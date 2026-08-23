@@ -1,0 +1,152 @@
+# Project agent memory
+
+This file is the project's committed home for project-intrinsic agent knowledge: build,
+test, release, architecture, and sharp-edge notes that should travel with the code.
+
+## The hard constraint: this repository is public and must stay generic
+
+`axi-core` is built by reading two AXI command-line tools and the installations they
+were developed against. The failure that matters is not a bug — it is a commit that
+describes, or grants access to, somebody's home automation instance, media server or
+workstation. Before writing **anything** into this repo, including tests, fixtures,
+docs, examples and commit messages:
+
+- **No host addresses.** No RFC1918 addresses, no install-specific hostnames or ports.
+- **No credentials.** Build credential shapes at run time; never write an `eyJ...`
+  literal, a bearer value or a token into a file. `tests/test_redact.py` shows the
+  pattern (`synthetic_jwt()`, values assembled from pieces), and it is the pattern
+  because the condensed scan joins the whole file before re-scanning.
+- **No real data.** Invent obviously-synthetic names: `light.example_lamp`,
+  `host.example.com`, area `Example Room`.
+- **No local paths or personal identifiers.** The two source checkouts are named by
+  `AXI_CORE_SOURCE_HA` / `AXI_CORE_SOURCE_PLEX` at capture time and must never reach a
+  committed file or a pull request body.
+
+`scripts/leakcheck.py` enforces this — do not rely on remembering it:
+
+```sh
+scripts/leakcheck.py                     # every tracked file
+scripts/leakcheck.py --staged            # what a commit would record (pre-commit hook)
+scripts/leakcheck.py --commit-msg PATH   # the message itself (commit-msg hook)
+scripts/leakcheck.py --pull-request N    # a pull request's title and body (hygiene.yml)
+scripts/leakcheck.py --rules             # the live rule list and the path allowances
+scripts/leakcheck.py --demo              # self-test: proves every rule still fires
+scripts/install-hooks.sh                 # sets core.hooksPath to .githooks
+```
+
+Its rule set is the **union** of both source tools' scanners, not a subset: a shared
+repository sees fixtures from both domains, and a scanner that catches more in a public
+repository is strictly better than one tuned to today's contents. CI runs `--demo`
+before the real scan, so a scanner that stopped detecting anything fails the build
+rather than passing silently. If it flags a line that legitimately needs the shape, add
+`leakcheck: allow=<rule>` on that line — scoped to that one rule, never blanket. Do not
+weaken a rule to make a commit pass, and do not bypass the hooks.
+
+**There are three surfaces and the third is not a file.** A pull request title and body
+are published the moment they are written, are in no checkout, pass under no hook, and
+can be edited after every other check has run. The pipeline's own document step writes
+into the body, pasting captured pytest output whose header carries a `rootdir:` line
+holding an absolute path; that has published a home directory three times across two
+sibling repositories with every check green each time. `edited` in `hygiene.yml`'s
+trigger list is the whole mechanism — without it the check scans the empty original
+body and passes. If the guard fires on a pull request body, **edit the body**; never
+weaken the guard.
+
+**A file that cannot carry a marker** — JSON has no comment syntax, and vendored
+third-party data must stay byte-for-byte — is exempted in `PATH_ALLOWANCES`, per path
+*and* per rule. There is one entry: the vendored TOON fixture whose backslash-escaping
+case is a synthetic Windows drive path.
+
+## Architecture
+
+- **`toon.py` + `toon_spec/`** — a strict TOON encoder (spec v4.1) and the
+  specification's own encode fixtures, vendored **inside the package** rather than under
+  `tests/`. That placement is load-bearing, not tidiness: one copy of the encoder only
+  ends the divergence if there is one copy of the rig that judges it, so
+  `toon_spec.run(encode)` takes the encoder as an argument and a downstream tool asserts
+  its own score without re-vendoring. `PROVENANCE.md` carries the commit, the licence,
+  the refresh recipe and what is deliberately not vendored.
+- **`errors.py`** — the closed recovery vocabulary. **Recovery is data; the tool's name
+  is supplied at render time and never stored.** `note` is the only kind that may name a
+  tool, as `{tool}`. There is deliberately no `help_lines` attribute: a slot left there
+  for convenience would be taken, and the first caller to take it bakes a name back in.
+- **`render/cli.py`** has `parse` as well as `line`. It is the migration aid for the two
+  CLIs *and* the thing that lets the byte-for-byte claim cover the whole corpus rather
+  than a chosen sample. A line it cannot express structurally becomes a note — which is
+  a reported gap, not a silent skip.
+- **`redact.py`** — order is literals → bearer → registered shapes → JWT. For the five
+  shapes the two tools carry the order is **not** observable (each rule leaves a
+  placeholder the next cannot match), which is why neither tool wrote it down. It is
+  written down and pinned here so the first shape where it matters is not the thing that
+  discovers it.
+- **`envconfig.py`** — every per-tool difference (variable names, scheme default, port
+  default, path-suffix stripping) is on a `CredentialSpec` the tool declares. None of
+  them can be decided here; they are properties of the system behind the tool.
+
+## The requirements layer
+
+`metaobjects/meta.axi-core.yaml` is the source of truth and `scripts/reqgen.py` is the
+only thing that reads it.
+
+**The modelling rule, because it was got wrong before.** `@implementedBy` is legal at
+**L4 (an object) and L5 (a member) only**, and it resolves to nodes in the model. So a
+fact about a live system is modelled *as a member* — a field on an `object.value` — and
+the requirement **tags the member**. There is no "oracle" attribute and no need for one;
+an earlier attempt invented one, got `ERR_UNKNOWN_ATTR`, and concluded the model could
+not express requirements. The refusal was right and the modelling was wrong.
+
+Consequences worth keeping straight:
+
+- **The projection object decides the relation.** `CapabilityFacts` → equality,
+  `PopulationFacts` → coverage, `WireFacts` → byte equality per case,
+  `DifferentialFacts` → the two sources agree and this package matches. There is no
+  attribute spelling it, and adding one would be an `ERR_UNKNOWN_ATTR`.
+- **A fact's name is the whole reference.** `haRecoveryLines` resolves to
+  `capture_ha_recovery_lines` and `subject_ha_recovery_lines` in
+  `tests/conformance/projections.py`. A fact with only one half fails generation.
+- **The Python loader does not check the binding rules.** It validates the vocabulary
+  and stops. The L4/L5 floor, nesting that never returns to a level already used,
+  references that resolve, a live leaf that names no fact, and a fact no requirement
+  claims are all enforced in `reqgen.bind` and tested in `tests/test_reqgen.py`.
+- **`tests/conformance/capture.json` is machine-written and never hand-edited.** It
+  holds every expected value in the repository. Re-read it with `reqgen capture`, which
+  needs both source checkouts; nothing else does.
+- **Do not model the TOON encoder's row shapes.** A prior measurement put that at 155
+  lines of metadata replacing 50 lines of Python plus a build step and a large
+  dependency, for no drift the checksummed fixtures do not already catch.
+
+Regenerate and gate:
+
+```sh
+python3.11 scripts/reqgen.py list | check | generate
+AXI_CORE_SOURCE_HA=<checkout> AXI_CORE_SOURCE_PLEX=<checkout> python3.11 scripts/reqgen.py capture
+```
+
+The `requirements` CI job runs `list` and `check`. It is separate from `test` because
+the metadata toolchain needs Python 3.11 while the test matrix goes down to 3.9 — the
+generator needs it, the generated checks never do, and that split is what keeps the
+package's own floor at 3.9.
+
+## Testing
+
+`pytest` runs the whole suite with **no credentials, no source checkouts and no
+network**. That property is the design, not a convenience: the conformance layer reads
+the committed capture.
+
+- `tests/conformance/test_requirements_generated.py` is generated. **Do not edit it** —
+  change the declaration and regenerate; CI fails on a stale copy.
+- Its last test breaks every check in turn and requires each to fail. A check that has
+  never failed is not yet a check.
+- `tests/test_toon_conformance.py` holds `CASE_COUNT`, the one deliberate literal in the
+  repository. It is a ratchet on a fixture refresh, not an expectation — every value a
+  check compares against comes from the capture.
+- Both TOON suites are kept and are not interchangeable: one states the encoder's
+  behaviour in this project's words, the other runs the specification's opinion.
+
+## Release
+
+release-please on `main`, same shape as the sibling projects. The PyPI publish job is
+written and gated behind `release_created`, but **the PyPI project does not exist yet**:
+registering the name is a one-time account action only the maintainer can perform, and
+trusted publishing needs the `pypi` environment configured before the first release.
+Nothing should attempt to publish before then.
