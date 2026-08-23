@@ -1,0 +1,488 @@
+## The requirements layer.
+##
+## This file is the source of truth for what `axi-core` claims, and for the facts
+## that witness those claims. It is loaded by the `metaobjects` loader under the
+## sealed-registry discipline (ADR-0023), which is the point: the requirement
+## vocabulary is closed, so there is nowhere here to type an expected value. Every
+## expected value lives in `tests/conformance/capture.json`, which is machine-written
+## from the two source tools and the vendored specification, and never hand-edited.
+##
+## HOW A CHECK COMES OUT OF THIS FILE
+##
+##   * A `object.value` in package `axi_core::conformance` is a PROJECTION KIND. The
+##     four here are the four the prior harness measurement found do the work:
+##     capability, population, wire and differential.
+##   * A field on one of those objects is a FACT. Its name is the whole reference:
+##     `scripts/reqgen.py` resolves `<name>` to a pair of functions in
+##     `tests/conformance/projections.py` -- `capture_<snake_name>` reads the
+##     authority, `subject_<snake_name>` reads this library -- and the projection
+##     kind decides the relation between them. A fact with no pair fails generation.
+##   * A requirement tags the facts that witness it with `@implementedBy`, which the
+##     metamodel permits at L4 (an object) and L5 (a member) only. A live or partial
+##     requirement tagging nothing fails generation: a requirement with no check must
+##     be red, not silently covered.
+##
+## There is deliberately NO attribute naming an oracle, a comparison, a fixture or an
+## expected value. The fact IS the member; the relation IS the projection kind. An
+## earlier attempt at this invented an `@oracle` attribute, was refused with
+## ERR_UNKNOWN_ATTR, and concluded the model could not express requirements. The
+## refusal was correct and the modelling was wrong.
+##
+## WHAT IS DELIBERATELY NOT MODELLED HERE: the TOON encoder's row shapes. A prior
+## measurement put that at 155 lines of metadata replacing 50 lines of Python, plus a
+## build step, for no drift the checksummed fixtures do not already catch. `toon.py`
+## stays plain Python and the specification's own fixtures stay its oracle.
+
+metadata:
+  package: axi_core::conformance
+  children:
+
+    # ---------------------------------------------------------------- row shapes
+    # Two shapes the fact fields below are made of. They carry no identity and no
+    # source because a capture is constructed and read, never persisted.
+
+    - object.value:
+        name: WireCase
+        children:
+          - field.string:
+              name: case
+              required: true
+          - field.string:
+              name: expected
+              required: true
+
+    - object.value:
+        name: SourcePair
+        children:
+          - field.string:
+              name: subject
+              required: true
+          - field.string:
+              name: ha
+              required: true
+          - field.string:
+              name: plex
+              required: true
+
+    # ------------------------------------------------------- 1. capability facts
+    # "What an independent authority offers." The relation is EQUALITY: this
+    # library's own model of the fact must equal the captured one. A set the library
+    # holds and the authority does not is an invention; the other way round is a gap.
+
+    - object.value:
+        name: CapabilityFacts
+        children:
+          - field.int:
+              name: toonEncodeCaseCount
+              required: true
+          - field.string[]:
+              name: toonFixtureDigests
+              required: true
+          - field.string[]:
+              name: toonFixtureCategories
+              required: true
+          - field.string[]:
+              name: toonCaseOptionNames
+              required: true
+          - field.string[]:
+              name: toonExercisedDelimiters
+              required: true
+          - field.string[]:
+              name: errorExitCodes
+              required: true
+          - field.string[]:
+              name: errorFaultClasses
+              required: true
+          - field.string[]:
+              name: errorTypeNames
+              required: true
+          - field.string[]:
+              name: envConfigErrorCodes
+              required: true
+
+    # ------------------------------------------------------- 2. population facts
+    # "Every shape reality contains has a branch here." The relation is COVERAGE:
+    # every cell the captured population contains must be reachable in this library.
+    # A partition is derived from reality rather than from the code, so it can name a
+    # cell the code has no branch for -- which is exactly what branch coverage cannot
+    # do, and exactly the defect class that shipped from the two tools before.
+
+    - object.value:
+        name: PopulationFacts
+        children:
+          - field.string[]:
+              name: recoveryShapeCells
+              required: true
+          - field.string[]:
+              name: redactionShapeCells
+              required: true
+          - field.string[]:
+              name: credentialSpecCells
+              required: true
+
+    # ------------------------------------------------------------- 3. wire facts
+    # "The bytes, reproduced exactly." The relation is BYTE EQUALITY, per case: the
+    # library, handed the captured input, must emit the captured output. This is
+    # where a recovery line that reads slightly differently after extraction dies.
+
+    - object.value:
+        name: WireFacts
+        children:
+          - field.object:
+              name: toonEncodeCases
+              objectRef: WireCase
+              isArray: true
+              required: true
+          - field.object:
+              name: haRecoveryLines
+              objectRef: WireCase
+              isArray: true
+              required: true
+          - field.object:
+              name: plexRecoveryLines
+              objectRef: WireCase
+              isArray: true
+              required: true
+          - field.object:
+              name: haCredentialMessages
+              objectRef: WireCase
+              isArray: true
+              required: true
+          - field.object:
+              name: plexCredentialMessages
+              objectRef: WireCase
+              isArray: true
+              required: true
+          - field.object:
+              name: haNormalizedUrls
+              objectRef: WireCase
+              isArray: true
+              required: true
+          - field.object:
+              name: plexNormalizedUrls
+              objectRef: WireCase
+              isArray: true
+              required: true
+          - field.object:
+              name: redactionSamples
+              objectRef: WireCase
+              isArray: true
+              required: true
+
+    # ----------------------------------------------------- 4. differential facts
+    # "Two independent implementations of the same contract agree." The relation is
+    # AGREEMENT FIRST: the two source copies must say the same thing, and only then
+    # must this library match them. A disagreement is reported as a disagreement --
+    # it is the drift this package exists to end, and picking a winner silently is
+    # how the drift started.
+
+    - object.value:
+        name: DifferentialFacts
+        children:
+          - field.object:
+              name: encoderDigest
+              objectRef: SourcePair
+              isArray: true
+              required: true
+          - field.object:
+              name: errorContract
+              objectRef: SourcePair
+              isArray: true
+              required: true
+          - field.object:
+              name: redactionContract
+              objectRef: SourcePair
+              isArray: true
+              required: true
+          - field.object:
+              name: credentialContract
+              objectRef: SourcePair
+              isArray: true
+              required: true
+
+    # =================================================================== TOON
+    - requirement.functional:
+        name: toonIsTheWireFormat
+        level: 1
+        status: live
+        statement: >-
+          Every AXI CLI prints one strict TOON dialect, so an agent parsing one tool's
+          output can parse the other's.
+        counterexample: >-
+          Two AXI tools encoding the same document differently, each believing itself
+          correct.
+        children:
+          - requirement.functional:
+              name: everyPublishedCaseIsReproduced
+              level: 5
+              status: live
+              statement: >-
+                Every encode case the vendored TOON specification publishes encodes to
+                the bytes the specification records for it.
+              counterexample: >-
+                A published case whose emitted bytes differ from the fixture's, on a
+                build that still reports a passing conformance score.
+              implementedBy:
+                - axi_core::conformance::WireFacts.toonEncodeCases
+          - requirement.functional:
+              name: theWholePublishedSuiteRuns
+              level: 5
+              status: live
+              statement: >-
+                The conformance run covers every case the vendored specification
+                publishes, and says how many that is by counting them.
+              counterexample: >-
+                A fixture file that stops being collected, shrinking the score in
+                silence while the suite stays green.
+              implementedBy:
+                - axi_core::conformance::CapabilityFacts.toonEncodeCaseCount
+                - axi_core::conformance::CapabilityFacts.toonFixtureCategories
+          - requirement.functional:
+              name: theFixturesAreStillTheSpecificationsOpinion
+              level: 5
+              status: live
+              statement: >-
+                Each vendored fixture still hashes to the digest recorded when it was
+                vendored.
+              counterexample: >-
+                A fixture edited to make a failing encoder pass, which is no longer the
+                specification's opinion about anything.
+              implementedBy:
+                - axi_core::conformance::CapabilityFacts.toonFixtureDigests
+          - requirement.functional:
+              name: noFixtureSettingIsIgnored
+              level: 5
+              status: live
+              statement: >-
+                Every option and delimiter the published cases exercise is one the
+                runner applies.
+              counterexample: >-
+                A case carrying an option the runner does not recognise, run with
+                default settings and reported as a pass.
+              implementedBy:
+                - axi_core::conformance::CapabilityFacts.toonCaseOptionNames
+                - axi_core::conformance::CapabilityFacts.toonExercisedDelimiters
+
+    # ============================================================ RECOVERY / ERRORS
+    - requirement.functional:
+        name: anErrorCarriesItsOwnFix
+        level: 1
+        status: live
+        statement: >-
+          An error names the specific command that fixes it, and the same error can be
+          rendered for a shell or for a caller that is not one.
+        counterexample: >-
+          An error that points at --help, or one whose fix can only be printed because
+          the tool's own name was baked into it when it was raised.
+        children:
+          - requirement.functional:
+              name: recoveryRendersByteForByte
+              level: 5
+              status: live
+              statement: >-
+                Rendering a recovery intent for a shell reproduces, byte for byte, the
+                line the tool that owns it prints today.
+              counterexample: >-
+                A recovery line that reads slightly differently after extraction, so the
+                tool's own suite fails on a diff nobody intended.
+              implementedBy:
+                - axi_core::conformance::WireFacts.haRecoveryLines
+                - axi_core::conformance::WireFacts.plexRecoveryLines
+          - requirement.functional:
+              name: everyRecoveryShapeInUseIsExpressible
+              level: 5
+              status: live
+              statement: >-
+                Every shape of recovery line the two tools actually emit is one the
+                recovery vocabulary can express.
+              counterexample: >-
+                A shape present in the tools' output that has no intent to carry it, so
+                extraction quietly drops it to free text.
+              implementedBy:
+                - axi_core::conformance::PopulationFacts.recoveryShapeCells
+          - requirement.functional:
+              name: theErrorVocabularyIsShared
+              level: 5
+              status: live
+              statement: >-
+                The exit codes, fault classes and error types this package declares are
+                the ones the two tools already declare.
+              counterexample: >-
+                A tool taking this package and finding an exit code or an error type it
+                used has gone missing.
+              implementedBy:
+                - axi_core::conformance::CapabilityFacts.errorExitCodes
+                - axi_core::conformance::CapabilityFacts.errorFaultClasses
+                - axi_core::conformance::CapabilityFacts.errorTypeNames
+
+    - requirement.architectural:
+        name: recoveryIsCarriedAsData
+        status: live
+        statement: >-
+          A recovery is structured intent, never a rendered line: the tool's name is
+          supplied when it is rendered and is not present when it is raised.
+        counterexample: >-
+          A recovery whose stored form already contains the string "ha-axi", which no
+          other caller can then reuse.
+        implementedBy:
+          - axi_core::conformance::WireFacts.haRecoveryLines
+          - axi_core::conformance::WireFacts.plexRecoveryLines
+
+    # ==================================================================== REDACTION
+    - requirement.functional:
+        name: aCredentialCannotReachStdout
+        level: 1
+        status: live
+        statement: >-
+          Anything printed passes one redactor, and a credential does not survive it,
+          whether it was registered by literal or recognised by shape.
+        counterexample: >-
+          A token in a traceback, an error message, or a URL the tool itself printed.
+        children:
+          - requirement.functional:
+              name: everyToolSampleIsStillRedacted
+              level: 5
+              status: live
+              statement: >-
+                Every sample either tool's own redactor cleans, this one cleans to the
+                same bytes.
+              counterexample: >-
+                A credential shape one tool catches today and this package lets through
+                after the tools adopt it.
+              implementedBy:
+                - axi_core::conformance::WireFacts.redactionSamples
+          - requirement.functional:
+              name: everyCredentialShapeInUseIsExpressible
+              level: 5
+              status: live
+              statement: >-
+                Every shape of credential pattern the two tools carry is one this
+                package's pattern registration can express.
+              counterexample: >-
+                A tool-specific pattern that cannot be registered, so the tool keeps a
+                private copy of the redactor and the drift begins again.
+              implementedBy:
+                - axi_core::conformance::PopulationFacts.redactionShapeCells
+
+    # ================================================================ ENVIRONMENT
+    - requirement.functional:
+        name: credentialsComeFromTheEnvironmentOnly
+        level: 1
+        status: live
+        statement: >-
+          A credential is read from the environment, validated before use, and never
+          accepted on a command line or from a file in the repository.
+        counterexample: >-
+          A --token flag, or a token with a line break in it reaching an HTTP client
+          that puts the whole header in a ValueError.
+        children:
+          - requirement.functional:
+              name: bothToolsMessagesAreReproduced
+              level: 5
+              status: live
+              statement: >-
+                The message and the recovery of every configuration failure either tool
+                raises are reproduced exactly under that tool's declared spec.
+              counterexample: >-
+                A configuration error whose wording changed on extraction, breaking a
+                tool's own assertion on it.
+              implementedBy:
+                - axi_core::conformance::WireFacts.haCredentialMessages
+                - axi_core::conformance::WireFacts.plexCredentialMessages
+                - axi_core::conformance::CapabilityFacts.envConfigErrorCodes
+          - requirement.functional:
+              name: bothToolsUrlNormalisationIsReproduced
+              level: 5
+              status: live
+              statement: >-
+                A base URL normalises to what the owning tool normalises it to,
+                including its scheme default and its port default.
+              counterexample: >-
+                A bare host that silently became http:// for the tool whose default is
+                TLS, sending its token in the clear.
+              implementedBy:
+                - axi_core::conformance::WireFacts.haNormalizedUrls
+                - axi_core::conformance::WireFacts.plexNormalizedUrls
+          - requirement.functional:
+              name: everyCredentialSpecInUseIsExpressible
+              level: 5
+              status: live
+              statement: >-
+                Every way the two tools differ in how they read credentials is a
+                difference the credential spec can carry.
+              counterexample: >-
+                A tool difference with nowhere to go, so that tool keeps its own copy of
+                the loader.
+              implementedBy:
+                - axi_core::conformance::PopulationFacts.credentialSpecCells
+
+    # =============================================================== ARCHITECTURAL
+    - requirement.architectural:
+        name: theTwoToolsCopiesAgreeOrTheDisagreementIsReported
+        status: live
+        statement: >-
+          For every contract this package takes over, the two tools' copies are compared
+          against each other, and this package matches the copy they agree on.
+        counterexample: >-
+          A fix landing in one tool's copy and not the other's, invisible until someone
+          runs both against the same fixtures.
+        implementedBy:
+          - axi_core::conformance::DifferentialFacts.encoderDigest
+          - axi_core::conformance::DifferentialFacts.errorContract
+          - axi_core::conformance::DifferentialFacts.redactionContract
+          - axi_core::conformance::DifferentialFacts.credentialContract
+
+    - requirement.architectural:
+        name: thePureModulesImportNoHttpLibrary
+        status: live
+        statement: >-
+          Importing any module of this package loads no HTTP or WebSocket client, and the
+          distribution declares no runtime dependency.
+        counterexample: >-
+          A tool that installed with one dependency finding it now installs with three.
+        implementedBy:
+          - axi_core::conformance::CapabilityFacts.errorTypeNames
+
+    - requirement.architectural:
+        name: noCheckCarriesAHandTypedExpectedValue
+        status: live
+        statement: >-
+          Every expected value a generated check compares against is read from the
+          committed capture, which is written by machine from the sources.
+        counterexample: >-
+          A check asserting equality against a literal somebody believed was true of the
+          authority -- which is the belief the check exists to test.
+        implementedBy:
+          - axi_core::conformance::CapabilityFacts.toonFixtureDigests
+          - axi_core::conformance::WireFacts.toonEncodeCases
+
+    - requirement.architectural:
+        name: noCheckIsVacuous
+        status: live
+        statement: >-
+          Every generated check is proved to fail when the thing it names is broken, by a
+          self-test that breaks each one in turn.
+        counterexample: >-
+          A check that has never failed, which is indistinguishable from a check that
+          cannot.
+        implementedBy:
+          - axi_core::conformance::PopulationFacts.recoveryShapeCells
+          - axi_core::conformance::WireFacts.redactionSamples
+
+    # ------------------------------------------------------------------- planned
+    # The domain tier. Declared now because the layout it lands in is decided and the
+    # ordering is published; `planned` is the one status whose @implementedBy may
+    # dangle, and it never counts toward coverage.
+    - requirement.functional:
+        name: theDomainTierFollows
+        level: 1
+        status: planned
+        disposition: deferred
+        trackedBy:
+          - "axi-core-arch-m3 report, section 10, steps 2 and 3"
+        statement: >-
+          The two domain halves -- the Home Assistant service model and the Plex id and
+          filter language -- move here behind the toolkit, each in its own change.
+        counterexample: >-
+          A domain module extracted before the toolkit it depends on, so the first
+          adoption has to take both at once.
