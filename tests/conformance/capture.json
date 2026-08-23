@@ -1,0 +1,2066 @@
+{
+  "_comment": "Machine-written by scripts/reqgen.py from the authorities named in tests/conformance/projections.py. Every expected value in this repository is here, and none of it is hand-edited: a value typed by a person is a belief about the authority, which is the belief the checks exist to test.",
+  "facts": {
+    "credentialContract": [
+      {
+        "ha": "30.0",
+        "plex": "30.0",
+        "subject": "DEFAULT_TIMEOUT"
+      },
+      {
+        "ha": "[\\s\\x00-\\x1f\\x7f]",
+        "plex": "[\\s\\x00-\\x1f\\x7f]",
+        "subject": "regex:_ILLEGAL_TOKEN"
+      }
+    ],
+    "credentialSpecCells": [
+      "scheme=https|port=none|strip=/api|aliases=1",
+      "scheme=http|port=32400|strip=none|aliases=2"
+    ],
+    "encoderDigest": [
+      {
+        "ha": "b3924ca2b2a3fc0dea7f1303c6a0eb3af99985e5eb25d7aac7d71161a99a3c40",
+        "plex": "b3924ca2b2a3fc0dea7f1303c6a0eb3af99985e5eb25d7aac7d71161a99a3c40",
+        "subject": "toon.py"
+      }
+    ],
+    "envConfigErrorCodes": [
+      "BAD_TOKEN",
+      "BAD_URL",
+      "NOT_CONFIGURED"
+    ],
+    "errorContract": [
+      {
+        "ha": "yes",
+        "plex": "yes",
+        "subject": "declares:ApiError"
+      },
+      {
+        "ha": "yes",
+        "plex": "yes",
+        "subject": "declares:AuthFailed"
+      },
+      {
+        "ha": "yes",
+        "plex": "yes",
+        "subject": "declares:AxiError"
+      },
+      {
+        "ha": "yes",
+        "plex": "yes",
+        "subject": "declares:ConfigError"
+      },
+      {
+        "ha": "yes",
+        "plex": "yes",
+        "subject": "declares:ConnectionFailed"
+      },
+      {
+        "ha": "yes",
+        "plex": "yes",
+        "subject": "declares:NotFound"
+      },
+      {
+        "ha": "yes",
+        "plex": "yes",
+        "subject": "declares:UsageError"
+      },
+      {
+        "ha": "1",
+        "plex": "1",
+        "subject": "exit:EXIT_ERROR"
+      },
+      {
+        "ha": "0",
+        "plex": "0",
+        "subject": "exit:EXIT_OK"
+      },
+      {
+        "ha": "2",
+        "plex": "2",
+        "subject": "exit:EXIT_USAGE"
+      }
+    ],
+    "errorExitCodes": [
+      "EXIT_ERROR=1",
+      "EXIT_OK=0",
+      "EXIT_USAGE=2"
+    ],
+    "errorFaultClasses": [
+      "auth",
+      "config",
+      "internal",
+      "not_found",
+      "permission",
+      "refused",
+      "transport",
+      "unclassified",
+      "usage"
+    ],
+    "errorTypeNames": [
+      "ApiError",
+      "AuthFailed",
+      "AxiError",
+      "ConfigError",
+      "ConnectionFailed",
+      "Forbidden",
+      "NotFound",
+      "UsageError"
+    ],
+    "haCredentialMessages": [
+      {
+        "case": "missing:both",
+        "expected": "HA_URL and HA_TOKEN are not set in the environment\n  Set HA_URL to your Home Assistant base URL, e.g. export HA_URL=https://homeassistant.example.com\n  Set HA_TOKEN to a long-lived access token from your Home Assistant profile page, under Security\n  Run `ha-axi doctor` to verify the connection once both are set"
+      },
+      {
+        "case": "missing:url",
+        "expected": "HA_URL is not set in the environment\n  Set HA_URL to your Home Assistant base URL, e.g. export HA_URL=https://homeassistant.example.com\n  Set HA_TOKEN to a long-lived access token from your Home Assistant profile page, under Security\n  Run `ha-axi doctor` to verify the connection once both are set"
+      },
+      {
+        "case": "missing:token",
+        "expected": "HA_TOKEN is not set in the environment\n  Set HA_URL to your Home Assistant base URL, e.g. export HA_URL=https://homeassistant.example.com\n  Set HA_TOKEN to a long-lived access token from your Home Assistant profile page, under Security\n  Run `ha-axi doctor` to verify the connection once both are set"
+      },
+      {
+        "case": "blank:url",
+        "expected": "HA_URL is not set in the environment\n  Set HA_URL to your Home Assistant base URL, e.g. export HA_URL=https://homeassistant.example.com\n  Set HA_TOKEN to a long-lived access token from your Home Assistant profile page, under Security\n  Run `ha-axi doctor` to verify the connection once both are set"
+      },
+      {
+        "case": "bad_token:space",
+        "expected": "HA_TOKEN contains whitespace or a control character\n  A long-lived access token is a single unbroken string; check for a line break\n  If it was read from a file, strip the trailing newline, e.g. HA_TOKEN=$(tr -d '\\n' < token.txt)"
+      },
+      {
+        "case": "bad_token:newline",
+        "expected": "HA_TOKEN contains whitespace or a control character\n  A long-lived access token is a single unbroken string; check for a line break\n  If it was read from a file, strip the trailing newline, e.g. HA_TOKEN=$(tr -d '\\n' < token.txt)"
+      },
+      {
+        "case": "bad_token:tab",
+        "expected": "HA_TOKEN contains whitespace or a control character\n  A long-lived access token is a single unbroken string; check for a line break\n  If it was read from a file, strip the trailing newline, e.g. HA_TOKEN=$(tr -d '\\n' < token.txt)"
+      },
+      {
+        "case": "bad_token:carriage-return",
+        "expected": "HA_TOKEN contains whitespace or a control character\n  A long-lived access token is a single unbroken string; check for a line break\n  If it was read from a file, strip the trailing newline, e.g. HA_TOKEN=$(tr -d '\\n' < token.txt)"
+      },
+      {
+        "case": "bad_url:empty",
+        "expected": "HA_URL is not a usable URL: 'https://'\n  Set HA_URL to your Home Assistant base URL, e.g. export HA_URL=https://homeassistant.example.com"
+      },
+      {
+        "case": "bad_url:scheme",
+        "expected": "HA_URL must use http or https, got 'ftp'\n  Set HA_URL to your Home Assistant base URL, e.g. export HA_URL=https://homeassistant.example.com"
+      },
+      {
+        "case": "bad_url:no-netloc",
+        "expected": "HA_URL is not a usable URL: '://nope'\n  Set HA_URL to your Home Assistant base URL, e.g. export HA_URL=https://homeassistant.example.com"
+      }
+    ],
+    "haNormalizedUrls": [
+      {
+        "case": "host.example.com",
+        "expected": "https://host.example.com"
+      },
+      {
+        "case": "host.example.com:8123",
+        "expected": "https://host.example.com:8123"
+      },
+      {
+        "case": "http://host.example.com",
+        "expected": "http://host.example.com"
+      },
+      {
+        "case": "https://host.example.com/",
+        "expected": "https://host.example.com"
+      },
+      {
+        "case": "https://host.example.com/api",
+        "expected": "https://host.example.com"
+      },
+      {
+        "case": "https://host.example.com/api/",
+        "expected": "https://host.example.com"
+      },
+      {
+        "case": "https://someone:example-secret@host.example.com",
+        "expected": "https://host.example.com"
+      },
+      {
+        "case": "https://proxy.example.com/prefix",
+        "expected": "https://proxy.example.com/prefix"
+      },
+      {
+        "case": "  https://host.example.com  ",
+        "expected": "https://host.example.com"
+      }
+    ],
+    "haRecoveryLines": [
+      {
+        "case": "  --debug (diagnostics on stderr), --help, -v/--version",
+        "expected": "  --debug (diagnostics on stderr), --help, -v/--version"
+      },
+      {
+        "case": "  --human (readable output), --json (raw JSON output), --timeout <seconds> (default 30),",
+        "expected": "  --human (readable output), --json (raw JSON output), --timeout <seconds> (default 30),"
+      },
+      {
+        "case": "  HA_TOKEN (or HASS_TOKEN) - long-lived access token; there is deliberately no --token flag",
+        "expected": "  HA_TOKEN (or HASS_TOKEN) - long-lived access token; there is deliberately no --token flag"
+      },
+      {
+        "case": "  HA_URL (or HASS_SERVER) - Home Assistant base URL, e.g. https://homeassistant.example.com",
+        "expected": "  HA_URL (or HASS_SERVER) - Home Assistant base URL, e.g. https://homeassistant.example.com"
+      },
+      {
+        "case": "A command removed or not yet added upstream answers this way; check the instance version with `ha-axi doctor`",
+        "expected": "A command removed or not yet added upstream answers this way; check the instance version with `ha-axi doctor`"
+      },
+      {
+        "case": "A long-lived access token is a single unbroken string; check for a line break",
+        "expected": "A long-lived access token is a single unbroken string; check for a line break"
+      },
+      {
+        "case": "A new token for the same account will not help; the account is the limit",
+        "expected": "A new token for the same account will not help; the account is the limit"
+      },
+      {
+        "case": "A new token will not help; the request was refused before any view ran",
+        "expected": "A new token will not help; the request was refused before any view ran"
+      },
+      {
+        "case": "A new token will not help; the upgrade was refused before Home Assistant saw it",
+        "expected": "A new token will not help; the upgrade was refused before Home Assistant saw it"
+      },
+      {
+        "case": "Check HA_TOKEN belongs to an account with administrator rights",
+        "expected": "Check HA_TOKEN belongs to an account with administrator rights"
+      },
+      {
+        "case": "Check HA_TOKEN holds a current long-lived access token",
+        "expected": "Check HA_TOKEN holds a current long-lived access token"
+      },
+      {
+        "case": "Check HA_URL points at a reachable Home Assistant instance",
+        "expected": "Check HA_URL points at a reachable Home Assistant instance"
+      },
+      {
+        "case": "Check whether a proxy in front of Home Assistant forwards WebSocket upgrades",
+        "expected": "Check whether a proxy in front of Home Assistant forwards WebSocket upgrades"
+      },
+      {
+        "case": "Check whether a proxy in front of Home Assistant is refusing the request",
+        "expected": "Check whether a proxy in front of Home Assistant is refusing the request"
+      },
+      {
+        "case": "Check whether a proxy in front of Home Assistant, or an IP ban, is refusing it",
+        "expected": "Check whether a proxy in front of Home Assistant, or an IP ban, is refusing it"
+      },
+      {
+        "case": "Confirm HA_URL points at the Home Assistant root, not at /api",
+        "expected": "Confirm HA_URL points at the Home Assistant root, not at /api"
+      },
+      {
+        "case": "Confirm HA_URL uses the scheme your instance actually serves",
+        "expected": "Confirm HA_URL uses the scheme your instance actually serves"
+      },
+      {
+        "case": "Create a new one on your Home Assistant profile page, under Security",
+        "expected": "Create a new one on your Home Assistant profile page, under Security"
+      },
+      {
+        "case": "Home Assistant authenticates after the upgrade, so a 401 here is usually a proxy in front of it demanding its own credentials",
+        "expected": "Home Assistant authenticates after the upgrade, so a 401 here is usually a proxy in front of it demanding its own credentials"
+      },
+      {
+        "case": "Home Assistant bans an address after repeated failed logins -- clear it from `ip_bans.yaml` on the instance and restart it",
+        "expected": "Home Assistant bans an address after repeated failed logins -- clear it from `ip_bans.yaml` on the instance and restart it"
+      },
+      {
+        "case": "If it was read from a file, strip the trailing newline, e.g. HA_TOKEN=$(tr -d '\\n' < token.txt)",
+        "expected": "If it was read from a file, strip the trailing newline, e.g. HA_TOKEN=$(tr -d '\\n' < token.txt)"
+      },
+      {
+        "case": "Install it with `pip install 'ha-axi'` or `pip install websockets`",
+        "expected": "Install it with `pip install 'ha-axi'` or `pip install websockets`"
+      },
+      {
+        "case": "Pass a readable path, or use `--template '<text>'`",
+        "expected": "Pass a readable path, or use `--template '<text>'`"
+      },
+      {
+        "case": "Pass a writable repository root with `--path <dir>`",
+        "expected": "Pass a writable repository root with `--path <dir>`"
+      },
+      {
+        "case": "Pass the area_id instead of the name",
+        "expected": "Pass the area_id instead of the name"
+      },
+      {
+        "case": "Point HA_URL directly at Home Assistant rather than at a proxy that redirects",
+        "expected": "Point HA_URL directly at Home Assistant rather than at a proxy that redirects"
+      },
+      {
+        "case": "Raise the limit with `ha-axi --timeout 60 <command>`",
+        "expected": "Raise the limit with `ha-axi --timeout 60 <command>`"
+      },
+      {
+        "case": "Re-run with `--debug` for a diagnostic trace on stderr",
+        "expected": "Re-run with `--debug` for a diagnostic trace on stderr"
+      },
+      {
+        "case": "Reads still work, e.g. `ha-axi state list`, `ha-axi entity list`, `ha-axi area list`",
+        "expected": "Reads still work, e.g. `ha-axi state list`, `ha-axi entity list`, `ha-axi area list`"
+      },
+      {
+        "case": "Report it at https://github.com/dmealing/ha-axi/issues",
+        "expected": "Report it at https://github.com/dmealing/ha-axi/issues"
+      },
+      {
+        "case": "Restart your agent session to receive ha-axi ambient context at session start",
+        "expected": "Restart your agent session to receive ha-axi ambient context at session start"
+      },
+      {
+        "case": "Retry the command; a dropped connection is often a one-off",
+        "expected": "Retry the command; a dropped connection is often a one-off"
+      },
+      {
+        "case": "Retry the command; an instance answers this way while it restarts",
+        "expected": "Retry the command; an instance answers this way while it restarts"
+      },
+      {
+        "case": "Retry the command; the instance did not finish in time",
+        "expected": "Retry the command; the instance did not finish in time"
+      },
+      {
+        "case": "Run `ha-axi --help` for the full reference",
+        "expected": "Run `ha-axi --help` for the full reference"
+      },
+      {
+        "case": "Run `ha-axi --help` to see the available commands",
+        "expected": "Run `ha-axi --help` to see the available commands"
+      },
+      {
+        "case": "Run `ha-axi --timeout 60 <command>`",
+        "expected": "Run `ha-axi --timeout 60 <command>`"
+      },
+      {
+        "case": "Run `ha-axi api --help` for the supported methods",
+        "expected": "Run `ha-axi api --help` for the supported methods"
+      },
+      {
+        "case": "Run `ha-axi api /config`",
+        "expected": "Run `ha-axi api /config`"
+      },
+      {
+        "case": "Run `ha-axi api GET /states`",
+        "expected": "Run `ha-axi api GET /states`"
+      },
+      {
+        "case": "Run `ha-axi api POST /services/light/turn_on --field entity_id=<id>`",
+        "expected": "Run `ha-axi api POST /services/light/turn_on --field entity_id=<id>`"
+      },
+      {
+        "case": "Run `ha-axi area create --name '<name>'` to add one",
+        "expected": "Run `ha-axi area create --name '<name>'` to add one"
+      },
+      {
+        "case": "Run `ha-axi area create --name 'Example Room'`",
+        "expected": "Run `ha-axi area create --name 'Example Room'`"
+      },
+      {
+        "case": "Run `ha-axi area list` to see each area's id",
+        "expected": "Run `ha-axi area list` to see each area's id"
+      },
+      {
+        "case": "Run `ha-axi area list` to see each area's id and how much it holds",
+        "expected": "Run `ha-axi area list` to see each area's id and how much it holds"
+      },
+      {
+        "case": "Run `ha-axi area list` to see the areas that exist",
+        "expected": "Run `ha-axi area list` to see the areas that exist"
+      },
+      {
+        "case": "Run `ha-axi area update <id|name> --name '<name>'` to rename one",
+        "expected": "Run `ha-axi area update <id|name> --name '<name>'` to rename one"
+      },
+      {
+        "case": "Run `ha-axi device list --fields device_id,name` to see each device's id",
+        "expected": "Run `ha-axi device list --fields device_id,name` to see each device's id"
+      },
+      {
+        "case": "Run `ha-axi device list` with no filters to see every device",
+        "expected": "Run `ha-axi device list` with no filters to see every device"
+      },
+      {
+        "case": "Run `ha-axi doctor` if it keeps answering this way",
+        "expected": "Run `ha-axi doctor` if it keeps answering this way"
+      },
+      {
+        "case": "Run `ha-axi doctor` to see whether the REST API answers at the same URL",
+        "expected": "Run `ha-axi doctor` to see whether the REST API answers at the same URL"
+      },
+      {
+        "case": "Run `ha-axi doctor` to see which transport is failing",
+        "expected": "Run `ha-axi doctor` to see which transport is failing"
+      },
+      {
+        "case": "Run `ha-axi doctor` to test both the REST and WebSocket connections",
+        "expected": "Run `ha-axi doctor` to test both the REST and WebSocket connections"
+      },
+      {
+        "case": "Run `ha-axi doctor` to test the connection",
+        "expected": "Run `ha-axi doctor` to test the connection"
+      },
+      {
+        "case": "Run `ha-axi doctor` to test the connection if it keeps happening",
+        "expected": "Run `ha-axi doctor` to test the connection if it keeps happening"
+      },
+      {
+        "case": "Run `ha-axi doctor` to verify the connection once both are set",
+        "expected": "Run `ha-axi doctor` to verify the connection once both are set"
+      },
+      {
+        "case": "Run `ha-axi entity get <entity_id>` for one entry in full",
+        "expected": "Run `ha-axi entity get <entity_id>` for one entry in full"
+      },
+      {
+        "case": "Run `ha-axi entity list --area <id|name>` to see the entities in an area",
+        "expected": "Run `ha-axi entity list --area <id|name>` to see the entities in an area"
+      },
+      {
+        "case": "Run `ha-axi entity list --area <id|name>` to see what one area holds",
+        "expected": "Run `ha-axi entity list --area <id|name>` to see what one area holds"
+      },
+      {
+        "case": "Run `ha-axi entity list --area none` to find entities with no area",
+        "expected": "Run `ha-axi entity list --area none` to find entities with no area"
+      },
+      {
+        "case": "Run `ha-axi entity list` to read the registry, which includes disabled entities",
+        "expected": "Run `ha-axi entity list` to read the registry, which includes disabled entities"
+      },
+      {
+        "case": "Run `ha-axi entity list` with no filters to see every entry",
+        "expected": "Run `ha-axi entity list` with no filters to see every entry"
+      },
+      {
+        "case": "Run `ha-axi entity update <entity_id> --name \"<name>\" --area <id|name>` to change one",
+        "expected": "Run `ha-axi entity update <entity_id> --name \"<name>\" --area <id|name>` to change one"
+      },
+      {
+        "case": "Run `ha-axi service call <domain>.<service> --target-entity <entity_id>` to act",
+        "expected": "Run `ha-axi service call <domain>.<service> --target-entity <entity_id>` to act"
+      },
+      {
+        "case": "Run `ha-axi service call <domain>.<service> --target-entity <entity_id>` to call one",
+        "expected": "Run `ha-axi service call <domain>.<service> --target-entity <entity_id>` to call one"
+      },
+      {
+        "case": "Run `ha-axi service call light.turn_on --target-entity <entity_id>`",
+        "expected": "Run `ha-axi service call light.turn_on --target-entity <entity_id>`"
+      },
+      {
+        "case": "Run `ha-axi service get <domain>.<service>` to see one service's fields",
+        "expected": "Run `ha-axi service get <domain>.<service>` to see one service's fields"
+      },
+      {
+        "case": "Run `ha-axi service list --domain <domain>` to see one domain's services",
+        "expected": "Run `ha-axi service list --domain <domain>` to see one domain's services"
+      },
+      {
+        "case": "Run `ha-axi service list` to see every domain",
+        "expected": "Run `ha-axi service list` to see every domain"
+      },
+      {
+        "case": "Run `ha-axi service list` to see the available domains",
+        "expected": "Run `ha-axi service list` to see the available domains"
+      },
+      {
+        "case": "Run `ha-axi state get <entity_id>` and compare its supported_features attribute",
+        "expected": "Run `ha-axi state get <entity_id>` and compare its supported_features attribute"
+      },
+      {
+        "case": "Run `ha-axi state get <entity_id>` for one entity's full attributes",
+        "expected": "Run `ha-axi state get <entity_id>` for one entity's full attributes"
+      },
+      {
+        "case": "Run `ha-axi state get <entity_id>` if the entity exists but is not registered",
+        "expected": "Run `ha-axi state get <entity_id>` if the entity exists but is not registered"
+      },
+      {
+        "case": "Run `ha-axi state get <entity_id>` to read an entity's supported_features",
+        "expected": "Run `ha-axi state get <entity_id>` to read an entity's supported_features"
+      },
+      {
+        "case": "Run `ha-axi state get <entity_id>` to see an entity's current state",
+        "expected": "Run `ha-axi state get <entity_id>` to see an entity's current state"
+      },
+      {
+        "case": "Run `ha-axi state list --domain <domain>` to browse one domain",
+        "expected": "Run `ha-axi state list --domain <domain>` to browse one domain"
+      },
+      {
+        "case": "Run `ha-axi state list --domain <domain>` to list entity states",
+        "expected": "Run `ha-axi state list --domain <domain>` to list entity states"
+      },
+      {
+        "case": "Run `ha-axi state list --domain light` to narrow by domain",
+        "expected": "Run `ha-axi state list --domain light` to narrow by domain"
+      },
+      {
+        "case": "Run `ha-axi state list --search <text>` to find an entity by name",
+        "expected": "Run `ha-axi state list --search <text>` to find an entity by name"
+      },
+      {
+        "case": "Run `ha-axi state list` with no filters to see every entity",
+        "expected": "Run `ha-axi state list` with no filters to see every entity"
+      },
+      {
+        "case": "Run `ha-axi template render --template '{{ now() }}'`",
+        "expected": "Run `ha-axi template render --template '{{ now() }}'`"
+      },
+      {
+        "case": "Run `ha-axi template render --template '{{ states(\"light.example_lamp\") }}'`",
+        "expected": "Run `ha-axi template render --template '{{ states(\"light.example_lamp\") }}'`"
+      },
+      {
+        "case": "Run `ha-axi template render --template-file <path>` to read one from disk",
+        "expected": "Run `ha-axi template render --template-file <path>` to read one from disk"
+      },
+      {
+        "case": "Run `ha-axi ws --list` to see each command's parameters",
+        "expected": "Run `ha-axi ws --list` to see each command's parameters"
+      },
+      {
+        "case": "Run `ha-axi ws --list` to see the commands this CLI declares",
+        "expected": "Run `ha-axi ws --list` to see the commands this CLI declares"
+      },
+      {
+        "case": "Run `ha-axi ws --list` to see the declared commands",
+        "expected": "Run `ha-axi ws --list` to see the declared commands"
+      },
+      {
+        "case": "Run `ha-axi ws --raw <api/type>` for a command that is not declared here",
+        "expected": "Run `ha-axi ws --raw <api/type>` for a command that is not declared here"
+      },
+      {
+        "case": "Run `ha-axi ws --raw config/floor_registry/list`",
+        "expected": "Run `ha-axi ws --raw config/floor_registry/list`"
+      },
+      {
+        "case": "Run `ha-axi ws <command> --param key=value` to send one",
+        "expected": "Run `ha-axi ws <command> --param key=value` to send one"
+      },
+      {
+        "case": "Run the command again with `--limit 50`",
+        "expected": "Run the command again with `--limit 50`"
+      },
+      {
+        "case": "Run the same command with --no-check to send it anyway",
+        "expected": "Run the same command with --no-check to send it anyway"
+      },
+      {
+        "case": "Set HA_TOKEN to a long-lived access token from your Home Assistant profile page, under Security",
+        "expected": "Set HA_TOKEN to a long-lived access token from your Home Assistant profile page, under Security"
+      },
+      {
+        "case": "Set HA_URL to your Home Assistant base URL, e.g. export HA_URL=https://homeassistant.example.com",
+        "expected": "Set HA_URL to your Home Assistant base URL, e.g. export HA_URL=https://homeassistant.example.com"
+      },
+      {
+        "case": "This is a bug in ha-axi; the command did not complete",
+        "expected": "This is a bug in ha-axi; the command did not complete"
+      },
+      {
+        "case": "This is a bug in ha-axi; the connection cannot be reused after it",
+        "expected": "This is a bug in ha-axi; the connection cannot be reused after it"
+      },
+      {
+        "case": "This session is read-only; the command was refused before anything changed",
+        "expected": "This session is read-only; the command was refused before anything changed"
+      },
+      {
+        "case": "env[3]:",
+        "expected": "env[3]:"
+      },
+      {
+        "case": "examples:",
+        "expected": "examples:"
+      },
+      {
+        "case": "flags[6]:",
+        "expected": "flags[6]:"
+      },
+      {
+        "case": "note:",
+        "expected": "note:"
+      },
+      {
+        "case": "usage: ha-axi [command] [subcommand] [args] [flags]",
+        "expected": "usage: ha-axi [command] [subcommand] [args] [flags]"
+      }
+    ],
+    "plexCredentialMessages": [
+      {
+        "case": "missing:both",
+        "expected": "PLEX_URL and PLEX_TOKEN are not set in the environment\n  Set PLEX_URL to your server's local address, e.g. export PLEX_URL=http://plex.example.com:32400\n  Set PLEX_TOKEN to a Plex access token; see https://support.plex.tv/articles/204059436\n  Run `plex-axi doctor` to verify the connection once both are set"
+      },
+      {
+        "case": "missing:url",
+        "expected": "PLEX_URL is not set in the environment\n  Set PLEX_URL to your server's local address, e.g. export PLEX_URL=http://plex.example.com:32400\n  Set PLEX_TOKEN to a Plex access token; see https://support.plex.tv/articles/204059436\n  Run `plex-axi doctor` to verify the connection once both are set"
+      },
+      {
+        "case": "missing:token",
+        "expected": "PLEX_TOKEN is not set in the environment\n  Set PLEX_URL to your server's local address, e.g. export PLEX_URL=http://plex.example.com:32400\n  Set PLEX_TOKEN to a Plex access token; see https://support.plex.tv/articles/204059436\n  Run `plex-axi doctor` to verify the connection once both are set"
+      },
+      {
+        "case": "blank:url",
+        "expected": "PLEX_URL is not set in the environment\n  Set PLEX_URL to your server's local address, e.g. export PLEX_URL=http://plex.example.com:32400\n  Set PLEX_TOKEN to a Plex access token; see https://support.plex.tv/articles/204059436\n  Run `plex-axi doctor` to verify the connection once both are set"
+      },
+      {
+        "case": "bad_token:space",
+        "expected": "PLEX_TOKEN contains whitespace or a control character\n  A Plex token is a single unbroken string; check for a line break\n  If it was read from a file, strip the trailing newline, e.g. PLEX_TOKEN=$(tr -d '\\n' < token.txt)"
+      },
+      {
+        "case": "bad_token:newline",
+        "expected": "PLEX_TOKEN contains whitespace or a control character\n  A Plex token is a single unbroken string; check for a line break\n  If it was read from a file, strip the trailing newline, e.g. PLEX_TOKEN=$(tr -d '\\n' < token.txt)"
+      },
+      {
+        "case": "bad_token:tab",
+        "expected": "PLEX_TOKEN contains whitespace or a control character\n  A Plex token is a single unbroken string; check for a line break\n  If it was read from a file, strip the trailing newline, e.g. PLEX_TOKEN=$(tr -d '\\n' < token.txt)"
+      },
+      {
+        "case": "bad_token:carriage-return",
+        "expected": "PLEX_TOKEN contains whitespace or a control character\n  A Plex token is a single unbroken string; check for a line break\n  If it was read from a file, strip the trailing newline, e.g. PLEX_TOKEN=$(tr -d '\\n' < token.txt)"
+      },
+      {
+        "case": "bad_url:empty",
+        "expected": "PLEX_URL is not a usable URL: 'http://'\n  Set PLEX_URL to your server's local address, e.g. export PLEX_URL=http://plex.example.com:32400"
+      },
+      {
+        "case": "bad_url:scheme",
+        "expected": "PLEX_URL must use http or https, got 'ftp'\n  Set PLEX_URL to your server's local address, e.g. export PLEX_URL=http://plex.example.com:32400"
+      },
+      {
+        "case": "bad_url:no-netloc",
+        "expected": "PLEX_URL is not a usable URL: '://nope'\n  Set PLEX_URL to your server's local address, e.g. export PLEX_URL=http://plex.example.com:32400"
+      }
+    ],
+    "plexNormalizedUrls": [
+      {
+        "case": "host.example.com",
+        "expected": "http://host.example.com:32400"
+      },
+      {
+        "case": "host.example.com:8443",
+        "expected": "http://host.example.com:8443"
+      },
+      {
+        "case": "http://host.example.com:32400/",
+        "expected": "http://host.example.com:32400"
+      },
+      {
+        "case": "https://host.example.com",
+        "expected": "https://host.example.com:32400"
+      },
+      {
+        "case": "https://someone:example-secret@host.example.com",
+        "expected": "https://host.example.com:32400"
+      },
+      {
+        "case": "http://[2001:db8::1]",
+        "expected": "http://[2001:db8::1]:32400"
+      },
+      {
+        "case": "http://[2001:db8::1]:32400",
+        "expected": "http://[2001:db8::1]:32400"
+      },
+      {
+        "case": "  host.example.com  ",
+        "expected": "http://host.example.com:32400"
+      }
+    ],
+    "plexRecoveryLines": [
+      {
+        "case": "A Plex client appears here only while it is running and on the same network as the server",
+        "expected": "A Plex client appears here only while it is running and on the same network as the server"
+      },
+      {
+        "case": "A Plex token is a single unbroken string; check for a line break",
+        "expected": "A Plex token is a single unbroken string; check for a line break"
+      },
+      {
+        "case": "A guid names an item in Plex's catalogue; a rating key names a row on this server",
+        "expected": "A guid names an item in Plex's catalogue; a rating key names a row on this server"
+      },
+      {
+        "case": "A rating is per-account: a token shared into this server may not carry one",
+        "expected": "A rating is per-account: a token shared into this server may not carry one"
+      },
+      {
+        "case": "A rating key from a film or photo library resolves here but cannot go in",
+        "expected": "A rating key from a film or photo library resolves here but cannot go in"
+      },
+      {
+        "case": "A rating key from another server, or from before a library rebuild, will not resolve here",
+        "expected": "A rating key from another server, or from before a library rebuild, will not resolve here"
+      },
+      {
+        "case": "A rating key is local to this server and moves when an item is re-matched",
+        "expected": "A rating key is local to this server and moves when an item is re-matched"
+      },
+      {
+        "case": "A server that allows unauthenticated access on the local network issues tokens like this; `--user` needs a token minted by signing in to plex.tv",
+        "expected": "A server that allows unauthenticated access on the local network issues tokens like this; `--user` needs a token minted by signing in to plex.tv"
+      },
+      {
+        "case": "A smart playlist's contents are a saved search that Plex re-runs; its items are a result, not a list, and adding to it is not something the server offers",
+        "expected": "A smart playlist's contents are a saved search that Plex re-runs; its items are a result, not a list, and adding to it is not something the server offers"
+      },
+      {
+        "case": "A typed command exists for search, detail, genres, similar, recent and sessions",
+        "expected": "A typed command exists for search, detail, genres, similar, recent and sessions"
+      },
+      {
+        "case": "Check that PLEX_URL is the server's address and port, e.g. http://plex.example.com:32400",
+        "expected": "Check that PLEX_URL is the server's address and port, e.g. http://plex.example.com:32400"
+      },
+      {
+        "case": "Check that PLEX_URL names the server on the local network, not plex.tv",
+        "expected": "Check that PLEX_URL names the server on the local network, not plex.tv"
+      },
+      {
+        "case": "Check the port; a Plex Media Server serves its API on 32400 by default",
+        "expected": "Check the port; a Plex Media Server serves its API on 32400 by default"
+      },
+      {
+        "case": "Drop one flag at a time: every flag narrows the query independently",
+        "expected": "Drop one flag at a time: every flag narrows the query independently"
+      },
+      {
+        "case": "Every local client still works without it: run `plex-axi clients`",
+        "expected": "Every local client still works without it: run `plex-axi clients`"
+      },
+      {
+        "case": "If it was read from a file, strip the trailing newline, e.g. PLEX_TOKEN=$(tr -d '\\n' < token.txt)",
+        "expected": "If it was read from a file, strip the trailing newline, e.g. PLEX_TOKEN=$(tr -d '\\n' < token.txt)"
+      },
+      {
+        "case": "Narrow the search instead; a list an agent cannot read is not a result",
+        "expected": "Narrow the search instead; a list an agent cannot read is not a result"
+      },
+      {
+        "case": "Nothing was sent to the server",
+        "expected": "Nothing was sent to the server"
+      },
+      {
+        "case": "Nothing was sent to the server; every other command in plex-axi reads",
+        "expected": "Nothing was sent to the server; every other command in plex-axi reads"
+      },
+      {
+        "case": "One filter did not run; see `unapplied` above before widening the others",
+        "expected": "One filter did not run; see `unapplied` above before widening the others"
+      },
+      {
+        "case": "Pass `--section <title|key>` with one of those, or unset PLEX_SECTION",
+        "expected": "Pass `--section <title|key>` with one of those, or unset PLEX_SECTION"
+      },
+      {
+        "case": "Pass `--section <title|key>`, or export PLEX_SECTION to set a default",
+        "expected": "Pass `--section <title|key>`, or export PLEX_SECTION to set a default"
+      },
+      {
+        "case": "Pass the number after the last slash, which is what `rating_key:` reports",
+        "expected": "Pass the number after the last slash, which is what `rating_key:` reports"
+      },
+      {
+        "case": "Plex Home users are managed separately and are not in the sharing record; read as one by exporting that user's own PLEX_TOKEN instead",
+        "expected": "Plex Home users are managed separately and are not in the sharing record; read as one by exporting that user's own PLEX_TOKEN instead"
+      },
+      {
+        "case": "Plex for Sonos needs a Plex Pass subscription and speakers linked to the account; check both in the Plex app",
+        "expected": "Plex for Sonos needs a Plex Pass subscription and speakers linked to the account; check both in the Plex app"
+      },
+      {
+        "case": "Plex gives an item it never matched a `local://` guid, which is this server's rating key with a scheme in front of it",
+        "expected": "Plex gives an item it never matched a `local://` guid, which is this server's rating key with a scheme in front of it"
+      },
+      {
+        "case": "Plex holds one media type per playlist, and an audio playlist takes music only",
+        "expected": "Plex holds one media type per playlist, and an audio playlist takes music only"
+      },
+      {
+        "case": "Ratings print in stars too, so a rating read from a result can be passed back",
+        "expected": "Ratings print in stars too, so a rating read from a result can be passed back"
+      },
+      {
+        "case": "Re-run with `--debug` for a diagnostic trace on stderr",
+        "expected": "Re-run with `--debug` for a diagnostic trace on stderr"
+      },
+      {
+        "case": "Report it at https://github.com/dmealing/plex-axi/issues",
+        "expected": "Report it at https://github.com/dmealing/plex-axi/issues"
+      },
+      {
+        "case": "Run `plex-axi --help` for the full reference",
+        "expected": "Run `plex-axi --help` for the full reference"
+      },
+      {
+        "case": "Run `plex-axi --section 'Example Music' <command>`",
+        "expected": "Run `plex-axi --section 'Example Music' <command>`"
+      },
+      {
+        "case": "Run `plex-axi --timeout 60 <command>`",
+        "expected": "Run `plex-axi --timeout 60 <command>`"
+      },
+      {
+        "case": "Run `plex-axi --user '<plex-username>' <command>`",
+        "expected": "Run `plex-axi --user '<plex-username>' <command>`"
+      },
+      {
+        "case": "Run `plex-axi api /`",
+        "expected": "Run `plex-axi api /`"
+      },
+      {
+        "case": "Run `plex-axi api /` to confirm the server answers at all",
+        "expected": "Run `plex-axi api /` to confirm the server answers at all"
+      },
+      {
+        "case": "Run `plex-axi api /` to see what this server answers at the root",
+        "expected": "Run `plex-axi api /` to see what this server answers at the root"
+      },
+      {
+        "case": "Run `plex-axi api /library/sections`",
+        "expected": "Run `plex-axi api /library/sections`"
+      },
+      {
+        "case": "Run `plex-axi api /library/sections` to list the paths below a section",
+        "expected": "Run `plex-axi api /library/sections` to list the paths below a section"
+      },
+      {
+        "case": "Run `plex-axi api GET <path>` to read the resource",
+        "expected": "Run `plex-axi api GET <path>` to read the resource"
+      },
+      {
+        "case": "Run `plex-axi api GET <path>` to read the same resource",
+        "expected": "Run `plex-axi api GET <path>` to read the same resource"
+      },
+      {
+        "case": "Run `plex-axi clients` for each one's machine_id, which is unambiguous when two share a title",
+        "expected": "Run `plex-axi clients` for each one's machine_id, which is unambiguous when two share a title"
+      },
+      {
+        "case": "Run `plex-axi clients` for the local clients, which need no cloud call",
+        "expected": "Run `plex-axi clients` for the local clients, which need no cloud call"
+      },
+      {
+        "case": "Run `plex-axi clients` to check the target is still there; a client that has gone to sleep is still listed by the server for a while",
+        "expected": "Run `plex-axi clients` to check the target is still there; a client that has gone to sleep is still listed by the server for a while"
+      },
+      {
+        "case": "Run `plex-axi clients` to see them side by side",
+        "expected": "Run `plex-axi clients` to see them side by side"
+      },
+      {
+        "case": "Run `plex-axi clients` to see what the server itself can reach",
+        "expected": "Run `plex-axi clients` to see what the server itself can reach"
+      },
+      {
+        "case": "Run `plex-axi doctor` to check what the server answers with",
+        "expected": "Run `plex-axi doctor` to check what the server answers with"
+      },
+      {
+        "case": "Run `plex-axi doctor` to confirm the library has finished scanning",
+        "expected": "Run `plex-axi doctor` to confirm the library has finished scanning"
+      },
+      {
+        "case": "Run `plex-axi doctor` to confirm the library is scanned and analysed",
+        "expected": "Run `plex-axi doctor` to confirm the library is scanned and analysed"
+      },
+      {
+        "case": "Run `plex-axi doctor` to re-check the environment and the connection",
+        "expected": "Run `plex-axi doctor` to re-check the environment and the connection"
+      },
+      {
+        "case": "Run `plex-axi doctor` to see the music libraries this server has",
+        "expected": "Run `plex-axi doctor` to see the music libraries this server has"
+      },
+      {
+        "case": "Run `plex-axi doctor` to see which check fails",
+        "expected": "Run `plex-axi doctor` to see which check fails"
+      },
+      {
+        "case": "Run `plex-axi doctor` to verify the connection once both are set",
+        "expected": "Run `plex-axi doctor` to verify the connection once both are set"
+      },
+      {
+        "case": "Run `plex-axi doctor` when something looks wrong",
+        "expected": "Run `plex-axi doctor` when something looks wrong"
+      },
+      {
+        "case": "Run `plex-axi doctor`: a library that has not finished scanning has no filter metadata yet",
+        "expected": "Run `plex-axi doctor`: a library that has not finished scanning has no filter metadata yet"
+      },
+      {
+        "case": "Run `plex-axi genres` (or `moods`, `styles`) for the values this library will accept",
+        "expected": "Run `plex-axi genres` (or `moods`, `styles`) for the values this library will accept"
+      },
+      {
+        "case": "Run `plex-axi genres` (or `moods`, `styles`) to see the values it does offer",
+        "expected": "Run `plex-axi genres` (or `moods`, `styles`) to see the values it does offer"
+      },
+      {
+        "case": "Run `plex-axi genres` for the genres this library actually uses",
+        "expected": "Run `plex-axi genres` for the genres this library actually uses"
+      },
+      {
+        "case": "Run `plex-axi moods` for the moods this library actually uses",
+        "expected": "Run `plex-axi moods` for the moods this library actually uses"
+      },
+      {
+        "case": "Run `plex-axi pick --rated-min 4` for something to play right now",
+        "expected": "Run `plex-axi pick --rated-min 4` for something to play right now"
+      },
+      {
+        "case": "Run `plex-axi pick` with no filters to confirm the library answers at all",
+        "expected": "Run `plex-axi pick` with no filters to confirm the library answers at all"
+      },
+      {
+        "case": "Run `plex-axi playlist add '<title>' --key <rating_key>` to preview an addition",
+        "expected": "Run `plex-axi playlist add '<title>' --key <rating_key>` to preview an addition"
+      },
+      {
+        "case": "Run `plex-axi playlist create '<title>' --key <rating_key> --write` for an ordinary playlist you can edit",
+        "expected": "Run `plex-axi playlist create '<title>' --key <rating_key> --write` for an ordinary playlist you can edit"
+      },
+      {
+        "case": "Run `plex-axi playlist create '<title>' --key <rating_key> --write` to make one",
+        "expected": "Run `plex-axi playlist create '<title>' --key <rating_key> --write` to make one"
+      },
+      {
+        "case": "Run `plex-axi playlist list` for a playlist's rating key",
+        "expected": "Run `plex-axi playlist list` for a playlist's rating key"
+      },
+      {
+        "case": "Run `plex-axi playlist list` for the audio playlists on this server",
+        "expected": "Run `plex-axi playlist list` for the audio playlists on this server"
+      },
+      {
+        "case": "Run `plex-axi rate --help` or `plex-axi playlist --help` for the writes this tool does offer, each gated and previewable",
+        "expected": "Run `plex-axi rate --help` or `plex-axi playlist --help` for the writes this tool does offer, each gated and previewable"
+      },
+      {
+        "case": "Run `plex-axi search --artist '<name>' --track '<title>'` to combine fields",
+        "expected": "Run `plex-axi search --artist '<name>' --track '<title>'` to combine fields"
+      },
+      {
+        "case": "Run `plex-axi search --artist '<name>' --track '<title>'` to search field by field",
+        "expected": "Run `plex-axi search --artist '<name>' --track '<title>'` to search field by field"
+      },
+      {
+        "case": "Run `plex-axi search --artist '<name>' --type track` to find a track key",
+        "expected": "Run `plex-axi search --artist '<name>' --type track` to find a track key"
+      },
+      {
+        "case": "Run `plex-axi search --artist '<name>'` to find a music rating key",
+        "expected": "Run `plex-axi search --artist '<name>'` to find a music rating key"
+      },
+      {
+        "case": "Run `plex-axi search --artist '<name>'` to find one",
+        "expected": "Run `plex-axi search --artist '<name>'` to find one"
+      },
+      {
+        "case": "Run `plex-axi search --artist '<name>'` to find rating keys",
+        "expected": "Run `plex-axi search --artist '<name>'` to find rating keys"
+      },
+      {
+        "case": "Run `plex-axi search --artist '<name>'` to search by artist",
+        "expected": "Run `plex-axi search --artist '<name>'` to search by artist"
+      },
+      {
+        "case": "Run `plex-axi search --track '<title>'` to find a rating key",
+        "expected": "Run `plex-axi search --track '<title>'` to find a rating key"
+      },
+      {
+        "case": "Run `plex-axi search --track '<title>'` to find rating keys",
+        "expected": "Run `plex-axi search --track '<title>'` to find rating keys"
+      },
+      {
+        "case": "Run `plex-axi search --track '<title>'` to find this server's rating key",
+        "expected": "Run `plex-axi search --track '<title>'` to find this server's rating key"
+      },
+      {
+        "case": "Run `plex-axi search --track '<title>'` to get this server's rating key",
+        "expected": "Run `plex-axi search --track '<title>'` to get this server's rating key"
+      },
+      {
+        "case": "Run `plex-axi sessions` to see whether the server agrees it is playing",
+        "expected": "Run `plex-axi sessions` to see whether the server agrees it is playing"
+      },
+      {
+        "case": "Run `plex-axi skill --check` in CI to catch a stale copy",
+        "expected": "Run `plex-axi skill --check` in CI to catch a stale copy"
+      },
+      {
+        "case": "Run `plex-axi skill` and commit the result",
+        "expected": "Run `plex-axi skill` and commit the result"
+      },
+      {
+        "case": "Run `plex-axi styles` for the styles this library actually uses",
+        "expected": "Run `plex-axi styles` for the styles this library actually uses"
+      },
+      {
+        "case": "Run `plex-axi track <key>` for a result's tags, analysis version and file details",
+        "expected": "Run `plex-axi track <key>` for a result's tags, analysis version and file details"
+      },
+      {
+        "case": "Run `plex-axi track <key>` for one item's tags, analysis version and file details",
+        "expected": "Run `plex-axi track <key>` for one item's tags, analysis version and file details"
+      },
+      {
+        "case": "Run `plex-axi track <key>` for one of these in full: tags, analysis version and file details",
+        "expected": "Run `plex-axi track <key>` for one of these in full: tags, analysis version and file details"
+      },
+      {
+        "case": "Run `plex-axi track <rating_key>` to check the item resolves at all",
+        "expected": "Run `plex-axi track <rating_key>` to check the item resolves at all"
+      },
+      {
+        "case": "Run the command again with `--debug` for what the server answered",
+        "expected": "Run the command again with `--debug` for what the server answered"
+      },
+      {
+        "case": "Run the command again with `--max-distance 0.25`",
+        "expected": "Run the command again with `--max-distance 0.25`"
+      },
+      {
+        "case": "Run the command again with `--timeout 60` if the server is slow to wake",
+        "expected": "Run the command again with `--timeout 60` if the server is slow to wake"
+      },
+      {
+        "case": "Run the command without `--user` to read as PLEX_TOKEN's own account",
+        "expected": "Run the command without `--user` to read as PLEX_TOKEN's own account"
+      },
+      {
+        "case": "Run the command without `--user` to read as the account PLEX_TOKEN belongs to",
+        "expected": "Run the command without `--user` to read as the account PLEX_TOKEN belongs to"
+      },
+      {
+        "case": "Run the command without `--user` to read as whatever account the server associates with this token",
+        "expected": "Run the command without `--user` to read as whatever account the server associates with this token"
+      },
+      {
+        "case": "Run the command without `--user`; everything else works against the local server with plex.tv down",
+        "expected": "Run the command without `--user`; everything else works against the local server with plex.tv down"
+      },
+      {
+        "case": "Run the same command with a bad field name to see the sorts this server offers",
+        "expected": "Run the same command with a bad field name to see the sorts this server offers"
+      },
+      {
+        "case": "Run the same command with a larger `--max-distance` to widen the search",
+        "expected": "Run the same command with a larger `--max-distance` to widen the search"
+      },
+      {
+        "case": "Run the same command with a lower `--rated-min`, or without it",
+        "expected": "Run the same command with a lower `--rated-min`, or without it"
+      },
+      {
+        "case": "Run the same command with a shorter `--not-played-since`, e.g. 7d",
+        "expected": "Run the same command with a shorter `--not-played-since`, e.g. 7d"
+      },
+      {
+        "case": "Run the same path with `--depth 5` if a nested element was summarised",
+        "expected": "Run the same path with `--depth 5` if a nested element was summarised"
+      },
+      {
+        "case": "Run the same search with `--no-group` to see every pressing of each title",
+        "expected": "Run the same search with `--no-group` to see every pressing of each title"
+      },
+      {
+        "case": "Run the same search with `--sort addedAt:desc` for newest first",
+        "expected": "Run the same search with `--sort addedAt:desc` for newest first"
+      },
+      {
+        "case": "Run the same search with `--type artist` to check the artist exists at all",
+        "expected": "Run the same search with `--type artist` to check the artist exists at all"
+      },
+      {
+        "case": "Set PLEX_TOKEN to a Plex access token; see https://support.plex.tv/articles/204059436",
+        "expected": "Set PLEX_TOKEN to a Plex access token; see https://support.plex.tv/articles/204059436"
+      },
+      {
+        "case": "Set PLEX_URL to your server's local address, e.g. export PLEX_URL=http://plex.example.com:32400",
+        "expected": "Set PLEX_URL to your server's local address, e.g. export PLEX_URL=http://plex.example.com:32400"
+      },
+      {
+        "case": "Sign in to plex.tv and read the token from the Plex web app; see https://support.plex.tv/articles/204059436",
+        "expected": "Sign in to plex.tv and read the token from the Plex web app; see https://support.plex.tv/articles/204059436"
+      },
+      {
+        "case": "Sonic analysis is a server-side feature; an unanalysed library has no neighbours",
+        "expected": "Sonic analysis is a server-side feature; an unanalysed library has no neighbours"
+      },
+      {
+        "case": "The field half is checked against this server; only the direction is fixed",
+        "expected": "The field half is checked against this server; only the direction is fixed"
+      },
+      {
+        "case": "The file is generated; edit the commands, not the skill",
+        "expected": "The file is generated; edit the commands, not the skill"
+      },
+      {
+        "case": "The gate is an environment variable rather than a flag on purpose: it is the operator's decision, and a caller cannot grant itself one it was not given",
+        "expected": "The gate is an environment variable rather than a flag on purpose: it is the operator's decision, and a caller cannot grant itself one it was not given"
+      },
+      {
+        "case": "The share may have been revoked or never accepted; check it in Plex's own sharing settings",
+        "expected": "The share may have been revoked or never accepted; check it in Plex's own sharing settings"
+      },
+      {
+        "case": "The share may not have been accepted yet; check it in Plex's own sharing settings",
+        "expected": "The share may not have been accepted yet; check it in Plex's own sharing settings"
+      },
+      {
+        "case": "The sonos route is the one part of this tool that needs Plex's cloud; every local client works without it",
+        "expected": "The sonos route is the one part of this tool that needs Plex's cloud; every local client works without it"
+      },
+      {
+        "case": "The speaker may have gone offline; run `plex-axi clients` to re-list them",
+        "expected": "The speaker may have gone offline; run `plex-axi clients` to re-list them"
+      },
+      {
+        "case": "The token is already sent as a header, from PLEX_TOKEN; drop the parameter",
+        "expected": "The token is already sent as a header, from PLEX_TOKEN; drop the parameter"
+      },
+      {
+        "case": "This is a bug in plex-axi: every filter must be a server-side Plex predicate",
+        "expected": "This is a bug in plex-axi: every filter must be a server-side Plex predicate"
+      },
+      {
+        "case": "This is a bug in plex-axi: it builds every comparison itself, so one this server rejects is a wrong assumption about Plex rather than a wrong argument",
+        "expected": "This is a bug in plex-axi: it builds every comparison itself, so one this server rejects is a wrong assumption about Plex rather than a wrong argument"
+      },
+      {
+        "case": "This is a bug in plex-axi; the command did not complete",
+        "expected": "This is a bug in plex-axi; the command did not complete"
+      },
+      {
+        "case": "This is not about ownership: plex.tv refuses this token outright, so no `--user` lookup can succeed with it -- every other command still works, because they only ever talk to the server",
+        "expected": "This is not about ownership: plex.tv refuses this token outright, so no `--user` lookup can succeed with it -- every other command still works, because they only ever talk to the server"
+      },
+      {
+        "case": "Titles match exactly; pass one of those, or the key beside it, rather than a description of it",
+        "expected": "Titles match exactly; pass one of those, or the key beside it, rather than a description of it"
+      },
+      {
+        "case": "Values are exact: pass one of these strings, not a synonym for it",
+        "expected": "Values are exact: pass one of these strings, not a synonym for it"
+      },
+      {
+        "case": "`--user` is admin-only and needs a plex.tv round-trip; every other flag here works against the local server alone",
+        "expected": "`--user` is admin-only and needs a plex.tv round-trip; every other flag here works against the local server alone"
+      },
+      {
+        "case": "`--user` is admin-only: only the account that owns the server can read the per-user tokens, and PLEX_TOKEN is a valid account but not that one",
+        "expected": "`--user` is admin-only: only the account that owns the server can read the per-user tokens, and PLEX_TOKEN is a valid account but not that one"
+      },
+      {
+        "case": "`--user` is the one flag here that needs plex.tv: the mapping from a username to that user's token for this server exists only in Plex's account service",
+        "expected": "`--user` is the one flag here that needs plex.tv: the mapping from a username to that user's token for this server exists only in Plex's account service"
+      },
+      {
+        "case": "`--user` needs a round-trip to plex.tv; every other command works without one",
+        "expected": "`--user` needs a round-trip to plex.tv; every other command works without one"
+      },
+      {
+        "case": "`pick` reads the fields this server advertises before it builds a predicate, so that a filter it cannot honour is reported rather than applied in Python",
+        "expected": "`pick` reads the fields this server advertises before it builds a predicate, so that a filter it cannot honour is reported rather than applied in Python"
+      },
+      {
+        "case": "distance is the server's own measure; sort order is the server's, closest first",
+        "expected": "distance is the server's own measure; sort order is the server's, closest first"
+      },
+      {
+        "case": "examples:",
+        "expected": "examples:"
+      },
+      {
+        "case": "flags[8]:",
+        "expected": "flags[8]:"
+      },
+      {
+        "case": "note:",
+        "expected": "note:"
+      },
+      {
+        "case": "plex-axi reads music only; a video library is deliberately out of scope",
+        "expected": "plex-axi reads music only; a video library is deliberately out of scope"
+      },
+      {
+        "case": "units: s seconds, m minutes, h hours, d days, w weeks, mon months, y years",
+        "expected": "units: s seconds, m minutes, h hours, d days, w weeks, mon months, y years"
+      },
+      {
+        "case": "usage: plex-axi [command] [subcommand] [args] [flags]",
+        "expected": "usage: plex-axi [command] [subcommand] [args] [flags]"
+      }
+    ],
+    "recoveryShapeCells": [
+      "note|names_tool=0",
+      "note|names_tool=1",
+      "retry|lead=custom|tail=none",
+      "retry|lead=custom|tail=other",
+      "retry|lead=custom|tail=space",
+      "retry|lead=default|tail=none",
+      "retry|lead=default|tail=space",
+      "run|lead=custom|tail=none",
+      "run|lead=custom|tail=other",
+      "run|lead=custom|tail=space",
+      "run|lead=default|tail=none",
+      "run|lead=default|tail=other",
+      "run|lead=default|tail=space",
+      "set_env"
+    ],
+    "redactionContract": [
+      {
+        "ha": "<redacted>",
+        "plex": "<redacted>",
+        "subject": "REDACTED"
+      },
+      {
+        "ha": "8",
+        "plex": "8",
+        "subject": "MIN_SECRET_LENGTH"
+      },
+      {
+        "ha": "\\beyJ[A-Za-z0-9_-]{4,}\\.[A-Za-z0-9_-]{4,}\\.[A-Za-z0-9_-]{4,}",
+        "plex": "\\beyJ[A-Za-z0-9_-]{4,}\\.[A-Za-z0-9_-]{4,}\\.[A-Za-z0-9_-]{4,}",
+        "subject": "regex:_JWT"
+      },
+      {
+        "ha": "(?i)\\b(bearer\\s+)[A-Za-z0-9._~+/=-]{8,}",
+        "plex": "(?i)\\b(bearer\\s+)[A-Za-z0-9._~+/=-]{8,}",
+        "subject": "regex:_BEARER"
+      }
+    ],
+    "redactionSamples": [
+      {
+        "case": "ha|bearer-header",
+        "expected": "Authorization: Bearer <redacted>"
+      },
+      {
+        "case": "ha|jwt-in-prose",
+        "expected": "leaked <redacted> here"
+      },
+      {
+        "case": "ha|token-parameter",
+        "expected": "http://host.example.com:32400/art?X-Plex-Token=plex0123456789abcdef"
+      },
+      {
+        "case": "ha|delegation-parameter",
+        "expected": "http://host.example.com:32400/s?token=plex0123456789abcdef"
+      },
+      {
+        "case": "ha|token-header",
+        "expected": "X-Plex-Token: plex0123456789abcdef"
+      },
+      {
+        "case": "ha|registered-literal",
+        "expected": "note <redacted> trailing"
+      },
+      {
+        "case": "ha|userinfo-pair",
+        "expected": "pair is <redacted>"
+      },
+      {
+        "case": "ha|too-short-to-register",
+        "expected": "abc def"
+      },
+      {
+        "case": "ha|nothing-to-redact",
+        "expected": "an ordinary sentence about a token"
+      },
+      {
+        "case": "plex|bearer-header",
+        "expected": "Authorization: Bearer <redacted>"
+      },
+      {
+        "case": "plex|jwt-in-prose",
+        "expected": "leaked <redacted> here"
+      },
+      {
+        "case": "plex|token-parameter",
+        "expected": "http://host.example.com:32400/art?X-Plex-Token=<redacted>"
+      },
+      {
+        "case": "plex|delegation-parameter",
+        "expected": "http://host.example.com:32400/s?token=<redacted>"
+      },
+      {
+        "case": "plex|token-header",
+        "expected": "X-Plex-Token: <redacted>"
+      },
+      {
+        "case": "plex|registered-literal",
+        "expected": "note <redacted> trailing"
+      },
+      {
+        "case": "plex|userinfo-pair",
+        "expected": "pair is <redacted>"
+      },
+      {
+        "case": "plex|too-short-to-register",
+        "expected": "abc def"
+      },
+      {
+        "case": "plex|nothing-to-redact",
+        "expected": "an ordinary sentence about a token"
+      }
+    ],
+    "redactionShapeCells": [
+      "groups=0|ignorecase=0|opens=literal",
+      "groups=1|ignorecase=1|opens=group",
+      "groups=1|ignorecase=1|opens=literal"
+    ],
+    "toonCaseOptionNames": [
+      "delimiter",
+      "indentSize"
+    ],
+    "toonEncodeCaseCount": 179,
+    "toonEncodeCases": [
+      {
+        "case": "arrays-nested-0",
+        "expected": "pairs[2]:\n  - [2]: a,b\n  - [2]: c,d"
+      },
+      {
+        "case": "arrays-nested-1",
+        "expected": "pairs[2]:\n  - [2]: a,b\n  - [3]: \"c,d\",\"e:f\",\"true\""
+      },
+      {
+        "case": "arrays-nested-2",
+        "expected": "pairs[2]:\n  - [0]:\n  - [0]:"
+      },
+      {
+        "case": "arrays-nested-3",
+        "expected": "pairs[2]:\n  - [1]: 1\n  - [2]: 2,3"
+      },
+      {
+        "case": "arrays-nested-4",
+        "expected": "[5]: x,y,\"true\",true,10"
+      },
+      {
+        "case": "arrays-nested-5",
+        "expected": "[2]{id}:\n  1\n  2"
+      },
+      {
+        "case": "arrays-nested-6",
+        "expected": "[2]:\n  - id: 1\n  - id: 2\n    name: Ada"
+      },
+      {
+        "case": "arrays-nested-7",
+        "expected": "[3]:\n  - summary\n  - id: 1\n    name: Ada\n  - [2]:\n    - id: 2\n    - status: draft"
+      },
+      {
+        "case": "arrays-nested-8",
+        "expected": "[2]:\n  - [2]: 1,2\n  - [0]:"
+      },
+      {
+        "case": "arrays-nested-9",
+        "expected": "[]"
+      },
+      {
+        "case": "arrays-nested-10",
+        "expected": "user:\n  id: 123\n  name: Ada\n  tags[2]: reading,gaming\n  active: true\n  prefs: []"
+      },
+      {
+        "case": "arrays-nested-11",
+        "expected": "items[3]:\n  - 1\n  - a: 1\n  - text"
+      },
+      {
+        "case": "arrays-nested-12",
+        "expected": "items[2]:\n  - a: 1\n  - [2]: 1,2"
+      },
+      {
+        "case": "arrays-nested-13",
+        "expected": "items[2]:\n  - \"#x\"\n  - a: 1"
+      },
+      {
+        "case": "arrays-nested-14",
+        "expected": "a[1]:\n  - [2]:\n    - x: 1\n    - x: 2"
+      },
+      {
+        "case": "arrays-objects-0",
+        "expected": "items[2]:\n  - id: 1\n    name: First\n  - id: 2\n    name: Second\n    extra: true"
+      },
+      {
+        "case": "arrays-objects-1",
+        "expected": "items[2]:\n  - id: 1\n    nested:\n      x: 1\n  - id: 2\n    nested:\n      y: 2"
+      },
+      {
+        "case": "arrays-objects-2",
+        "expected": "items[1]:\n  - nums[3]: 1,2,3\n    name: Ada"
+      },
+      {
+        "case": "arrays-objects-3",
+        "expected": "items[1]:\n  - name: Ada\n    nums[3]: 1,2,3"
+      },
+      {
+        "case": "arrays-objects-4",
+        "expected": "items[1]:\n  - matrix[2]:\n      - [2]: 1,2\n      - [2]: 3,4\n    name: grid"
+      },
+      {
+        "case": "arrays-objects-5",
+        "expected": "items[1]:\n  - users[2]{id,name}:\n      1,Ada\n      2,Bob\n    status: active"
+      },
+      {
+        "case": "arrays-objects-6",
+        "expected": "items[1]:\n  - users[2]:\n      - id: 1\n        name: Ada\n      - id: 2\n    status: active"
+      },
+      {
+        "case": "arrays-objects-7",
+        "expected": "items[1]:\n  - nums[2]: 1,2\n    tags[2]: a,b\n    name: test"
+      },
+      {
+        "case": "arrays-objects-8",
+        "expected": "items[1]:\n  - nums[3]: 1,2,3\n    tags[2]: a,b"
+      },
+      {
+        "case": "arrays-objects-9",
+        "expected": "items[1]:\n  - name: Ada\n    data: []"
+      },
+      {
+        "case": "arrays-objects-10",
+        "expected": "items[1]:\n  - users[2]{id}:\n      1\n      2\n    note: x"
+      },
+      {
+        "case": "arrays-objects-11",
+        "expected": "items[1]:\n  - users[2]{id,name}:\n      1,Ada\n      2,Bob"
+      },
+      {
+        "case": "arrays-objects-12",
+        "expected": "items[1]:\n  - data: []\n    name: x"
+      },
+      {
+        "case": "arrays-objects-13",
+        "expected": "items[3]:\n  - first\n  - second\n  -"
+      },
+      {
+        "case": "arrays-objects-14",
+        "expected": "items[2]{a,b,c}:\n  1,2,3\n  10,20,30"
+      },
+      {
+        "case": "arrays-objects-15",
+        "expected": "items[2]:\n  - id: 1\n    data: string\n  - id: 2\n    data:\n      nested: true"
+      },
+      {
+        "case": "arrays-objects-16",
+        "expected": "items[2]:\n  -\n  -"
+      },
+      {
+        "case": "arrays-objects-17",
+        "expected": "a[1]{t{p{x},q{x}},other}:\n  1,2,9"
+      },
+      {
+        "case": "arrays-primitive-0",
+        "expected": "tags[2]: reading,gaming"
+      },
+      {
+        "case": "arrays-primitive-1",
+        "expected": "nums[3]: 1,2,3"
+      },
+      {
+        "case": "arrays-primitive-2",
+        "expected": "data[4]: x,y,true,10"
+      },
+      {
+        "case": "arrays-primitive-3",
+        "expected": "items: []"
+      },
+      {
+        "case": "arrays-primitive-4",
+        "expected": "\"\"[3]: 1,2,3"
+      },
+      {
+        "case": "arrays-primitive-5",
+        "expected": "\"\": []"
+      },
+      {
+        "case": "arrays-primitive-6",
+        "expected": "items[1]: \"\""
+      },
+      {
+        "case": "arrays-primitive-7",
+        "expected": "items[3]: a,\"\",b"
+      },
+      {
+        "case": "arrays-primitive-8",
+        "expected": "items[2]: \" \",\"  \""
+      },
+      {
+        "case": "arrays-primitive-9",
+        "expected": "items[3]: a,\"b,c\",\"d:e\""
+      },
+      {
+        "case": "arrays-primitive-10",
+        "expected": "items[4]: x,\"true\",\"42\",\"-3.14\""
+      },
+      {
+        "case": "arrays-primitive-11",
+        "expected": "items[3]: \"[5]\",\"- item\",\"{key}\""
+      },
+      {
+        "case": "arrays-primitive-12",
+        "expected": "tags[2]: \"#a\",b"
+      },
+      {
+        "case": "arrays-tabular-0",
+        "expected": "items[2]{sku,qty,price}:\n  A1,2,9.99\n  B2,1,14.5"
+      },
+      {
+        "case": "arrays-tabular-1",
+        "expected": "items[2]{id,value}:\n  1,null\n  2,test"
+      },
+      {
+        "case": "arrays-tabular-2",
+        "expected": "items[2]{sku,desc,qty}:\n  \"A,1\",cool,2\n  B2,\"wip: test\",1"
+      },
+      {
+        "case": "arrays-tabular-3",
+        "expected": "items[2]{id,status}:\n  1,\"true\"\n  2,\"false\""
+      },
+      {
+        "case": "arrays-tabular-4",
+        "expected": "items[2]{\"order:id\",\"full name\"}:\n  1,Ada\n  2,Bob"
+      },
+      {
+        "case": "arrays-tabular-5",
+        "expected": "\"\"[2]{id,name}:\n  1,Ada\n  2,Bob"
+      },
+      {
+        "case": "arrays-tabular-6",
+        "expected": "items[2]{tag}:\n  \"#a\"\n  b"
+      },
+      {
+        "case": "arrays-tabular-7",
+        "expected": "orders[2]{id,customer{name,country},total}:\n  1,Ada,DK,99\n  2,Bob,UK,149"
+      },
+      {
+        "case": "arrays-tabular-8",
+        "expected": "shipments[1]{id,sender{name,city},receiver{name,city}}:\n  s1,ACME,Berlin,Globex,Oslo"
+      },
+      {
+        "case": "arrays-tabular-9",
+        "expected": "items[2]{id,geo{point{lat,lon}}}:\n  1,1.5,2.5\n  2,3,4"
+      },
+      {
+        "case": "arrays-tabular-10",
+        "expected": "orders[2|]{id|customer{name|country}|total}:\n  1|Ada|DK|99\n  2|Bob|UK|149"
+      },
+      {
+        "case": "arrays-tabular-11",
+        "expected": "items[1]{id,customer{\"full name\",country}}:\n  1,Ada,UK"
+      },
+      {
+        "case": "arrays-tabular-12",
+        "expected": "entries[2]:\n  - id: 1\n    meta:\n      a: 1\n  - id: 2\n    meta:\n      b: 2"
+      },
+      {
+        "case": "arrays-tabular-13",
+        "expected": "orders[2]:\n  - id: 1\n    customer:\n      name: Ada\n  - id: 2\n    customer: null"
+      },
+      {
+        "case": "arrays-tabular-14",
+        "expected": "orders[1]:\n  - id: 1\n    customer:\n      name: Ada\n      tags[1]: x"
+      },
+      {
+        "case": "arrays-tabular-15",
+        "expected": "items[1]:\n  - id: 1\n    meta:"
+      },
+      {
+        "case": "delimiters-0",
+        "expected": "tags[3\t]: reading\tgaming\tcoding"
+      },
+      {
+        "case": "delimiters-1",
+        "expected": "tags[3|]: reading|gaming|coding"
+      },
+      {
+        "case": "delimiters-2",
+        "expected": "tags[3]: reading,gaming,coding"
+      },
+      {
+        "case": "delimiters-3",
+        "expected": "items[2\t]{sku\tqty\tprice}:\n  A1\t2\t9.99\n  B2\t1\t14.5"
+      },
+      {
+        "case": "delimiters-4",
+        "expected": "items[2|]{sku|qty|price}:\n  A1|2|9.99\n  B2|1|14.5"
+      },
+      {
+        "case": "delimiters-5",
+        "expected": "pairs[2\t]:\n  - [2\t]: a\tb\n  - [2\t]: c\td"
+      },
+      {
+        "case": "delimiters-6",
+        "expected": "pairs[2|]:\n  - [2|]: a|b\n  - [2|]: c|d"
+      },
+      {
+        "case": "delimiters-7",
+        "expected": "[3\t]: x\ty\tz"
+      },
+      {
+        "case": "delimiters-8",
+        "expected": "[3|]: x|y|z"
+      },
+      {
+        "case": "delimiters-9",
+        "expected": "[2\t]{id}:\n  1\n  2"
+      },
+      {
+        "case": "delimiters-10",
+        "expected": "[2|]{id}:\n  1\n  2"
+      },
+      {
+        "case": "delimiters-11",
+        "expected": "items[3\t]: a\t\"b\\tc\"\td"
+      },
+      {
+        "case": "delimiters-12",
+        "expected": "items[3|]: a|\"b|c\"|d"
+      },
+      {
+        "case": "delimiters-13",
+        "expected": "items[2\t]: a,b\tc,d"
+      },
+      {
+        "case": "delimiters-14",
+        "expected": "items[2|]: a,b|c,d"
+      },
+      {
+        "case": "delimiters-15",
+        "expected": "items[2]{id,note}:\n  1,\"a,b\"\n  2,\"c,d\""
+      },
+      {
+        "case": "delimiters-16",
+        "expected": "items[2\t]{id\tnote}:\n  1\ta,b\n  2\tc,d"
+      },
+      {
+        "case": "delimiters-17",
+        "expected": "note: a,b"
+      },
+      {
+        "case": "delimiters-18",
+        "expected": "note: a,b"
+      },
+      {
+        "case": "delimiters-19",
+        "expected": "pairs[1|]:\n  - [2|]: a|\"b|c\""
+      },
+      {
+        "case": "delimiters-20",
+        "expected": "pairs[1\t]:\n  - [2\t]: a\t\"b\\tc\""
+      },
+      {
+        "case": "delimiters-21",
+        "expected": "items[3|]: \"true\"|\"42\"|\"-3.14\""
+      },
+      {
+        "case": "objects-keyed-0",
+        "expected": "servers[2:]{host,port}:\n  alpha: a.example.com,8080\n  beta: b.example.com,9090"
+      },
+      {
+        "case": "objects-keyed-1",
+        "expected": "[2:]{age,city}:\n  alice: 30,Berlin\n  bob: 25,Oslo"
+      },
+      {
+        "case": "objects-keyed-2",
+        "expected": "regions[2:]{name,geo{lat,lon}}:\n  eu: Europe,50,10\n  us: America,40,-100"
+      },
+      {
+        "case": "objects-keyed-3",
+        "expected": "m[2:]{x,y}:\n  a: 1,2\n  b: 3,4"
+      },
+      {
+        "case": "objects-keyed-4",
+        "expected": "servers[2:|]{host|port}:\n  alpha: a.example.com|8080\n  beta: b.example.com|9090"
+      },
+      {
+        "case": "objects-keyed-5",
+        "expected": "ids[2:]{v}:\n  \"42\": 1\n  \"my key\": 2"
+      },
+      {
+        "case": "objects-keyed-6",
+        "expected": "notes[2:]{text}:\n  n1: \"a,b\"\n  n2: c"
+      },
+      {
+        "case": "objects-keyed-7",
+        "expected": "config:\n  only:\n    a: 1\n    b: 2"
+      },
+      {
+        "case": "objects-keyed-8",
+        "expected": "envs:\n  dev:\n    host: x\n  prod:\n    host: y\n    port: 1"
+      },
+      {
+        "case": "objects-keyed-9",
+        "expected": "m:\n  a:\n    x: 1\n  b: 2"
+      },
+      {
+        "case": "objects-keyed-10",
+        "expected": "m:\n  a:\n    tags[1]: x\n  b:\n    tags[1]: y"
+      },
+      {
+        "case": "objects-keyed-11",
+        "expected": "items[2]:\n  - config[2:]{x}:\n      a: 1\n      b: 2\n    status: ok\n  - status: down"
+      },
+      {
+        "case": "objects-keyed-12",
+        "expected": "items[2]:\n  - a:\n      x: 1\n    b:\n      x: 2\n  - 5"
+      },
+      {
+        "case": "objects-0",
+        "expected": "id: 123\nname: Ada\nactive: true"
+      },
+      {
+        "case": "objects-1",
+        "expected": "id: 123\nvalue: null"
+      },
+      {
+        "case": "objects-2",
+        "expected": ""
+      },
+      {
+        "case": "objects-3",
+        "expected": "note: \"a:b\""
+      },
+      {
+        "case": "objects-4",
+        "expected": "note: \"a,b\""
+      },
+      {
+        "case": "objects-5",
+        "expected": "text: \"line1\\nline2\""
+      },
+      {
+        "case": "objects-6",
+        "expected": "text: \"say \\\"hello\\\"\""
+      },
+      {
+        "case": "objects-7",
+        "expected": "text: \" padded \""
+      },
+      {
+        "case": "objects-8",
+        "expected": "text: \"  \""
+      },
+      {
+        "case": "objects-9",
+        "expected": "v: \"true\""
+      },
+      {
+        "case": "objects-10",
+        "expected": "v: \"42\""
+      },
+      {
+        "case": "objects-11",
+        "expected": "v: \"-7.5\""
+      },
+      {
+        "case": "objects-12",
+        "expected": "\"order:id\": 7"
+      },
+      {
+        "case": "objects-13",
+        "expected": "\"[index]\": 5"
+      },
+      {
+        "case": "objects-14",
+        "expected": "\"{key}\": 5"
+      },
+      {
+        "case": "objects-15",
+        "expected": "\"a,b\": 1"
+      },
+      {
+        "case": "objects-16",
+        "expected": "\"full name\": Ada"
+      },
+      {
+        "case": "objects-17",
+        "expected": "\"-lead\": 1"
+      },
+      {
+        "case": "objects-18",
+        "expected": "\" a \": 1"
+      },
+      {
+        "case": "objects-19",
+        "expected": "\"123\": x"
+      },
+      {
+        "case": "objects-20",
+        "expected": "\"\": 1"
+      },
+      {
+        "case": "objects-21",
+        "expected": "\"caf\u00e9\": 1"
+      },
+      {
+        "case": "objects-22",
+        "expected": "\"\u540d\u524d\": x"
+      },
+      {
+        "case": "objects-23",
+        "expected": "\"line\\nbreak\": 1"
+      },
+      {
+        "case": "objects-24",
+        "expected": "\"tab\\there\": 2"
+      },
+      {
+        "case": "objects-25",
+        "expected": "\"he said \\\"hi\\\"\": 1"
+      },
+      {
+        "case": "objects-26",
+        "expected": "\"a\\u0004b\": 1"
+      },
+      {
+        "case": "objects-27",
+        "expected": "\"x\\u001fy\": 2"
+      },
+      {
+        "case": "objects-28",
+        "expected": "a:\n  b:\n    c: deep"
+      },
+      {
+        "case": "objects-29",
+        "expected": "user:"
+      },
+      {
+        "case": "objects-30",
+        "expected": "__proto__: polluted\nsafe: true"
+      },
+      {
+        "case": "objects-31",
+        "expected": "constructor: 1\nprototype: 2"
+      },
+      {
+        "case": "objects-32",
+        "expected": "rows[2]{__proto__,x}:\n  a,1\n  b,2"
+      },
+      {
+        "case": "objects-33",
+        "expected": "note: \"#x\""
+      },
+      {
+        "case": "primitives-0",
+        "expected": "hello"
+      },
+      {
+        "case": "primitives-1",
+        "expected": "Ada_99"
+      },
+      {
+        "case": "primitives-2",
+        "expected": "\"\""
+      },
+      {
+        "case": "primitives-3",
+        "expected": "\"true\""
+      },
+      {
+        "case": "primitives-4",
+        "expected": "\"false\""
+      },
+      {
+        "case": "primitives-5",
+        "expected": "\"null\""
+      },
+      {
+        "case": "primitives-6",
+        "expected": "\"42\""
+      },
+      {
+        "case": "primitives-7",
+        "expected": "\"-3.14\""
+      },
+      {
+        "case": "primitives-8",
+        "expected": "\"1e-6\""
+      },
+      {
+        "case": "primitives-9",
+        "expected": "\"05\""
+      },
+      {
+        "case": "primitives-10",
+        "expected": "\"line1\\nline2\""
+      },
+      {
+        "case": "primitives-11",
+        "expected": "\"tab\\there\""
+      },
+      {
+        "case": "primitives-12",
+        "expected": "\"return\\rcarriage\""
+      },
+      {
+        "case": "primitives-13",
+        "expected": "val: \"a\\u0004b\""
+      },
+      {
+        "case": "primitives-14",
+        "expected": "\"C:\\\\Users\\\\path\""
+      },
+      {
+        "case": "primitives-15",
+        "expected": "\"[3]: x,y\""
+      },
+      {
+        "case": "primitives-16",
+        "expected": "\"- item\""
+      },
+      {
+        "case": "primitives-17",
+        "expected": "marker: \"-\""
+      },
+      {
+        "case": "primitives-18",
+        "expected": "note: \"- item\""
+      },
+      {
+        "case": "primitives-19",
+        "expected": "items[1]: \"-\""
+      },
+      {
+        "case": "primitives-20",
+        "expected": "tags[3]: a,\"- item\",b"
+      },
+      {
+        "case": "primitives-21",
+        "expected": "\"[test]\""
+      },
+      {
+        "case": "primitives-22",
+        "expected": "\"{key}\""
+      },
+      {
+        "case": "primitives-23",
+        "expected": "caf\u00e9"
+      },
+      {
+        "case": "primitives-24",
+        "expected": "\u4f60\u597d"
+      },
+      {
+        "case": "primitives-25",
+        "expected": "\ud83d\ude80"
+      },
+      {
+        "case": "primitives-26",
+        "expected": "hello \ud83d\udc4b world"
+      },
+      {
+        "case": "primitives-27",
+        "expected": "\"a,\ud83d\ude80\""
+      },
+      {
+        "case": "primitives-28",
+        "expected": "42"
+      },
+      {
+        "case": "primitives-29",
+        "expected": "3.14"
+      },
+      {
+        "case": "primitives-30",
+        "expected": "-7"
+      },
+      {
+        "case": "primitives-31",
+        "expected": "0"
+      },
+      {
+        "case": "primitives-32",
+        "expected": "0"
+      },
+      {
+        "case": "primitives-33",
+        "expected": "1000000"
+      },
+      {
+        "case": "primitives-34",
+        "expected": "0.000001"
+      },
+      {
+        "case": "primitives-35",
+        "expected": "100000000000000000000"
+      },
+      {
+        "case": "primitives-36",
+        "expected": "9007199254740991"
+      },
+      {
+        "case": "primitives-37",
+        "expected": "0.3333333333333333"
+      },
+      {
+        "case": "primitives-38",
+        "expected": "true"
+      },
+      {
+        "case": "primitives-39",
+        "expected": "false"
+      },
+      {
+        "case": "primitives-40",
+        "expected": "null"
+      },
+      {
+        "case": "primitives-41",
+        "expected": "\"+1\""
+      },
+      {
+        "case": "primitives-42",
+        "expected": "\"#\""
+      },
+      {
+        "case": "primitives-43",
+        "expected": "\"#hello\""
+      },
+      {
+        "case": "whitespace-0",
+        "expected": "id: 123"
+      },
+      {
+        "case": "whitespace-1",
+        "expected": "user:\n  id: 123\n  name: Ada\nitems[2]: a,b"
+      },
+      {
+        "case": "whitespace-2",
+        "expected": "user:\n    name: Ada\n    role: admin"
+      },
+      {
+        "case": "whitespace-3",
+        "expected": "k: \u00a0x\u00a0"
+      }
+    ],
+    "toonExercisedDelimiters": [
+      "\t",
+      ",",
+      "|"
+    ],
+    "toonFixtureCategories": [
+      "encode"
+    ],
+    "toonFixtureDigests": [
+      "arrays-nested.json e30b3def09d2df11971f15b87c3e6cd8c5b8a375cc9036c7ae0fdf755d07f86b",
+      "arrays-objects.json a4829052e36a365624526816b7d8f9ddae10e7df0e93eaf6b089603e7f302b7a",
+      "arrays-primitive.json 0ab7c14b9d5038ed52f4449680ccda54081867bfef0b383816aeebc069d8054f",
+      "arrays-tabular.json c6a4079a188533fd3983363c80816e69dbd82cfd3abf4497c7b5bd0c32d8e94d",
+      "delimiters.json db6b0b8a6695e2194122f3e035dd4d0481d7f90068090f34c96f02fa0c7f0166",
+      "objects-keyed.json b064d9fe983c737d1273c05db4b4f38889e04c341637b0d0d33d681c1f5877d0",
+      "objects.json 94703db9232df9ea09b3543733fa1cb34379d3cdc8b6d9db56196d9afc2954c5",
+      "primitives.json 19c54507f5a08d6d8f6c9907c5ed831097489963f8a33e8847ab94ef857e929e",
+      "whitespace.json 581d0fdf6c2f433b7a4c48b123a471346245249d1bb15352885f7ce51865dcfe"
+    ]
+  }
+}

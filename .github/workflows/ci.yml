@@ -1,0 +1,183 @@
+# Local CI — the heavy validation matrix, on the maintainer's self-hosted runner.
+#
+# SECURITY (public repository + self-hosted runner): this workflow must NEVER
+# gain a `pull_request` trigger. The runner is the maintainer's own workstation,
+# and a job on it executes repository code as a real user with that user's files
+# and network. Every trigger below is reachable only by someone who already has
+# write access — a push to `main`, the schedule, or a manual dispatch — so
+# fork-submitted code cannot reach the machine. `pull_request` would hand any
+# contributor on the internet code execution on it, in one line and with no
+# other visible symptom. Add coverage for pull requests in `hygiene.yml`, which
+# is GitHub-hosted, or not at all.
+#
+# WHERE VALIDATION ACTUALLY HAPPENS: every change here goes through the local
+# no-mistakes gate — review, tests, lint, docs — before a PR is ever opened.
+# GitHub-hosted CI is not the primary quality signal for this repository and
+# should not be treated as one, which is why a pull request shows a single cheap
+# check (the leak scan, the one gate that must run before a human reads a diff)
+# rather than a matrix. This workflow is the full matrix; it runs on `main`,
+# nightly, and on demand.
+name: ci (self-hosted)
+
+on:
+  push:
+    branches: [main]
+  # Nightly. Deliberately not 08:17 or 09:41 UTC: two sibling projects hold
+  # those slots on the same workstation.
+  schedule:
+    - cron: '23 10 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  leakcheck:
+    name: leak check
+    runs-on: [self-hosted, linux]
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The workspace on a self-hosted runner outlives the job; do not leave
+          # a credential behind in its .git/config.
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      # Prove the scanner still detects what it claims to before trusting it.
+      - name: Self-test against a synthetic dirty fixture
+        run: python3 scripts/leakcheck.py --demo
+      - name: Scan every tracked file
+        run: python3 scripts/leakcheck.py
+
+  # A commit message release-please cannot parse is dropped from the changelog
+  # and the version bump while the release workflow exits 0. `release.yml` fails
+  # on that too, but it only runs on `main`; here it also runs nightly, so an
+  # allowance that has outlived its cause surfaces without waiting for a merge.
+  commits:
+    name: commit messages are readable
+    runs-on: [self-hosted, linux]
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      # A pull request body can replace a commit message entirely, so the audit
+      # reads it. Read-only.
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Self-test the checker
+        run: python3 scripts/commitcheck.py --demo
+      - name: Audit every commit since the last release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 scripts/commitcheck.py --since-release --pull-requests require
+
+  # EVERY job that needs third-party packages installs into a fresh `.venv` and
+  # calls the tools by path out of it. That is not ceremony. This runner runs as
+  # the maintainer's own user, so `~/.local/lib/python3.X/site-packages` and
+  # `~/.local/bin` are on the interpreter's path and ahead of it on `PATH` — a
+  # bare `pytest` or `ruff` resolves to whatever the maintainer happens to have
+  # installed, against `/usr/bin/python3.X` rather than the interpreter this job
+  # set up. A venv excludes the user site by construction, so a job sees only
+  # what it just installed.
+  lint:
+    name: lint
+    runs-on: [self-hosted, linux]
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      # --clear because the workspace outlives the job on a self-hosted runner.
+      - run: python -m venv --clear .venv
+      - run: .venv/bin/python -m pip install --upgrade pip
+      - run: .venv/bin/pip install -e ".[dev]"
+      - run: .venv/bin/ruff check .
+      - run: .venv/bin/ruff format --check .
+
+  test:
+    name: test (py${{ matrix.python-version }})
+    runs-on: [self-hosted, linux]
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      # The runner's host provides only some of these; setup-python downloads
+      # the rest into the persistent tool cache, so only the first run pays.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: python -m venv --clear .venv
+      - run: .venv/bin/python -m pip install --upgrade pip
+      - run: .venv/bin/pip install -e ".[dev]"
+      # No credentials, no source checkouts, no network. The conformance layer
+      # reads the committed capture, which is the property that lets the whole
+      # suite run here at all — and the floor is 3.9 precisely because the
+      # metadata toolchain (3.11+) is not needed to run what it generated.
+      - run: .venv/bin/pytest
+
+  # The declaration is the source of truth, so a generated file that no longer
+  # matches it is a failure rather than a stale artefact somebody will notice.
+  # Separate from `test` because the metadata toolchain's floor is 3.11 while
+  # the matrix goes down to 3.9: the generator needs it, the generated checks
+  # never do.
+  requirements:
+    name: requirements are current
+    runs-on: [self-hosted, linux]
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m venv --clear .venv
+      - run: .venv/bin/python -m pip install --upgrade pip
+      - run: .venv/bin/pip install -e ".[dev,reqgen]"
+      # Loads the declaration under the sealed-registry discipline and applies
+      # the binding rules — an invented attribute, a requirement with no check,
+      # a reference that no longer resolves, all fail here.
+      - run: .venv/bin/python scripts/reqgen.py list
+      - run: .venv/bin/python scripts/reqgen.py check
+
+  # Nothing watches a workflow that runs on main and overnight, so a failure has
+  # to come and find someone.
+  notify:
+    needs: [leakcheck, commits, lint, test, requirements]
+    if: always() && contains(needs.*.result, 'failure')
+    runs-on: [self-hosted, linux]
+    timeout-minutes: 5
+    steps:
+      - env:
+          # env-indirection: a commit message is untrusted text and must never be
+          # interpolated with ${{ }} directly into a script body.
+          HEAD_MSG: ${{ github.event.head_commit.message }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus"
+          notify-send -u critical "ci FAILED: axi-core" \
+            "$(printf '%s' "$HEAD_MSG" | head -n1)
+          $RUN_URL" || echo "notify-send unavailable; GitHub email still fires"

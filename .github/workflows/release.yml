@@ -1,0 +1,162 @@
+name: release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # release-please reports success when it cannot read a commit. It catches the
+  # parse error, logs `commit could not be parsed` at debug level, carries on
+  # with whatever it *could* read, and exits 0 — so a message its parser chokes
+  # on is dropped from the changelog and from the version bump while the run goes
+  # green. That is not hypothetical here: it is how a merged fix sat on `main`
+  # unreleased while this workflow reported success, with `Considering: 0
+  # commits` buried in the log.
+  #
+  # Every commit since the last release tag has to be readable by the parser
+  # release-please actually runs — a byte-for-byte copy of it lives in
+  # `vendor/conventional-commits-parser/`, so this needs no npm install and no
+  # network. A commit it cannot read is one release-please silently dropped, and
+  # zero readable commits with commits waiting is the exact state that shipped
+  # nothing; both fail here instead of passing quietly. Nothing since the tag is
+  # the healthy no-op and still passes, which is the distinction the log did not
+  # make.
+  #
+  # `--pull-requests require` is the correction to the first version of this job,
+  # which passed — in the sibling project — while release-please dropped every
+  # commit in the range. The message a commit carries is not necessarily the
+  # message release-please reads: a pull request body that names the
+  # commit-override marker — a paragraph *about* the mechanism is enough —
+  # replaces the whole message with whatever follows the word. That artefact is
+  # on GitHub and not in the checkout, so the audit needs a token, and `require`
+  # makes a missing one fail rather than quietly send it back to checking the
+  # wrong string.
+  #
+  # This job deliberately does NOT `needs:` the one below. It has to fail on its
+  # own account, including on a run where release-please itself errored, and its
+  # verdict does not depend on the outcome it is auditing.
+  commit-audit:
+    name: every commit is readable
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      # The pull request body can replace the commit message, so the audit has
+      # to read it. Read-only: this job never writes anything.
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The audit compares `main` against the last release tag, so it needs
+          # both the tags and the commits after them.
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      # A checker that stopped detecting anything reads exactly like a checker
+      # with nothing to report, so prove it still works before trusting it.
+      - name: Self-test the checker
+        run: python3 scripts/commitcheck.py --demo
+      - name: Audit every commit since the last release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 scripts/commitcheck.py --since-release --pull-requests require
+
+  # Drives version bumps and the changelog from conventional commits, and opens
+  # a release PR. Merging that PR is what cuts a release.
+  release-please:
+    name: release PR
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+    steps:
+      - uses: googleapis/release-please-action@v4
+        id: release
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+      # What the action decided, in the run summary rather than only in the log.
+      # "No release PR and no release" is a legitimate outcome and also what a
+      # silent parse failure looks like; `commit-audit` is what tells the two
+      # apart, so say here which one this run was.
+      - name: Say what release-please decided
+        env:
+          RELEASE_CREATED: ${{ steps.release.outputs.release_created }}
+          PRS_CREATED: ${{ steps.release.outputs.prs_created }}
+          TAG_NAME: ${{ steps.release.outputs.tag_name }}
+        run: |
+          {
+            echo "### release-please"
+            echo ""
+            echo "| | |"
+            echo "| --- | --- |"
+            echo "| release created | ${RELEASE_CREATED:-false} |"
+            echo "| release PR created or updated | ${PRS_CREATED:-false} |"
+            echo "| tag | ${TAG_NAME:-none} |"
+            echo ""
+            echo "A run with neither a release nor a release PR means nothing"
+            echo "releasable has landed. The \`every commit is readable\` job is"
+            echo "what proves that is the truth rather than a parse failure."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # NOT YET REACHABLE, on purpose. The PyPI project does not exist: registering
+  # the name is a one-time account action only the maintainer can perform, and
+  # nothing here should attempt it. The job is written now and gated behind
+  # `release_created`, which is only true after a release PR merges, so it
+  # cannot fire before the name is claimed. Trusted publishing needs the
+  # `pypi` environment and a PyPI publisher configured for this repository
+  # before the first release; until then, merging a release PR would fail this
+  # job and nothing else.
+  publish:
+    name: publish to PyPI
+    needs: release-please
+    if: needs.release-please.outputs.release_created == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/axi-core
+    permissions:
+      # The only credential involved: a short-lived OIDC token minted for this
+      # run. No long-lived PyPI token exists in this repository or anywhere else.
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --upgrade pip build
+      - run: python -m build
+
+      # Publishing a broken artifact is worse than not publishing. This package
+      # has no entry point to run, so the smoke test is the thing a consumer
+      # will actually do: install the wheel on its own, import every module, and
+      # run the vendored conformance rig out of the installed copy. That last
+      # part is why the fixtures ship inside the package — a wheel whose
+      # encoder and fixtures disagreed would go out green otherwise.
+      - name: Smoke-test the built wheel
+        run: |
+          python -m venv /tmp/verify
+          /tmp/verify/bin/pip install --quiet dist/*.whl
+          /tmp/verify/bin/python -c "
+          import axi_core, axi_core.errors, axi_core.redact, axi_core.envconfig
+          import axi_core.toon, axi_core.toon_spec
+          from axi_core.render import cli, prose
+          report = axi_core.toon_spec.run(axi_core.toon.encode)
+          assert not report.failures, report.failures[:3]
+          assert not axi_core.toon_spec.digest_mismatches()
+          print('axi-core', axi_core.__version__, 'TOON', report.score)
+          "
+
+      - uses: pypa/gh-action-pypi-publish@release/v1
