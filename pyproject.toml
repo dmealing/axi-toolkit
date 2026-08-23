@@ -1,0 +1,74 @@
+[build-system]
+requires = ["hatchling>=1.21"]
+build-backend = "hatchling.build"
+
+[project]
+name = "axi-core"
+version = "0.1.0"
+description = "Shared toolkit for Agent eXperience Interface (AXI) command-line tools: a strict TOON encoder with the specification's own fixtures, errors that carry recovery as data, redaction, and environment-only credentials"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.9"
+keywords = ["axi", "agent", "cli", "toon", "redaction", "requirements", "metaobjects"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Topic :: Software Development :: Libraries",
+]
+# Deliberately empty, and asserted by tests/test_purity.py. `ha-axi` installs with
+# exactly one runtime dependency and must keep doing so after it takes this package;
+# a transport pulled in here would land in both CLIs without either asking for it.
+dependencies = []
+
+[project.optional-dependencies]
+# Section 9 of the architecture assessment: transports are optional, and the two
+# domain extras are declared now so the later `ha/` and `plex/` steps have somewhere
+# to land without a packaging change. `ha` is empty because its transport is stdlib.
+ha = []
+plex = ["PlexAPI>=4.18"]
+cli = []
+dev = [
+  "pytest>=7.4",
+  "ruff>=0.5",
+]
+# The requirements layer's toolchain: the loader that validates `metaobjects/` and
+# the generator that reads it. Build-time only -- nothing under `src/axi_core`
+# imports it, and the generated checks it emits are committed and run under plain
+# pytest. Its own floor is 3.11, which is why it is not in `dev`: the test matrix
+# runs down to 3.9 and must not need it.
+reqgen = [
+  "metaobjects==0.24.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/dmealing/axi-core"
+Source = "https://github.com/dmealing/axi-core"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/axi_core"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+src = ["src", "tests", "scripts"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "C4", "SIM", "RUF"]
+ignore = ["E501"]
+
+[tool.ruff.format]
+# The generated conformance module is linted like everything else, but its layout is
+# owned by `scripts/reqgen.py`: a formatter reflowing it would make `reqgen check`
+# report a difference the declaration did not cause, on every run, forever.
+exclude = ["tests/conformance/test_requirements_generated.py"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+filterwarnings = ["error::DeprecationWarning:axi_core.*"]
