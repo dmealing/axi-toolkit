@@ -1,7 +1,7 @@
 """How each source tool would declare itself, in this package's vocabulary.
 
 These are the *subject* declarations: what a tool passes to
-:mod:`axi_core.envconfig` and :mod:`axi_core.redact` once it takes this package. They
+:mod:`axi_toolkit.envconfig` and :mod:`axi_toolkit.redact` once it takes this package. They
 live in the conformance suite rather than in ``src/`` because they belong to the two
 tools, not to the library -- and because their whole job here is to be judged against
 what those tools actually do today.
@@ -12,8 +12,8 @@ Nothing in this file is an expected value. Every expectation is in
 
 from __future__ import annotations
 
-from axi_core.envconfig import CredentialSpec
-from axi_core.errors import note, run, set_env
+from axi_toolkit.envconfig import CredentialSpec
+from axi_toolkit.errors import note, run, set_env
 
 __all__ = ["HA", "HA_PATTERNS", "PATTERNS", "PLEX", "PLEX_PATTERNS", "SPECS"]
 

@@ -16,8 +16,8 @@ from __future__ import annotations
 
 import pytest
 
-from axi_core.errors import choose, note, retry, run, set_env
-from axi_core.render import cli
+from axi_toolkit.errors import choose, note, retry, run, set_env
+from axi_toolkit.render import cli
 
 TOOL = "ha-axi"
 

@@ -21,8 +21,8 @@ import json
 
 import pytest
 
-from axi_core import redact
-from axi_core.redact import REDACTED, Redactor
+from axi_toolkit import redact
+from axi_toolkit.redact import REDACTED, Redactor
 
 
 def synthetic_jwt() -> str:

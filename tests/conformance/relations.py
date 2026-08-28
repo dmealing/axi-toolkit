@@ -1,7 +1,7 @@
 """The four relations a generated check can hold, and how to break each one.
 
 A relation is picked by the projection kind the fact is declared under, never written
-down beside the fact -- ``metaobjects/meta.axi-core.yaml`` has no attribute for it, and
+down beside the fact -- ``metaobjects/meta.axi-toolkit.yaml`` has no attribute for it, and
 that is deliberate. A ``CapabilityFacts`` member gets :func:`equal`, a
 ``PopulationFacts`` member gets :func:`covers`, and so on, so the relation is a
 consequence of where the fact was declared rather than a second thing to keep in step

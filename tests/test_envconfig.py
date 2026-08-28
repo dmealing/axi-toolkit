@@ -12,10 +12,10 @@ from __future__ import annotations
 
 import pytest
 
-from axi_core import envconfig, redact
-from axi_core.envconfig import Credentials, CredentialSpec
-from axi_core.errors import ConfigError, note, run, set_env
-from axi_core.render import cli
+from axi_toolkit import envconfig, redact
+from axi_toolkit.envconfig import Credentials, CredentialSpec
+from axi_toolkit.errors import ConfigError, note, run, set_env
+from axi_toolkit.render import cli
 
 TOKEN = "probe-" + "0123456789abcdef"
 

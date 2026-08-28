@@ -8,7 +8,7 @@ there is also one copy of the thing that judges it -- so a tool taking this pack
 gets the rig too, and asserts its own score with :func:`run` rather than re-vendoring
 179 cases and hoping they stayed in step.
 
-Nothing here imports :mod:`axi_core.toon`. The fixtures are the specification's
+Nothing here imports :mod:`axi_toolkit.toon`. The fixtures are the specification's
 opinion and the encoder is this package's; keeping the two modules apart is what lets
 :func:`run` be handed some *other* encoder -- which is exactly how the divergence
 between the two tools was measured in the first place.

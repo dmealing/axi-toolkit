@@ -3,10 +3,10 @@
   "packages": {
     ".": {
       "release-type": "python",
-      "package-name": "axi-core",
+      "package-name": "axi-toolkit",
       "changelog-path": "CHANGELOG.md",
       "include-component-in-tag": false,
-      "extra-files": ["src/axi_core/__init__.py"]
+      "extra-files": ["src/axi_toolkit/__init__.py"]
     }
   }
 }

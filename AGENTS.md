@@ -5,7 +5,7 @@ test, release, architecture, and sharp-edge notes that should travel with the co
 
 ## The hard constraint: this repository is public and must stay generic
 
-`axi-core` is built by reading two AXI command-line tools and the installations they
+`axi-toolkit` is built by reading two AXI command-line tools and the installations they
 were developed against. The failure that matters is not a bug — it is a commit that
 describes, or grants access to, somebody's home automation instance, media server or
 workstation. Before writing **anything** into this repo, including tests, fixtures,
@@ -19,8 +19,8 @@ docs, examples and commit messages:
 - **No real data.** Invent obviously-synthetic names: `light.example_lamp`,
   `host.example.com`, area `Example Room`.
 - **No local paths or personal identifiers.** The two source checkouts are named by
-  `AXI_CORE_SOURCE_HA` / `AXI_CORE_SOURCE_PLEX` at capture time and must never reach a
-  committed file or a pull request body.
+  `AXI_TOOLKIT_SOURCE_HA` / `AXI_TOOLKIT_SOURCE_PLEX` at capture time and must never
+  reach a committed file or a pull request body.
 
 `scripts/leakcheck.py` enforces this — do not rely on remembering it:
 
@@ -45,12 +45,16 @@ weaken a rule to make a commit pass, and do not bypass the hooks.
 **There are three surfaces and the third is not a file.** A pull request title and body
 are published the moment they are written, are in no checkout, pass under no hook, and
 can be edited after every other check has run. The pipeline's own document step writes
-into the body, pasting captured pytest output whose header carries a `rootdir:` line
-holding an absolute path; that has published a home directory three times across two
-sibling repositories with every check green each time. `edited` in `hygiene.yml`'s
-trigger list is the whole mechanism — without it the check scans the empty original
-body and passes. If the guard fires on a pull request body, **edit the body**; never
-weaken the guard.
+into the body, pasting captured pytest output that carries absolute paths on two lines:
+the header's `rootdir:` line, and the warnings summary, which prints the site-packages
+path of the interpreter that raised the warning — a path no choice of capture directory
+moves, so running an evidence capture from a scratch directory neutralises the first
+line and leaves the second fully intact. The first line published a home directory
+three times across two sibling repositories with every check green each time; the
+second did it in this repository's own body, and the guard caught it. `edited` in
+`hygiene.yml`'s trigger list is the whole mechanism — without it the check scans the
+empty original body and passes. If the guard fires on a pull request body, **edit the
+body**; never weaken the guard.
 
 **A file that cannot carry a marker** — JSON has no comment syntax, and vendored
 third-party data must stay byte-for-byte — is exempted in `PATH_ALLOWANCES`, per path
@@ -85,7 +89,7 @@ case is a synthetic Windows drive path.
 
 ## The requirements layer
 
-`metaobjects/meta.axi-core.yaml` is the source of truth and `scripts/reqgen.py` is the
+`metaobjects/meta.axi-toolkit.yaml` is the source of truth and `scripts/reqgen.py` is the
 only thing that reads it.
 
 **The modelling rule, because it was got wrong before.** `@implementedBy` is legal at
@@ -119,7 +123,7 @@ Regenerate and gate:
 
 ```sh
 python3.11 scripts/reqgen.py list | check | generate
-AXI_CORE_SOURCE_HA=<checkout> AXI_CORE_SOURCE_PLEX=<checkout> python3.11 scripts/reqgen.py capture
+AXI_TOOLKIT_SOURCE_HA=<checkout> AXI_TOOLKIT_SOURCE_PLEX=<checkout> python3.11 scripts/reqgen.py capture
 ```
 
 The `requirements` CI job runs `list` and `check`. It is separate from `test` because
@@ -150,3 +154,28 @@ written and gated behind `release_created`, but **the PyPI project does not exis
 registering the name is a one-time account action only the maintainer can perform, and
 trusted publishing needs the `pypi` environment configured before the first release.
 Nothing should attempt to publish before then.
+
+### Why the distribution is called `axi-toolkit`
+
+It was `axi-core` first, and PyPI **rejected** that name. `axl-core` -- with an L -- is
+already registered there at 0.7.0, and PyPI does not compare the name you submit against
+the names that exist. It compares *normalised* forms, and its confusability check folds
+`i`, `l` and `1` together, folds `o` and `0` together, and strips the separators `-`,
+`_` and `.` entirely. `axi-core` and `axl-core` normalise to the same string, so the
+upload was refused after the name looked free in every way anyone had thought to check.
+
+An exact-name lookup does not answer the question. Before proposing any distribution
+name for this project or a sibling, expand it over the whole confusable class and check
+every member: substitute each `i`/`l`/`1` for the others, each `o`/`0` for the other, and
+test the separator-stripped spelling as well. `axi-toolkit` was cleared that way -- all
+216 variants of it were free -- and that is the only reason to believe it will upload.
+
+Two consequences worth keeping straight:
+
+- **The distribution name and the repository name are independent.** They happen to
+  agree today, but a trusted publisher is configured per repository and per project, and
+  it is content with a distribution whose name differs from the repository's. A future
+  rename of one does not compel the other.
+- **The import package follows the distribution, with no alias left behind.** There is
+  no `axi_core` shim: a compatibility alias would let a downstream consumer keep the old
+  spelling, and the old spelling is the one PyPI will not accept.

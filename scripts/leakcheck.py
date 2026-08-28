@@ -32,8 +32,11 @@ Three surfaces reach a public page, and only two of them are files. A pull
 request's title and body are published the moment they are written, are in no
 checkout, pass under no hook, and can be edited after every other check has run
 -- and this project's own pipeline writes into the body, pasting captured pytest
-output whose header carries a ``rootdir:`` line holding an absolute path. That
-has now happened twice, on two repositories, with every check green both times.
+output that carries an absolute path on more lines than the header's
+``rootdir:`` one: the warnings summary prints the site-packages path of the
+interpreter that raised the warning, and running the capture from a scratch
+directory hides the first line without touching the second. Both have now
+published a home directory; only the second was caught, here, by this scan.
 ``--pull-request`` is the surface's own scan: the same rules, read from GitHub at
 check time, reported without ever echoing what it found.
 
@@ -230,7 +233,7 @@ PATH_ALLOWANCES = {
     # fixture is vendored byte-for-byte and its checksum is asserted, so editing
     # it to satisfy this scanner would replace the specification's opinion with
     # ours, which is the opposite of what a conformance fixture is for.
-    "src/axi_core/toon_spec/encode/primitives.json": frozenset({"home-path"}),
+    "src/axi_toolkit/toon_spec/encode/primitives.json": frozenset({"home-path"}),
 }
 
 
@@ -563,9 +566,12 @@ def scan_commit_message(path):
 # looked at it. It is not in the checkout, so the tracked-file scan cannot reach
 # it; it never passes under a hook, so --commit-msg cannot either. It is also the
 # surface this project's own pipeline writes into: the document step pastes
-# captured pytest output, and a pytest header carries a `rootdir:` line holding
-# an absolute path. Twice now that has published a home directory -- once here,
-# once on the sibling project -- with every check green both times.
+# captured pytest output, which carries absolute paths on two different lines.
+# The header's `rootdir:` line is the one everybody knows; the warnings summary
+# is the other, printing the site-packages path of the interpreter that raised
+# the warning. A capture run from a scratch directory neutralises the first and
+# cannot touch the second, which is how this repository's own body came to leak
+# one anyway -- and this scan is what caught it, before anything merged on top.
 #
 # The rules are the ones above, unchanged and unforked. What is different is the
 # reporting: a public CI log must say WHERE the match is without repeating it,
@@ -697,7 +703,9 @@ def report_pull_request(findings, *, label, fields, stream=None):
         "  joined view of the text, so only the line locates it. Captured tool output", file=stream
     )
     print("  is the usual source -- a pytest header carries a `rootdir:` line holding", file=stream)
-    print("  an absolute path.", file=stream)
+    print("  an absolute path, and the warnings summary below it carries another:", file=stream)
+    print("  the site-packages path of the interpreter that raised the warning, which", file=stream)
+    print("  no choice of capture directory moves.", file=stream)
     print("  Editing the body re-runs this check; nothing else has to happen.", file=stream)
     print(
         f"  A line in a pull request cannot carry `{ALLOW_PREFIX}<rule>`, on purpose.", file=stream
@@ -764,13 +772,37 @@ def dirty_fixture():
     }
 
 
-def dirty_pull_request():
-    """The leak that has now happened twice, rebuilt from fragments.
+def dirty_pasted_warnings(rootdir):
+    """A block of pasted pytest output, rebuilt from fragments.
 
-    A pipeline step pastes captured pytest output into the body; a pytest header
-    carries a ``rootdir:`` line holding an absolute path. Assembled here rather
-    than written out so this file stays clean under its own scan, the same way
-    ``dirty_fixture`` is. One ``(field, text)`` pair per published field.
+    The ``rootdir`` the capture ran from is a parameter because it is the knob
+    reached for first: point it at a scratch directory and the header's
+    ``rootdir:`` line reads harmless. The warnings summary under it still prints
+    the absolute site-packages path of the interpreter that raised the warning
+    -- a path no choice of capture directory moves, which is why the one leak
+    this repository has had came through that line and not the header.
+    """
+    home = "/ho" + "me/" + "someone"
+    site_packages = home + "/.local/lib/python3.12/site-packages"
+    warning = site_packages + "/_pytest/config/__init__.py:1434"
+    return (
+        "```\n"
+        "platform linux -- Python 3.12.0, pytest-8.0.0, pluggy-1.5.0\n"
+        f"rootdir: {rootdir}\n"
+        "collected 590 items\n"
+        "\n"
+        "========= warnings summary =========\n"
+        f"{warning}\n"
+        f"  {warning}: PytestConfigWarning: Unknown config option: cache_dir\n"
+        "```\n"
+    )
+
+
+def dirty_pull_request():
+    """The leak the pipeline's pasted evidence produces, rebuilt from fragments.
+
+    One ``(field, text)`` pair per published field; the body's evidence block
+    is ``dirty_pasted_warnings`` run from a home directory, the generic capture.
     """
     home = "/ho" + "me/" + "someone"
     return (
@@ -779,11 +811,8 @@ def dirty_pull_request():
             "body",
             "## Evidence\n\n"
             "<details>\n<summary>pytest</summary>\n\n"
-            "```\n"
-            "platform linux -- Python 3.12.0, pytest-8.0.0, pluggy-1.5.0\n"
-            f"rootdir: {home}/checkout\n"
-            "collected 590 items\n"
-            "```\n\n</details>\n",
+            + dirty_pasted_warnings(home + "/checkout")
+            + "\n</details>\n",
         ),
     )
 
@@ -795,7 +824,7 @@ def clean_pull_request():
         (
             "body",
             "## Intent\n\n"
-            "`src/axi_core/toon.py` formats through `Decimal(repr(value))` inside the range.\n\n"
+            "`src/axi_toolkit/toon.py` formats through `Decimal(repr(value))` inside the range.\n\n"
             "```\n"
             "rootdir: /github/workspace\n"
             "collected 590 items\n"
@@ -844,6 +873,20 @@ def run_demo():
     if any(finding.column is None for finding in leaky):
         print("error: a pull request finding carried no offset to locate it by")
         return 1
+    # The pasted-output leak is not only the header's rootdir line: a capture
+    # run from a scratch directory reads harmless there, and the warnings
+    # summary under it still prints the site-packages path of the interpreter
+    # that raised the warning. That is the line that reached this repository's
+    # own body, and the pull request fixture above cannot prove it -- its title
+    # and its rootdir line satisfy both field checks while this line's shape
+    # goes missed -- so it gets its own scan, with the header made harmless.
+    incident = dirty_pasted_warnings("/scratch/capture")
+    if not scan_pull_request((("body", incident),)):
+        print(
+            "error: the warnings-summary path in pasted pytest output was not "
+            "caught; a scratch-directory capture leaves that line dirty"
+        )
+        return 1
     quiet = scan_pull_request(clean_pull_request())
     if quiet:
         print(
@@ -854,7 +897,8 @@ def run_demo():
     print(f"demo: every rule fired ({', '.join(triggered)}); the scanner is working")
     print(
         f"demo: a pull request leaking an absolute path was caught in all "
-        f"{len(PULL_REQUEST_FIELDS)} fields, and an ordinary one was left alone"
+        f"{len(PULL_REQUEST_FIELDS)} fields, the warnings-summary line of "
+        f"pasted pytest output included, and an ordinary one was left alone"
     )
     return 0
 
