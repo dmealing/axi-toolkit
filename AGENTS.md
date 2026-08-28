@@ -155,6 +155,26 @@ registering the name is a one-time account action only the maintainer can perfor
 trusted publishing needs the `pypi` environment configured before the first release.
 Nothing should attempt to publish before then.
 
+### Why `bump-minor-pre-major` is on
+
+`release-please-config.json` sets `"bump-minor-pre-major": true`. That is deliberate, not
+an oversight to be tidied away. This package is pre-1.0 **on purpose**: steps 2 and 3 of
+the extraction still have to move `servicemodel.py` and the Plex id/filter language into
+it, and those change the public surface substantially. It stays in 0.x until that has
+landed.
+
+Without the flag, release-please applies strict semver, and the rename commit's `feat!:`
+marker alone would have made the very first artifact ever to appear on PyPI a 1.0.0 — a
+public statement that the API is stable, published as a side effect of a commit prefix
+rather than as a decision. With it on, a breaking change bumps the **minor** while the
+version is below 1.0.0, so `feat!:` gives 0.2.0.
+
+`bump-patch-for-minor-pre-major` is left unset (it defaults to false) so an ordinary
+`feat:` bumps the minor too, which is the conventional 0.x behaviour.
+
+1.0.0 is reached by **removing** this flag once the extraction has landed and the surface
+is one somebody is willing to keep — a deliberate act, which is the whole point.
+
 ### Why the distribution is called `axi-toolkit`
 
 It was `axi-core` first, and PyPI **rejected** that name. `axl-core` -- with an L -- is
