@@ -92,7 +92,7 @@ def test_a_facts_name_is_the_whole_reference_to_its_two_projections():
     subject = fact("toonEncodeCaseCount")
     assert subject.capture_fn == "capture_toon_encode_case_count"
     assert subject.subject_fn == "subject_toon_encode_case_count"
-    assert subject.fqn == "axi_core::conformance::CapabilityFacts.toonEncodeCaseCount"
+    assert subject.fqn == "axi_toolkit::conformance::CapabilityFacts.toonEncodeCaseCount"
 
 
 # ------------------------------------------------------------------- the rules
@@ -106,7 +106,8 @@ def test_a_live_leaf_naming_no_fact_is_refused():
         [
             requirement("claimsNothing"),
             requirement(
-                "claimsIt", targets=("axi_core::conformance::CapabilityFacts.toonEncodeCaseCount",)
+                "claimsIt",
+                targets=("axi_toolkit::conformance::CapabilityFacts.toonEncodeCaseCount",),
             ),
         ],
     )
@@ -120,7 +121,7 @@ def test_a_parent_naming_no_fact_is_fine_because_its_children_carry_the_claim():
             requirement("tree", level=1, is_leaf=False, targets=()),
             requirement(
                 "tree.leaf",
-                targets=("axi_core::conformance::CapabilityFacts.toonEncodeCaseCount",),
+                targets=("axi_toolkit::conformance::CapabilityFacts.toonEncodeCaseCount",),
             ),
         ],
     )
@@ -133,10 +134,10 @@ def test_a_planned_leaf_may_name_nothing_and_may_dangle():
         facts,
         [
             requirement(
-                "later", status="planned", targets=("axi_core::conformance::WireFacts.notYet",)
+                "later", status="planned", targets=("axi_toolkit::conformance::WireFacts.notYet",)
             ),
             requirement(
-                "now", targets=("axi_core::conformance::CapabilityFacts.toonEncodeCaseCount",)
+                "now", targets=("axi_toolkit::conformance::CapabilityFacts.toonEncodeCaseCount",)
             ),
         ],
     )
@@ -152,7 +153,7 @@ def test_implemented_by_above_the_binding_floor_is_refused(level):
             requirement(
                 "tooHigh",
                 level=level,
-                targets=("axi_core::conformance::CapabilityFacts.toonEncodeCaseCount",),
+                targets=("axi_toolkit::conformance::CapabilityFacts.toonEncodeCaseCount",),
             )
         ],
     )
@@ -167,7 +168,7 @@ def test_implemented_by_at_the_binding_floor_is_accepted(level):
             requirement(
                 "bound",
                 level=level,
-                targets=("axi_core::conformance::CapabilityFacts.toonEncodeCaseCount",),
+                targets=("axi_toolkit::conformance::CapabilityFacts.toonEncodeCaseCount",),
             )
         ],
     )
@@ -183,7 +184,7 @@ def test_a_flat_architectural_requirement_may_bind_without_a_level():
                 "policy",
                 sub_type="architectural",
                 level=None,
-                targets=("axi_core::conformance::CapabilityFacts.toonEncodeCaseCount",),
+                targets=("axi_toolkit::conformance::CapabilityFacts.toonEncodeCaseCount",),
             )
         ],
     )
@@ -198,14 +199,14 @@ def test_a_levelled_architectural_requirement_obeys_the_same_floor():
                 "policy",
                 sub_type="architectural",
                 level=2,
-                targets=("axi_core::conformance::CapabilityFacts.toonEncodeCaseCount",),
+                targets=("axi_toolkit::conformance::CapabilityFacts.toonEncodeCaseCount",),
             )
         ],
     )
 
 
 def test_nesting_may_skip_a_level_but_never_return_to_one():
-    target = ("axi_core::conformance::CapabilityFacts.toonEncodeCaseCount",)
+    target = ("axi_toolkit::conformance::CapabilityFacts.toonEncodeCaseCount",)
     facts = [fact("toonEncodeCaseCount")]
     bind(
         facts,
@@ -227,9 +228,9 @@ def test_a_live_requirement_naming_a_fact_that_does_not_exist_is_refused():
         [fact("toonEncodeCaseCount")],
         [
             requirement(
-                "real", targets=("axi_core::conformance::CapabilityFacts.toonEncodeCaseCount",)
+                "real", targets=("axi_toolkit::conformance::CapabilityFacts.toonEncodeCaseCount",)
             ),
-            requirement("stale", targets=("axi_core::conformance::WireFacts.longGone",)),
+            requirement("stale", targets=("axi_toolkit::conformance::WireFacts.longGone",)),
         ],
     )
 
@@ -241,7 +242,7 @@ def test_a_fact_no_live_requirement_claims_is_refused():
         [fact("toonEncodeCaseCount"), fact("orphan")],
         [
             requirement(
-                "real", targets=("axi_core::conformance::CapabilityFacts.toonEncodeCaseCount",)
+                "real", targets=("axi_toolkit::conformance::CapabilityFacts.toonEncodeCaseCount",)
             )
         ],
     )
@@ -252,7 +253,11 @@ def test_a_fact_with_no_projection_pair_is_refused():
     refuses(
         "needs capture_never_projected",
         [fact("neverProjected")],
-        [requirement("claim", targets=("axi_core::conformance::CapabilityFacts.neverProjected",))],
+        [
+            requirement(
+                "claim", targets=("axi_toolkit::conformance::CapabilityFacts.neverProjected",)
+            )
+        ],
     )
 
 
@@ -261,7 +266,11 @@ def test_a_requirement_may_tag_a_whole_projection_object_at_l4():
     facts = [fact("toonEncodeCaseCount"), fact("toonFixtureDigests")]
     bound = bind(
         facts,
-        [requirement("wholeObject", level=4, targets=("axi_core::conformance::CapabilityFacts",))],
+        [
+            requirement(
+                "wholeObject", level=4, targets=("axi_toolkit::conformance::CapabilityFacts",)
+            )
+        ],
     )
     for subject in bound.values():
         assert [req.path for req in subject.requirements] == ["wholeObject"]
@@ -277,9 +286,9 @@ def test_the_generated_module_is_what_the_declaration_produces_now():
     while the CI job that loads the real declaration runs on one.
     """
     facts = {
-        "axi_core::conformance::CapabilityFacts.toonEncodeCaseCount": fact("toonEncodeCaseCount")
+        "axi_toolkit::conformance::CapabilityFacts.toonEncodeCaseCount": fact("toonEncodeCaseCount")
     }
-    facts["axi_core::conformance::CapabilityFacts.toonEncodeCaseCount"].requirements = [
+    facts["axi_toolkit::conformance::CapabilityFacts.toonEncodeCaseCount"].requirements = [
         requirement("tree.leaf")
     ]
     rendered = reqgen.render(facts)

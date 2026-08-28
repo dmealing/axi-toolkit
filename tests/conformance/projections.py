@@ -13,7 +13,7 @@ There are two authorities here and neither of them needs a credential:
 * the **vendored TOON specification fixtures**, which are the specification's own
   opinion and travel with the package; and
 * the **two source CLIs**, read and executed from a checkout whose location is given by
-  ``AXI_CORE_SOURCE_HA`` and ``AXI_CORE_SOURCE_PLEX`` at capture time and never
+  ``AXI_TOOLKIT_SOURCE_HA`` and ``AXI_TOOLKIT_SOURCE_PLEX`` at capture time and never
   recorded. Nothing about where they live reaches the capture -- only what their code
   says and does.
 
@@ -39,8 +39,8 @@ import re
 import sys
 from pathlib import Path
 
-from axi_core import errors, redact, toon, toon_spec
-from axi_core.render import cli
+from axi_toolkit import errors, redact, toon, toon_spec
+from axi_toolkit.render import cli
 
 from . import specs
 
@@ -48,7 +48,7 @@ TOOLS = ("ha", "plex")
 
 #: Where each tool's checkout is, at capture time only. Never read by a subject
 #: projection, never recorded in the capture, never needed in CI.
-_SOURCE_ENV = {"ha": "AXI_CORE_SOURCE_HA", "plex": "AXI_CORE_SOURCE_PLEX"}
+_SOURCE_ENV = {"ha": "AXI_TOOLKIT_SOURCE_HA", "plex": "AXI_TOOLKIT_SOURCE_PLEX"}
 _PACKAGE = {"ha": "ha_axi", "plex": "plex_axi"}
 _TOOL_NAME = {"ha": "ha-axi", "plex": "plex-axi"}
 
@@ -185,7 +185,7 @@ def _recovery_holders(node: ast.AST) -> list[ast.AST]:
 def _raw_fixture_docs() -> list[dict]:
     """The vendored fixture files, read as plain JSON.
 
-    Deliberately not through :mod:`axi_core.toon_spec`: the authority is the files, and
+    Deliberately not through :mod:`axi_toolkit.toon_spec`: the authority is the files, and
     a projection that read them through the same loader the subject uses would be
     comparing that loader with itself.
     """
@@ -319,7 +319,7 @@ def subject_env_config_error_codes() -> list[str]:
     instead of writing one, the extractor would not collect it and the check would go
     red on the absence.
     """
-    from axi_core import envconfig
+    from axi_toolkit import envconfig
 
     tree = ast.parse(Path(envconfig.__file__).read_text(encoding="utf-8"))
     return _code_literals(tree)
@@ -506,7 +506,7 @@ def capture_credential_spec_cells() -> list[str]:
 
 def subject_credential_spec_cells(cells) -> list[str]:
     """Each cell rebuilt as a spec, and probed the same way the capture probed a tool."""
-    from axi_core import envconfig
+    from axi_toolkit import envconfig
 
     covered = []
     for cell in cells:
@@ -642,7 +642,7 @@ def _capture_credential_message(tool: str, scenario: str) -> str:
 
 
 def _subject_credential_message(tool: str, scenario: str) -> str:
-    from axi_core import envconfig
+    from axi_toolkit import envconfig
 
     spec = specs.SPECS[tool]
     url_var, token_var = spec.url_vars[0], spec.token_vars[0]
@@ -729,7 +729,7 @@ def capture_plex_normalized_urls() -> list[dict]:
 
 
 def _subject_url(tool: str, raw: str) -> str:
-    from axi_core import envconfig
+    from axi_toolkit import envconfig
 
     return envconfig.normalize_base_url(raw, specs.SPECS[tool])
 
@@ -923,7 +923,7 @@ def capture_credential_contract() -> list[dict]:
 
 
 def subject_credential_contract(name: str) -> str:
-    from axi_core import envconfig
+    from axi_toolkit import envconfig
 
     if name == "DEFAULT_TIMEOUT":
         return str(envconfig.DEFAULT_TIMEOUT)

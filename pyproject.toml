@@ -3,7 +3,7 @@ requires = ["hatchling>=1.21"]
 build-backend = "hatchling.build"
 
 [project]
-name = "axi-core"
+name = "axi-toolkit"
 version = "0.1.0"
 description = "Shared toolkit for Agent eXperience Interface (AXI) command-line tools: a strict TOON encoder with the specification's own fixtures, errors that carry recovery as data, redaction, and environment-only credentials"
 readme = "README.md"
@@ -35,7 +35,7 @@ dev = [
   "ruff>=0.5",
 ]
 # The requirements layer's toolchain: the loader that validates `metaobjects/` and
-# the generator that reads it. Build-time only -- nothing under `src/axi_core`
+# the generator that reads it. Build-time only -- nothing under `src/axi_toolkit`
 # imports it, and the generated checks it emits are committed and run under plain
 # pytest. Its own floor is 3.11, which is why it is not in `dev`: the test matrix
 # runs down to 3.9 and must not need it.
@@ -44,11 +44,11 @@ reqgen = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/dmealing/axi-core"
-Source = "https://github.com/dmealing/axi-core"
+Homepage = "https://github.com/dmealing/axi-toolkit"
+Source = "https://github.com/dmealing/axi-toolkit"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/axi_core"]
+packages = ["src/axi_toolkit"]
 
 [tool.ruff]
 line-length = 100
@@ -71,4 +71,4 @@ exclude = ["tests/conformance/test_requirements_generated.py"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
-filterwarnings = ["error::DeprecationWarning:axi_core.*"]
+filterwarnings = ["error::DeprecationWarning:axi_toolkit.*"]

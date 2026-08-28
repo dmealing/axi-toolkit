@@ -178,6 +178,6 @@ jobs:
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus"
-          notify-send -u critical "ci FAILED: axi-core" \
+          notify-send -u critical "ci FAILED: axi-toolkit" \
             "$(printf '%s' "$HEAD_MSG" | head -n1)
           $RUN_URL" || echo "notify-send unavailable; GitHub email still fires"

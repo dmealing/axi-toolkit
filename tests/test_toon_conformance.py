@@ -3,7 +3,7 @@
 ``test_toon.py`` states the encoder's behaviour in this project's words, which is worth
 having and is not the same thing as conformance: a rule nobody thought to write a test
 for reads as passing. These are the specification's opinion, vendored byte-for-byte
-(MIT; see ``src/axi_core/toon_spec/PROVENANCE.md``), so "strict encoder" is a property
+(MIT; see ``src/axi_toolkit/toon_spec/PROVENANCE.md``), so "strict encoder" is a property
 this suite checks rather than a claim the README makes.
 
 The generated conformance layer already judges every case as one wire fact, against a
@@ -16,8 +16,8 @@ from __future__ import annotations
 
 import pytest
 
-from axi_core import toon_spec
-from axi_core.toon import encode
+from axi_toolkit import toon_spec
+from axi_toolkit.toon import encode
 
 #: The number of encode cases the vendored specification version publishes.
 #:

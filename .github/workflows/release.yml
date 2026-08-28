@@ -126,7 +126,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: pypi
-      url: https://pypi.org/p/axi-core
+      url: https://pypi.org/p/axi-toolkit
     permissions:
       # The only credential involved: a short-lived OIDC token minted for this
       # run. No long-lived PyPI token exists in this repository or anywhere else.
@@ -150,13 +150,13 @@ jobs:
           python -m venv /tmp/verify
           /tmp/verify/bin/pip install --quiet dist/*.whl
           /tmp/verify/bin/python -c "
-          import axi_core, axi_core.errors, axi_core.redact, axi_core.envconfig
-          import axi_core.toon, axi_core.toon_spec
-          from axi_core.render import cli, prose
-          report = axi_core.toon_spec.run(axi_core.toon.encode)
+          import axi_toolkit, axi_toolkit.errors, axi_toolkit.redact, axi_toolkit.envconfig
+          import axi_toolkit.toon, axi_toolkit.toon_spec
+          from axi_toolkit.render import cli, prose
+          report = axi_toolkit.toon_spec.run(axi_toolkit.toon.encode)
           assert not report.failures, report.failures[:3]
-          assert not axi_core.toon_spec.digest_mismatches()
-          print('axi-core', axi_core.__version__, 'TOON', report.score)
+          assert not axi_toolkit.toon_spec.digest_mismatches()
+          print('axi-toolkit', axi_toolkit.__version__, 'TOON', report.score)
           "
 
       - uses: pypa/gh-action-pypi-publish@release/v1

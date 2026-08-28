@@ -1,6 +1,6 @@
 """Recovery intent, rendered as a sentence for a caller that is not a shell.
 
-The same :class:`~axi_core.errors.Recovery` the CLI renderer turns into
+The same :class:`~axi_toolkit.errors.Recovery` the CLI renderer turns into
 ``Run `ha-axi area list` to see each area's id`` becomes, here,
 ``To see each area's id, use ha-axi's `area list` command.`` -- which is the form a
 caller embedding this package wants when it has to tell a person, or a model, what
@@ -12,9 +12,9 @@ the fix without implying the caller is about to execute it.
 
 Every sentence names the tool that owns the command -- and the name arrives as an
 argument, so the *caller's* tool is named rather than whichever tool happened to raise
-the error. Two kinds legitimately do not name it: a :data:`~axi_core.errors.KIND_CHOOSE`
+the error. Two kinds legitimately do not name it: a :data:`~axi_toolkit.errors.KIND_CHOOSE`
 offers values that belong to the system rather than to the tool, and a note names it
-only if its author wrote :data:`~axi_core.errors.TOOL_SLOT`.
+only if its author wrote :data:`~axi_toolkit.errors.TOOL_SLOT`.
 """
 
 from __future__ import annotations

@@ -45,14 +45,14 @@ FORBIDDEN = (
 )
 
 MODULES = (
-    "axi_core",
-    "axi_core.errors",
-    "axi_core.redact",
-    "axi_core.envconfig",
-    "axi_core.toon",
-    "axi_core.toon_spec",
-    "axi_core.render.cli",
-    "axi_core.render.prose",
+    "axi_toolkit",
+    "axi_toolkit.errors",
+    "axi_toolkit.redact",
+    "axi_toolkit.envconfig",
+    "axi_toolkit.toon",
+    "axi_toolkit.toon_spec",
+    "axi_toolkit.render.cli",
+    "axi_toolkit.render.prose",
 )
 
 
@@ -129,11 +129,11 @@ def test_importing_a_module_loads_no_http_library(module):
 
 def test_the_whole_package_imports_with_nothing_installed():
     """No third-party name may appear at all, however harmless it looks."""
-    loaded = _imported_after("axi_core.render.cli")
+    loaded = _imported_after("axi_toolkit.render.cli")
     third_party = sorted(
         name
         for name in loaded
-        if name and not name.startswith(("axi_core", "_")) and name.split(".")[0] in FORBIDDEN
+        if name and not name.startswith(("axi_toolkit", "_")) and name.split(".")[0] in FORBIDDEN
     )
     assert third_party == []
 

@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import pytest
 
-from axi_core.toon import encode
+from axi_toolkit.toon import encode
 
 
 def test_uniform_object_array_uses_tabular_form():

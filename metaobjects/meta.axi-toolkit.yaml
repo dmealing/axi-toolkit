@@ -1,6 +1,6 @@
 ## The requirements layer.
 ##
-## This file is the source of truth for what `axi-core` claims, and for the facts
+## This file is the source of truth for what `axi-toolkit` claims, and for the facts
 ## that witness those claims. It is loaded by the `metaobjects` loader under the
 ## sealed-registry discipline (ADR-0023), which is the point: the requirement
 ## vocabulary is closed, so there is nowhere here to type an expected value. Every
@@ -9,7 +9,7 @@
 ##
 ## HOW A CHECK COMES OUT OF THIS FILE
 ##
-##   * A `object.value` in package `axi_core::conformance` is a PROJECTION KIND. The
+##   * A `object.value` in package `axi_toolkit::conformance` is a PROJECTION KIND. The
 ##     four here are the four the prior harness measurement found do the work:
 ##     capability, population, wire and differential.
 ##   * A field on one of those objects is a FACT. Its name is the whole reference:
@@ -34,7 +34,7 @@
 ## stays plain Python and the specification's own fixtures stay its oracle.
 
 metadata:
-  package: axi_core::conformance
+  package: axi_toolkit::conformance
   children:
 
     # ---------------------------------------------------------------- row shapes
@@ -223,7 +223,7 @@ metadata:
                 A published case whose emitted bytes differ from the fixture's, on a
                 build that still reports a passing conformance score.
               implementedBy:
-                - axi_core::conformance::WireFacts.toonEncodeCases
+                - axi_toolkit::conformance::WireFacts.toonEncodeCases
           - requirement.functional:
               name: theWholePublishedSuiteRuns
               level: 5
@@ -235,8 +235,8 @@ metadata:
                 A fixture file that stops being collected, shrinking the score in
                 silence while the suite stays green.
               implementedBy:
-                - axi_core::conformance::CapabilityFacts.toonEncodeCaseCount
-                - axi_core::conformance::CapabilityFacts.toonFixtureCategories
+                - axi_toolkit::conformance::CapabilityFacts.toonEncodeCaseCount
+                - axi_toolkit::conformance::CapabilityFacts.toonFixtureCategories
           - requirement.functional:
               name: theFixturesAreStillTheSpecificationsOpinion
               level: 5
@@ -248,7 +248,7 @@ metadata:
                 A fixture edited to make a failing encoder pass, which is no longer the
                 specification's opinion about anything.
               implementedBy:
-                - axi_core::conformance::CapabilityFacts.toonFixtureDigests
+                - axi_toolkit::conformance::CapabilityFacts.toonFixtureDigests
           - requirement.functional:
               name: noFixtureSettingIsIgnored
               level: 5
@@ -260,8 +260,8 @@ metadata:
                 A case carrying an option the runner does not recognise, run with
                 default settings and reported as a pass.
               implementedBy:
-                - axi_core::conformance::CapabilityFacts.toonCaseOptionNames
-                - axi_core::conformance::CapabilityFacts.toonExercisedDelimiters
+                - axi_toolkit::conformance::CapabilityFacts.toonCaseOptionNames
+                - axi_toolkit::conformance::CapabilityFacts.toonExercisedDelimiters
 
     # ============================================================ RECOVERY / ERRORS
     - requirement.functional:
@@ -286,8 +286,8 @@ metadata:
                 A recovery line that reads slightly differently after extraction, so the
                 tool's own suite fails on a diff nobody intended.
               implementedBy:
-                - axi_core::conformance::WireFacts.haRecoveryLines
-                - axi_core::conformance::WireFacts.plexRecoveryLines
+                - axi_toolkit::conformance::WireFacts.haRecoveryLines
+                - axi_toolkit::conformance::WireFacts.plexRecoveryLines
           - requirement.functional:
               name: everyRecoveryShapeInUseIsExpressible
               level: 5
@@ -299,7 +299,7 @@ metadata:
                 A shape present in the tools' output that has no intent to carry it, so
                 extraction quietly drops it to free text.
               implementedBy:
-                - axi_core::conformance::PopulationFacts.recoveryShapeCells
+                - axi_toolkit::conformance::PopulationFacts.recoveryShapeCells
           - requirement.functional:
               name: theErrorVocabularyIsShared
               level: 5
@@ -311,9 +311,9 @@ metadata:
                 A tool taking this package and finding an exit code or an error type it
                 used has gone missing.
               implementedBy:
-                - axi_core::conformance::CapabilityFacts.errorExitCodes
-                - axi_core::conformance::CapabilityFacts.errorFaultClasses
-                - axi_core::conformance::CapabilityFacts.errorTypeNames
+                - axi_toolkit::conformance::CapabilityFacts.errorExitCodes
+                - axi_toolkit::conformance::CapabilityFacts.errorFaultClasses
+                - axi_toolkit::conformance::CapabilityFacts.errorTypeNames
 
     - requirement.architectural:
         name: recoveryIsCarriedAsData
@@ -325,8 +325,8 @@ metadata:
           A recovery whose stored form already contains the string "ha-axi", which no
           other caller can then reuse.
         implementedBy:
-          - axi_core::conformance::WireFacts.haRecoveryLines
-          - axi_core::conformance::WireFacts.plexRecoveryLines
+          - axi_toolkit::conformance::WireFacts.haRecoveryLines
+          - axi_toolkit::conformance::WireFacts.plexRecoveryLines
 
     # ==================================================================== REDACTION
     - requirement.functional:
@@ -350,7 +350,7 @@ metadata:
                 A credential shape one tool catches today and this package lets through
                 after the tools adopt it.
               implementedBy:
-                - axi_core::conformance::WireFacts.redactionSamples
+                - axi_toolkit::conformance::WireFacts.redactionSamples
           - requirement.functional:
               name: everyCredentialShapeInUseIsExpressible
               level: 5
@@ -362,7 +362,7 @@ metadata:
                 A tool-specific pattern that cannot be registered, so the tool keeps a
                 private copy of the redactor and the drift begins again.
               implementedBy:
-                - axi_core::conformance::PopulationFacts.redactionShapeCells
+                - axi_toolkit::conformance::PopulationFacts.redactionShapeCells
 
     # ================================================================ ENVIRONMENT
     - requirement.functional:
@@ -387,9 +387,9 @@ metadata:
                 A configuration error whose wording changed on extraction, breaking a
                 tool's own assertion on it.
               implementedBy:
-                - axi_core::conformance::WireFacts.haCredentialMessages
-                - axi_core::conformance::WireFacts.plexCredentialMessages
-                - axi_core::conformance::CapabilityFacts.envConfigErrorCodes
+                - axi_toolkit::conformance::WireFacts.haCredentialMessages
+                - axi_toolkit::conformance::WireFacts.plexCredentialMessages
+                - axi_toolkit::conformance::CapabilityFacts.envConfigErrorCodes
           - requirement.functional:
               name: bothToolsUrlNormalisationIsReproduced
               level: 5
@@ -401,8 +401,8 @@ metadata:
                 A bare host that silently became http:// for the tool whose default is
                 TLS, sending its token in the clear.
               implementedBy:
-                - axi_core::conformance::WireFacts.haNormalizedUrls
-                - axi_core::conformance::WireFacts.plexNormalizedUrls
+                - axi_toolkit::conformance::WireFacts.haNormalizedUrls
+                - axi_toolkit::conformance::WireFacts.plexNormalizedUrls
           - requirement.functional:
               name: everyCredentialSpecInUseIsExpressible
               level: 5
@@ -414,7 +414,7 @@ metadata:
                 A tool difference with nowhere to go, so that tool keeps its own copy of
                 the loader.
               implementedBy:
-                - axi_core::conformance::PopulationFacts.credentialSpecCells
+                - axi_toolkit::conformance::PopulationFacts.credentialSpecCells
 
     # =============================================================== ARCHITECTURAL
     - requirement.architectural:
@@ -427,10 +427,10 @@ metadata:
           A fix landing in one tool's copy and not the other's, invisible until someone
           runs both against the same fixtures.
         implementedBy:
-          - axi_core::conformance::DifferentialFacts.encoderDigest
-          - axi_core::conformance::DifferentialFacts.errorContract
-          - axi_core::conformance::DifferentialFacts.redactionContract
-          - axi_core::conformance::DifferentialFacts.credentialContract
+          - axi_toolkit::conformance::DifferentialFacts.encoderDigest
+          - axi_toolkit::conformance::DifferentialFacts.errorContract
+          - axi_toolkit::conformance::DifferentialFacts.redactionContract
+          - axi_toolkit::conformance::DifferentialFacts.credentialContract
 
     - requirement.architectural:
         name: thePureModulesImportNoHttpLibrary
@@ -441,7 +441,7 @@ metadata:
         counterexample: >-
           A tool that installed with one dependency finding it now installs with three.
         implementedBy:
-          - axi_core::conformance::CapabilityFacts.errorTypeNames
+          - axi_toolkit::conformance::CapabilityFacts.errorTypeNames
 
     - requirement.architectural:
         name: noCheckCarriesAHandTypedExpectedValue
@@ -453,8 +453,8 @@ metadata:
           A check asserting equality against a literal somebody believed was true of the
           authority -- which is the belief the check exists to test.
         implementedBy:
-          - axi_core::conformance::CapabilityFacts.toonFixtureDigests
-          - axi_core::conformance::WireFacts.toonEncodeCases
+          - axi_toolkit::conformance::CapabilityFacts.toonFixtureDigests
+          - axi_toolkit::conformance::WireFacts.toonEncodeCases
 
     - requirement.architectural:
         name: noCheckIsVacuous
@@ -466,8 +466,8 @@ metadata:
           A check that has never failed, which is indistinguishable from a check that
           cannot.
         implementedBy:
-          - axi_core::conformance::PopulationFacts.recoveryShapeCells
-          - axi_core::conformance::WireFacts.redactionSamples
+          - axi_toolkit::conformance::PopulationFacts.recoveryShapeCells
+          - axi_toolkit::conformance::WireFacts.redactionSamples
 
     # ------------------------------------------------------------------- planned
     # The domain tier. Declared now because the layout it lands in is decided and the
@@ -479,7 +479,7 @@ metadata:
         status: planned
         disposition: deferred
         trackedBy:
-          - "axi-core-arch-m3 report, section 10, steps 2 and 3"
+          - "axi-toolkit-arch-m3 report, section 10, steps 2 and 3"
         statement: >-
           The two domain halves -- the Home Assistant service model and the Plex id and
           filter language -- move here behind the toolkit, each in its own change.

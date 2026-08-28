@@ -14,8 +14,8 @@ import json
 
 import pytest
 
-from axi_core import errors
-from axi_core.errors import (
+from axi_toolkit import errors
+from axi_toolkit.errors import (
     ApiError,
     AuthFailed,
     AxiError,

@@ -89,7 +89,7 @@ def parse(text: str, tool: str) -> Recovery:
 
     Succeeds for any line a tool would actually print: prose that fits no structured
     kind becomes a note carrying the same bytes with the tool's name replaced by
-    :data:`~axi_core.errors.TOOL_SLOT`. An empty line raises, because an empty
+    :data:`~axi_toolkit.errors.TOOL_SLOT`. An empty line raises, because an empty
     suggestion is worse than none -- it occupies the slot that should have held the
     fix -- and the tools already drop blank help lines before printing them. It
     is the caller's job to notice that -- ``kind == "note"`` on something that looks

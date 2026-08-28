@@ -10,8 +10,8 @@ owning tool's name baked in at the point the error is raised --
 ``help_lines=["Run `ha-axi area list` to see the areas that exist"]`` -- so the
 sentence belongs to one tool forever. Here the same fact is
 :func:`run(("area", "list"), purpose="to see the areas that exist")`, and the tool's
-name arrives when somebody renders it: :mod:`axi_core.render.cli` for a shell,
-:mod:`axi_core.render.prose` for a caller that will never run one.
+name arrives when somebody renders it: :mod:`axi_toolkit.render.cli` for a shell,
+:mod:`axi_toolkit.render.prose` for a caller that will never run one.
 
 The vocabulary is closed -- :data:`KINDS` is the whole of it -- and every kind is a
 :class:`Recovery` with the same shape, so a recovery survives ``as_dict`` /
@@ -390,7 +390,7 @@ class AxiError(Exception):
     on and no table can ever complete.
 
     There is deliberately no ``help_lines``. Rendered lines are what
-    :mod:`axi_core.render` produces from ``recovery`` at the moment somebody knows
+    :mod:`axi_toolkit.render` produces from ``recovery`` at the moment somebody knows
     which tool is asking.
     """
 
