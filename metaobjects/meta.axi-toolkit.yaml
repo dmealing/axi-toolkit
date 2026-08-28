@@ -479,7 +479,7 @@ metadata:
         status: planned
         disposition: deferred
         trackedBy:
-          - "axi-toolkit-arch-m3 report, section 10, steps 2 and 3"
+          - "axi-core-arch-m3 report, section 10, steps 2 and 3"
         statement: >-
           The two domain halves -- the Home Assistant service model and the Plex id and
           filter language -- move here behind the toolkit, each in its own change.
