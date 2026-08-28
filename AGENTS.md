@@ -45,12 +45,16 @@ weaken a rule to make a commit pass, and do not bypass the hooks.
 **There are three surfaces and the third is not a file.** A pull request title and body
 are published the moment they are written, are in no checkout, pass under no hook, and
 can be edited after every other check has run. The pipeline's own document step writes
-into the body, pasting captured pytest output whose header carries a `rootdir:` line
-holding an absolute path; that has published a home directory three times across two
-sibling repositories with every check green each time. `edited` in `hygiene.yml`'s
-trigger list is the whole mechanism — without it the check scans the empty original
-body and passes. If the guard fires on a pull request body, **edit the body**; never
-weaken the guard.
+into the body, pasting captured pytest output that carries absolute paths on two lines:
+the header's `rootdir:` line, and the warnings summary, which prints the site-packages
+path of the interpreter that raised the warning — a path no choice of capture directory
+moves, so running an evidence capture from a scratch directory neutralises the first
+line and leaves the second fully intact. The first line published a home directory
+three times across two sibling repositories with every check green each time; the
+second did it in this repository's own body, and the guard caught it. `edited` in
+`hygiene.yml`'s trigger list is the whole mechanism — without it the check scans the
+empty original body and passes. If the guard fires on a pull request body, **edit the
+body**; never weaken the guard.
 
 **A file that cannot carry a marker** — JSON has no comment syntax, and vendored
 third-party data must stay byte-for-byte — is exempted in `PATH_ALLOWANCES`, per path

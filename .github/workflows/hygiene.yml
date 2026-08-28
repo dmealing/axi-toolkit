@@ -22,15 +22,20 @@
 #
 # The first is a leak scan of the title and body. This repository is public and
 # the pipeline's own document step writes into the body, pasting captured pytest
-# output whose header carries a `rootdir:` line holding an absolute path. That
-# has published a home directory three times across two sibling repositories,
-# with every check green each time — because nothing scanned the one artefact
-# that is neither a tracked file nor a commit message. This repository is new and
-# is about to receive the same pipeline-generated bodies, which is why the guard
-# is here from the first commit rather than after the first leak. `edited` is
-# what makes it work at all: the document step writes the evidence in *after*
-# the pull request is opened, so a check that fired only on `opened` would pass
-# the empty original body.
+# output that carries absolute paths on two lines: the header's `rootdir:` line,
+# and the warnings summary, which prints the site-packages path of the
+# interpreter that raised the warning — a path no choice of capture directory
+# moves. The first line published a home directory three times across two
+# sibling repositories, with every check green each time, because nothing
+# scanned the one artefact that is neither a tracked file nor a commit message.
+# The guard went in here from the first commit for exactly that, rather than
+# after this repository's first leak — which came anyway, through the second
+# line, in a body whose capture had been run from a scratch directory precisely
+# so the `rootdir:` line would read harmless. The guard caught it, and `edited`
+# re-ran it green on the fixed body. `edited` is what makes the check work at
+# all: the document step writes the evidence in *after* the pull request is
+# opened, so a check that fired only on `opened` would pass the empty original
+# body.
 #
 # The second is release-please's: a body that names the commit-override marker
 # replaces the merged commit message with whatever follows the word, and a
