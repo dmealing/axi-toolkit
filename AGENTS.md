@@ -451,6 +451,78 @@ is on PyPI**, wheel and sdist with attestations, and the trusted publisher and t
 environment are configured. The one-time account actions are done; a release cut from
 `main` publishes without further setup.
 
+### Forcing a release when every landed commit is hidden
+
+`main` can sit ahead of the published package with every check green, and it did: 0.4.0
+was tagged, three commits landed after it -- two `refactor(conformance):` and one
+`build:` -- and no release followed. That is not a fault. All three types are hidden in
+the changelog table, so release-please renders a section that is a header line and
+nothing else, `changelogEmpty` in `strategies/base.js` (`entry.split('\n').length <= 1`)
+is true, `buildReleasePullRequest` returns `undefined`, and the run exits 0 having
+decided correctly that nothing user-facing landed. Nothing reports the drift; it is
+visible only by comparing the tag against `main`.
+
+Bringing the two back into line is **one commit whose last footer is
+`Release-As: <version>`**. Three things about it are easy to get wrong, and two of them
+were got wrong before this note existed.
+
+- **Touch no version string and no changelog.** `pyproject.toml`,
+  `src/axi_toolkit/__init__.py` (it is in `extra-files`) and
+  `.release-please-manifest.json` are release-please's to write, in its own release PR,
+  and the `CHANGELOG.md` section is generated from the commits. A hand-bump does not seed
+  that PR, it collides with it. The forcing commit carries prose and the footer, nothing
+  else.
+- **The section table this repository uses is not the one the preset documents.**
+  `"release-type": "python"` selects `strategies/python.js`, which injects its own
+  `CHANGELOG_SECTIONS` before `DefaultChangelogNotes` is reached, and that table differs
+  from `conventional-changelog-conventionalcommits`' default on exactly one row: `docs`
+  is **visible** here and hidden there. `refactor`, `build`, `chore`, `test`, `ci` and
+  `style` are hidden in both. So "does a `docs:` commit produce an entry" is a question
+  whose answer depends on the release type, and reading it off the preset gives the
+  wrong one.
+- **A commit carrying `Release-As:` is exempt from `hidden` anyway.** The preset's own
+  `transform` sets `discard = false` when the footer or the body matches its
+  `release-as:` pattern, before it consults the type at all. Measured across the
+  plausible types, with the footer and without:
+
+  | type | in the table | with the footer | without it |
+  | --- | --- | --- | --- |
+  | `docs` | visible | `### Documentation` | `### Documentation` |
+  | `feat` | visible | `### Features` | `### Features` |
+  | `build` | hidden | `### Build System` | nothing; no release PR |
+  | `refactor` | hidden | `### Code Refactoring` | nothing; no release PR |
+  | `chore` | hidden | `### Miscellaneous Chores` | nothing; no release PR |
+
+  **The type does not decide whether the release happens. It decides the heading the one
+  entry lands under.** So choose it to describe the commit -- `docs:` for a prose change
+  -- rather than to escape a flag it does not have to escape. `docs:` has the smaller
+  blast radius as well: it is the only honest choice here that renders on its own account
+  rather than on the exemption, so it still works if that exemption ever goes.
+
+**The version is a judgement about the commits being released, not about the forcing
+one.** Read the landed commits: if nothing a consumer imports behaves differently, it is
+a patch, whatever `bump-minor-pre-major` would have done with the types involved.
+`Release-As:` overrides the computed bump entirely -- `buildNewVersion` takes the note's
+text ahead of the versioning strategy -- so the number is asserted and has to be argued
+for in the commit message.
+
+**The footer has to be the last thing in the message that reaches `main`, and a squash
+can move it.** release-please finds it in the parsed syntax tree: a `<footer>` whose token
+is `release-as` becomes a note titled `RELEASE AS`, and `buildNewVersion` takes it. What
+loses the version is that footer ceasing to be a `<footer>` -- reflowed into the tail of
+the preceding paragraph, or dropped, it is body text, the tree has no footer node at all,
+and release-please computes a bump instead of taking the number. Insisting it be *last*
+is what makes that visible: a message ending in anything else has had something done to
+it. None of it is caught by `scripts/commitcheck.py`, which exits 0 on the dropped
+message, on the reflowed one and on a message with a trailer appended after the footer,
+all three measured -- it answers "would release-please read this commit at all", which is
+a different question and not this one. Verify the footer itself by driving
+`vendor/conventional-commits-parser/` over the message and counting `footer` nodes:
+exactly one, its token `release-as`, and it the last. Put the footer last in the pull
+request body too. The squash message is drawn from the commit message or from the body
+depending on a repository setting nobody checks at merge time, and a footer in both is in
+whichever one is used.
+
 ### Why `bump-minor-pre-major` is on
 
 `release-please-config.json` sets `"bump-minor-pre-major": true`. That is deliberate, not
