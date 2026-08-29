@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.1](https://github.com/dmealing/axi-toolkit/compare/v0.4.0...v0.4.1) (2026-08-29)
+
+
+### Documentation
+
+* record the forced-release procedure and correct the stale publish job comment ([#13](https://github.com/dmealing/axi-toolkit/issues/13)) ([4dc2952](https://github.com/dmealing/axi-toolkit/commit/4dc295236bd698943b20b9ec97384b0352e5b2c4))
+
 ## [0.4.0](https://github.com/dmealing/axi-toolkit/compare/v0.3.0...v0.4.0) (2026-08-29)
 
 

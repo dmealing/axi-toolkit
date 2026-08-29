@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "axi-toolkit"
-version = "0.4.0"
+version = "0.4.1"
 description = "Shared toolkit for Agent eXperience Interface (AXI) command-line tools: a strict TOON encoder with the specification's own fixtures, errors that carry recovery as data, redaction, and environment-only credentials"
 readme = "README.md"
 license = { text = "MIT" }
