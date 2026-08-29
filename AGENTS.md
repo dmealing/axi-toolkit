@@ -78,6 +78,22 @@ case is a synthetic Windows drive path.
   CLIs *and* the thing that lets the byte-for-byte claim cover the whole corpus rather
   than a chosen sample. A line it cannot express structurally becomes a note — which is
   a reported gap, not a silent skip.
+
+  **Its output is to be read, not pasted.** `parse` matches the first backticked span,
+  so a line that merely *cites* something in backticks parses as a `retry` whose
+  `purpose` is the rest of the sentence — ``Pass the number after the last slash, which
+  is what `rating_key:` reports`` becomes "retry with `rating_key:`". That renders back
+  through `cli.line` byte for byte, which is why it passes, and `render/prose.py` then
+  writes "…, then run it again with plex-axi." Those lines are authored as notes. The
+  rule: a backticked span that is a citation rather than a thing to type is prose.
+
+  **`mentions_tool` is the wrong gate on a hand-authored intent.** It answers "will
+  rendering this name a tool", and for an intent `parse` produced that is sound — `parse`
+  has already put any tool name into `{tool}`. For an intent somebody wrote, a note
+  holding the literal string `plex-axi` returns false and sails through. The check that
+  matters is unconditional: render for *another* tool name and require that the first
+  tool's name is absent. That hole was live in `_plex_subject_recovery` until a mutation
+  found it.
 - **`redact.py`** — order is literals → bearer → registered shapes → JWT. For the five
   shapes the two tools carry the order is **not** observable (each rule leaves a
   placeholder the next cannot match), which is why neither tool wrote it down. It is
@@ -94,6 +110,28 @@ case is a synthetic Windows drive path.
   proves it rather than asserting it. Pure and stdlib-only (`difflib`): the caller
   fetches the model and decides whether the read is worth paying for, which is why the
   `ha` extra is still empty and the distribution still declares no runtime dependency.
+- **`plex/ids.py` + `plex/filters.py`** — the second domain module and the first move
+  that was *not* verbatim. `ids.py` came whole; `filters.py` is the pure half of the
+  tool's `music.py`, and the half is the judgement: anything taking a `server`, a
+  `section` or a page of `items` stayed, the `plexapi` exception classification stayed,
+  and **the `--fields` row vocabulary stayed** — `ROW_FIELDS`, the three row builders,
+  `rows_for`, `with_track_artist`, `tag_titles`, `number`, `date_only`, `_seconds`. A
+  two-arm adjudication put those on the surface-specific side, and whether to move them
+  anyway is a question held for the maintainer. Do not move them and do not re-propose
+  it. `SEARCH_METHODS` and `GROUP_BY_TITLE` stayed too, and they are the ones that will
+  look like an oversight: both are plain literals with no import behind them, so "pure"
+  in the mechanical sense. They name `MusicSection` methods and a parameter only the
+  probing layer sends, and they have exactly one caller each, which stayed. They travel
+  with `section.py`. The one rename: `_assert_server_side` is `assert_server_side`, because its caller
+  is now a module that stayed behind and a leading underscore on a name another module
+  must import says the opposite of what it means.
+
+  **Every recovery line in both modules became intent**, which is what makes this move
+  non-mechanical. `validate_rating_key` used to take `invocation="plex-axi track"` and
+  now takes `command=("track",)` — the words *after* the name. It refuses a bare string
+  outright, and that refusal is load-bearing: `run()` calls `tuple()` on its argument, so
+  a string would become one argument per character and render as a line that reads
+  plausibly and is wrong.
 
 ## The requirements layer
 
@@ -155,6 +193,31 @@ Consequences worth keeping straight:
   no more: drift introduced **here** goes red on the next `pytest`, drift introduced
   **there** goes red at the next `reqgen capture`. It is meant to be deleted when the
   tool imports this module instead of carrying its own copy.
+- **A gate states what the move left invariant, and a rewrite leaves different things
+  invariant than a copy does.** `haServiceModelDefinitions` works because that module
+  moved verbatim; the Plex move deliberately rewrote every recovery line, so a digest
+  would have failed by construction and weakening it to pass would have been worse than
+  having no gate. What is invariant there is the **surface** and the **rendered
+  behaviour**, and those are the two facts:
+  - `plexDomainDefinitions` (`CapabilityFacts`, equality) — `ids.<name>` for every public
+    top-level name in the tool's `ids.py`, which moved whole, and `filters.<name>` for
+    every entry of `_PLEX_FILTER_BOUNDARY` in `projections.py`, which is the declared
+    move list and which the capture refuses to record a missing name from. Honest about
+    its reach: it catches a moved definition renamed or dropped on either side, and it
+    does **not** catch a new pure function appearing in the tool's `music.py`. Deciding
+    that mechanically was tried and abandoned — every rule that admits `stars` also
+    admits the row vocabulary, which must not move.
+  - `plexIdBehaviour` and `plexFilterBehaviour` (`WireFacts`, byte equality per case) —
+    91 scenarios, each run against the tool's copy and against this one. A value is
+    compared as its value; a refusal as its type, code, message and the recovery
+    **rendered for `plex-axi`**. That comparison is the byte-for-byte claim, made over
+    the templated lines the literal corpus in `plexRecoveryLines` cannot reach.
+- **The capture executes the tool's `music.py` without importing it.** That module
+  imports the tool's transport and, through it, `plexapi` — which the capture
+  interpreter does not have and must not need. `_source_filters()` filters the module's
+  own syntax tree down to its stdlib imports and the boundary's definitions and executes
+  that subset against the tool's own error types, so what is measured is the tool's code
+  rather than a paraphrase of it.
 - **Do not model the TOON encoder's row shapes.** A prior measurement put that at 155
   lines of metadata replacing 50 lines of Python plus a build step and a large
   dependency, for no drift the checksummed fixtures do not already catch.
@@ -191,7 +254,16 @@ the committed capture.
   forty-five address the module. The rest drive its commands end to end against a REST
   double and cannot follow the module out, because what they test is the command path.
   Four cases came across unchanged; the other eleven functions arrived uncovered and are
-  stated directly here. Expect that ratio again on the Plex half.
+  stated directly here.
+- **The Plex half predicted that ratio and came in under it.** `tests/test_plex_ids.py`
+  ported six of the ten test functions in the tool's 149-line `test_ids.py`; the other
+  four drive `search`, `track`, `rate` and `playlist` against a Plex double.
+  `tests/test_plex_filters.py` ported **nothing**, because there was nothing to port:
+  the tool has *no* direct test of any function in the pure half of `music.py`. Every
+  one of them is reached only through a command. So a rating scale, an operator that
+  had already been wrong once on every real server, and a date grammar all arrived with
+  no direct coverage; both files above are what they have now. Assume the same for the
+  probing layer when it moves, and budget for writing the suite rather than moving it.
 
 ## Release
 
@@ -205,10 +277,13 @@ environment are configured. The one-time account actions are done; a release cut
 
 `release-please-config.json` sets `"bump-minor-pre-major": true`. That is deliberate, not
 an oversight to be tidied away. This package is pre-1.0 **on purpose**: the extraction is
-not finished. Step 2's first half has landed — `servicemodel.py` is here as
-`axi_toolkit.ha.services` — but the tool has not yet adopted it, and step 3's Plex
-id/filter language has not moved at all. Both remaining halves change the public surface
-substantially. It stays in 0.x until they have landed.
+not finished. Step 2 has landed — `servicemodel.py` is here as `axi_toolkit.ha.services`
+— and so has step 3's first half, the Plex id and filter language as `axi_toolkit.plex`.
+Neither tool has adopted either yet, and step 3's second half, the probing layer that
+reads a section's advertised fields plus the `plexapi` exception classification, has not
+moved. That remainder changes the public surface substantially, and adoption is what
+will show whether the surface here is the right one. It stays in 0.x until both have
+landed.
 
 Without the flag, release-please applies strict semver, and the rename commit's `feat!:`
 marker alone would have made the very first artifact ever to appear on PyPI a 1.0.0 — a
