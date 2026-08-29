@@ -43,7 +43,7 @@ from annotations — so there is no adapter worth writing.
 
 ## Recovery is data, never a rendered line
 
-This is the one part of the extraction that was not mechanical, and it is the reason a
+This is the first part of the extraction that was not mechanical, and it is the reason a
 single module can serve a CLI and a caller that will never run one.
 
 Today a tool raises `help_lines=["Run \`ha-axi area list\` to see the areas that exist"]`.
