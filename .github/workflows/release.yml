@@ -111,14 +111,13 @@ jobs:
             echo "what proves that is the truth rather than a parse failure."
           } >> "$GITHUB_STEP_SUMMARY"
 
-  # NOT YET REACHABLE, on purpose. The PyPI project does not exist: registering
-  # the name is a one-time account action only the maintainer can perform, and
-  # nothing here should attempt it. The job is written now and gated behind
-  # `release_created`, which is only true after a release PR merges, so it
-  # cannot fire before the name is claimed. Trusted publishing needs the
-  # `pypi` environment and a PyPI publisher configured for this repository
-  # before the first release; until then, merging a release PR would fail this
-  # job and nothing else.
+  # Gated behind `release_created`, which is only true after a release PR
+  # merges, so a plain push to `main` never publishes. That gate is what let
+  # this job be committed before the PyPI project existed: it could not fire
+  # until the one-time account actions only the maintainer could perform --
+  # claiming the name, the `pypi` environment, the trusted publisher -- were
+  # done. They are done and the job has fired; the Release section of
+  # AGENTS.md owns the current state of publishing, not this comment.
   publish:
     name: publish to PyPI
     needs: release-please
