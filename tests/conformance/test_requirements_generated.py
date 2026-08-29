@@ -54,13 +54,6 @@ CHECKS = {
             "thePureModulesImportNoHttpLibrary",
         ),
     ),
-    "plexDomainDefinitions": (
-        "equal",
-        (
-            "theDomainTierFollows.thePlexIdAndFilterLanguageFollows",
-            "anExtractedModuleIsGatedAgainstItsOriginUntilTheToolTakesIt",
-        ),
-    ),
     "toonCaseOptionNames": (
         "equal",
         (
@@ -136,22 +129,6 @@ CHECKS = {
             "credentialsComeFromTheEnvironmentOnly.bothToolsMessagesAreReproduced",
         ),
     ),
-    "plexFilterBehaviour": (
-        "wire",
-        (
-            "recoveryIsCarriedAsData",
-            "theDomainTierFollows.thePlexIdAndFilterLanguageFollows",
-            "anExtractedModuleIsGatedAgainstItsOriginUntilTheToolTakesIt",
-        ),
-    ),
-    "plexIdBehaviour": (
-        "wire",
-        (
-            "recoveryIsCarriedAsData",
-            "theDomainTierFollows.thePlexIdAndFilterLanguageFollows",
-            "anExtractedModuleIsGatedAgainstItsOriginUntilTheToolTakesIt",
-        ),
-    ),
     "plexNormalizedUrls": (
         "wire",
         (
@@ -212,7 +189,6 @@ SUBJECTS = {
     "errorExitCodes": lambda captured: projections.subject_error_exit_codes(),
     "errorFaultClasses": lambda captured: projections.subject_error_fault_classes(),
     "errorTypeNames": lambda captured: projections.subject_error_type_names(),
-    "plexDomainDefinitions": lambda captured: projections.subject_plex_domain_definitions(),
     "toonCaseOptionNames": lambda captured: projections.subject_toon_case_option_names(),
     "toonEncodeCaseCount": lambda captured: projections.subject_toon_encode_case_count(),
     "toonExercisedDelimiters": lambda captured: projections.subject_toon_exercised_delimiters(),
@@ -225,8 +201,6 @@ SUBJECTS = {
     "haNormalizedUrls": lambda captured: projections.subject_ha_normalized_urls,
     "haRecoveryLines": lambda captured: projections.subject_ha_recovery_lines,
     "plexCredentialMessages": lambda captured: projections.subject_plex_credential_messages,
-    "plexFilterBehaviour": lambda captured: projections.subject_plex_filter_behaviour,
-    "plexIdBehaviour": lambda captured: projections.subject_plex_id_behaviour,
     "plexNormalizedUrls": lambda captured: projections.subject_plex_normalized_urls,
     "plexRecoveryLines": lambda captured: projections.subject_plex_recovery_lines,
     "redactionSamples": lambda captured: projections.subject_redaction_samples,
@@ -283,15 +257,6 @@ def test_error_type_names():
     Breaking it looks like: A tool taking this package and finding an exit code or an error type it used has gone missing.
     """
     _judge("errorTypeNames")
-
-
-def test_plex_domain_definitions():
-    """The Plex id language and the pure half of the filter language are in this package, offering the same surface and answering the same way as the tool they came from -- with every recovery line carried as intent rather than as the tool's own words.
-
-    Requirement: theDomainTierFollows.thePlexIdAndFilterLanguageFollows, anExtractedModuleIsGatedAgainstItsOriginUntilTheToolTakesIt (functional, live).
-    Breaking it looks like: A move that changed what a refusal says on the way, so the tool taking it back prints a line its own suite fails on; or one that reproduced the line by storing the tool's name in it, which no sibling could then reuse.
-    """
-    _judge("plexDomainDefinitions")
 
 
 def test_toon_case_option_names():
@@ -400,24 +365,6 @@ def test_plex_credential_messages():
     Breaking it looks like: A configuration error whose wording changed on extraction, breaking a tool's own assertion on it.
     """
     _judge("plexCredentialMessages")
-
-
-def test_plex_filter_behaviour():
-    """A recovery is structured intent, never a rendered line: the tool's name is supplied when it is rendered and is not present when it is raised.
-
-    Requirement: recoveryIsCarriedAsData, theDomainTierFollows.thePlexIdAndFilterLanguageFollows, anExtractedModuleIsGatedAgainstItsOriginUntilTheToolTakesIt (architectural, live).
-    Breaking it looks like: A recovery whose stored form already contains the string "ha-axi", which no other caller can then reuse.
-    """
-    _judge("plexFilterBehaviour")
-
-
-def test_plex_id_behaviour():
-    """A recovery is structured intent, never a rendered line: the tool's name is supplied when it is rendered and is not present when it is raised.
-
-    Requirement: recoveryIsCarriedAsData, theDomainTierFollows.thePlexIdAndFilterLanguageFollows, anExtractedModuleIsGatedAgainstItsOriginUntilTheToolTakesIt (architectural, live).
-    Breaking it looks like: A recovery whose stored form already contains the string "ha-axi", which no other caller can then reuse.
-    """
-    _judge("plexIdBehaviour")
 
 
 def test_plex_normalized_urls():

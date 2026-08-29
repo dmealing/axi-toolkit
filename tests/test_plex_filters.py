@@ -10,9 +10,11 @@ nothing to port and nothing to inherit.
 The Home Assistant half predicted this ratio and got it roughly right: four cases
 of forty-five lines came across there, and none came across here.
 
-What the conformance layer holds instead is the *comparison*: every scenario in
-``plexFilterBehaviour`` is run against the tool's own copy and against this one,
-and the two must answer identically. This file says what the answers mean.
+For a while the conformance layer held the *comparison* alongside this file:
+``plexFilterBehaviour`` ran sixty scenarios against the tool's own copy and against
+this one and required identical answers. The tool has since deleted its copy and
+imports this module, so that gate has been retired and **this file is what states
+this module's behaviour** -- see "Retired gates" in AGENTS.md.
 """
 
 from __future__ import annotations
