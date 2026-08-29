@@ -28,8 +28,10 @@ least" is not defined for any type, so "at least four stars" is written as
 
 **Recovery is data here, and was a rendered line in the tool.** Every
 ``help_lines`` entry became a :class:`~axi_toolkit.errors.Recovery`; the tool's
-name arrives at :mod:`axi_toolkit.render.cli`, and the conformance layer proves
-the bytes are the ones the tool prints today rather than asserting it.
+name arrives at :mod:`axi_toolkit.render.cli`. The conformance layer proved the
+bytes were the tool's own while the tool still carried its copy; that gate is
+retired now the tool imports this module, and ``tests/test_plex_filters.py`` is
+what states this module's behaviour -- see "Retired gates" in AGENTS.md.
 """
 
 from __future__ import annotations
