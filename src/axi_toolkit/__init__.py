@@ -27,6 +27,6 @@ HTTP or WebSocket client, the distribution declares no runtime dependency, and
 ``tests/test_purity.py`` is what keeps both true.
 """
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 __all__ = ["__version__"]

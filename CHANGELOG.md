@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/dmealing/axi-toolkit/compare/v0.2.0...v0.3.0) (2026-08-29)
+
+
+### Features
+
+* **ha:** move the Home Assistant service model in as axi_toolkit.ha.services ([#6](https://github.com/dmealing/axi-toolkit/issues/6)) ([8397ede](https://github.com/dmealing/axi-toolkit/commit/8397ede6a1aa6fe815ed27547a7313cfcf160c7c))
+
 ## [0.2.0](https://github.com/dmealing/axi-toolkit/compare/v0.1.0...v0.2.0) (2026-08-28)
 
 
