@@ -49,7 +49,8 @@ tar -xzf conventional-commits-parser-<version>.tgz         # extracts to package
 cp package/lib/{parser,scanner,type-checks,codes}.js vendor/conventional-commits-parser/lib/
 cp package/LICENSE.txt vendor/conventional-commits-parser/LICENSE
 (cd vendor/conventional-commits-parser && sha256sum lib/*.js LICENSE) > vendor/conventional-commits-parser/checksums.txt
-pytest tests/test_commit_message.py
+scripts/dev-setup.sh
+.venv/bin/pytest tests/test_commit_message.py
 ```
 
 Then update the table above, and re-read `THROW_SITES` in `scripts/commitcheck.py`: the count is

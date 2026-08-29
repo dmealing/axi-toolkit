@@ -115,11 +115,11 @@ source CLIs read from a local checkout at capture time. All four projection kind
 therefore run offline, in ordinary CI, with no secrets.
 
 ```sh
-python3.11 -m pip install -e '.[dev,reqgen]'
-python3.11 scripts/reqgen.py list       # the declaration as a table
-python3.11 scripts/reqgen.py check      # fail if the generated checks are stale
+scripts/dev-setup.sh --reqgen                 # .venv, with the 3.11 toolchain in it
+.venv/bin/python scripts/reqgen.py list       # the declaration as a table
+.venv/bin/python scripts/reqgen.py check      # fail if the generated checks are stale
 AXI_TOOLKIT_SOURCE_HA=<checkout> AXI_TOOLKIT_SOURCE_PLEX=<checkout> \
-  python3.11 scripts/reqgen.py capture  # re-read the authorities
+  .venv/bin/python scripts/reqgen.py capture  # re-read the authorities
 ```
 
 The generator is only worth its lines because of four things a hand-written suite does
@@ -136,12 +136,21 @@ checks it generates are committed and run under plain pytest on 3.9 upwards.
 ## Development
 
 ```sh
-python -m pip install -e '.[dev]'
-pytest                    # the whole suite; no credentials, no network
-ruff check . && ruff format --check .
+scripts/dev-setup.sh      # creates .venv and installs .[dev] into it
+.venv/bin/pytest          # the whole suite; no credentials, no network
+.venv/bin/ruff check . && .venv/bin/ruff format --check .
 scripts/install-hooks.sh  # the pre-commit and commit-msg guards
 scripts/leakcheck.py      # what those hooks run
 ```
+
+**Install into `.venv`, never into the ambient interpreter.** The tools that consume this
+package are normally installed as isolated user-level tools, and a bare editable install
+outside a virtualenv overwrites the launcher for one of them with a copy bound to
+whatever interpreter was ambient — so deleting the checkout later breaks a command the
+reader depends on and never installed from here. `scripts/dev-setup.sh` is the whole
+setup for that reason: it puts the same `.venv` in place that `.github/workflows/ci.yml`
+builds, and no other Python environment, console script or site-packages directory is
+created, modified or removed.
 
 This repository is public. `scripts/leakcheck.py` blocks installation-specific data —
 addresses, credentials, home paths, hardware identifiers — from files, commit messages
