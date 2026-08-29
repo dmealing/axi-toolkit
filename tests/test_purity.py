@@ -60,6 +60,9 @@ MODULES = (
     "axi_toolkit.render.prose",
     "axi_toolkit.ha",
     "axi_toolkit.ha.services",
+    "axi_toolkit.plex",
+    "axi_toolkit.plex.ids",
+    "axi_toolkit.plex.filters",
 )
 
 

@@ -102,6 +102,9 @@ metadata:
           - field.string[]:
               name: haServiceModelDefinitions
               required: true
+          - field.string[]:
+              name: plexDomainDefinitions
+              required: true
 
     # ------------------------------------------------------- 2. population facts
     # "Every shape reality contains has a branch here." The relation is COVERAGE:
@@ -163,6 +166,16 @@ metadata:
               required: true
           - field.object:
               name: plexNormalizedUrls
+              objectRef: WireCase
+              isArray: true
+              required: true
+          - field.object:
+              name: plexIdBehaviour
+              objectRef: WireCase
+              isArray: true
+              required: true
+          - field.object:
+              name: plexFilterBehaviour
               objectRef: WireCase
               isArray: true
               required: true
@@ -330,6 +343,8 @@ metadata:
         implementedBy:
           - axi_toolkit::conformance::WireFacts.haRecoveryLines
           - axi_toolkit::conformance::WireFacts.plexRecoveryLines
+          - axi_toolkit::conformance::WireFacts.plexIdBehaviour
+          - axi_toolkit::conformance::WireFacts.plexFilterBehaviour
 
     # ==================================================================== REDACTION
     - requirement.functional:
@@ -473,13 +488,15 @@ metadata:
           - axi_toolkit::conformance::WireFacts.redactionSamples
 
     # ------------------------------------------------------------ the domain tier
-    # Half delivered. The Home Assistant half is here; the Plex half is not, and
-    # `planned` is the one status whose @implementedBy may dangle, so the half that has
-    # not landed carries no check and counts toward no coverage.
+    # Both halves are here. They were gated differently and had to be: the Home
+    # Assistant half moved verbatim and is judged by its source text, while the Plex
+    # half rewrote every recovery line into intent, so a digest of it would fail by
+    # construction and what is judged instead is the surface it offers and the bytes
+    # it renders.
     - requirement.functional:
         name: theDomainTierFollows
         level: 1
-        status: partial
+        status: live
         trackedBy:
           - "axi-core-arch-m3 report, section 10, steps 2 and 3"
         statement: >-
@@ -504,27 +521,38 @@ metadata:
           - requirement.functional:
               name: thePlexIdAndFilterLanguageFollows
               level: 5
-              status: planned
-              disposition: deferred
+              status: live
               trackedBy:
                 - "axi-core-arch-m3 report, section 10, step 3"
               statement: >-
-                The Plex id and filter language moves here behind the toolkit, in its own
-                change.
+                The Plex id language and the pure half of the filter language are in this
+                package, offering the same surface and answering the same way as the tool
+                they came from -- with every recovery line carried as intent rather than
+                as the tool's own words.
               counterexample: >-
-                Both domain halves landing in one change, so a regression in either has
-                two places to have come from.
+                A move that changed what a refusal says on the way, so the tool taking it
+                back prints a line its own suite fails on; or one that reproduced the line
+                by storing the tool's name in it, which no sibling could then reuse.
+              implementedBy:
+                - axi_toolkit::conformance::CapabilityFacts.plexDomainDefinitions
+                - axi_toolkit::conformance::WireFacts.plexIdBehaviour
+                - axi_toolkit::conformance::WireFacts.plexFilterBehaviour
 
     - requirement.architectural:
         name: anExtractedModuleIsGatedAgainstItsOriginUntilTheToolTakesIt
         status: live
         statement: >-
           While a module lives here and in the tool it came from, the two copies are
-          compared on every run, and the only difference allowed is the docstring
-          reference that could not resolve in both repositories.
+          compared on every run, by whichever comparison states what the move left
+          invariant: source text where the move was verbatim, and the surface plus the
+          rendered answer where it deliberately restated recovery as data.
         counterexample: >-
           A fix landing in the tool's copy and not in this one, so an extraction meant to
           end the duplication doubled it instead -- invisible until somebody diffs two
-          checkouts by hand.
+          checkouts by hand. Or a gate weakened to a comparison the rewrite could pass,
+          which is worse than no gate because it reads as one.
         implementedBy:
           - axi_toolkit::conformance::CapabilityFacts.haServiceModelDefinitions
+          - axi_toolkit::conformance::CapabilityFacts.plexDomainDefinitions
+          - axi_toolkit::conformance::WireFacts.plexIdBehaviour
+          - axi_toolkit::conformance::WireFacts.plexFilterBehaviour

@@ -33,6 +33,8 @@ files instead of re-vendoring 179 cases and hoping they stayed in step.
 | `axi_toolkit.redact` | `register_secret`, `register_pattern`, and one filter with a documented ordering. |
 | `axi_toolkit.envconfig` | Environment-only credentials, control-character rejection, userinfo splitting. |
 | `axi_toolkit.ha.services` | Home Assistant's published service model, read: fields and their selectors, the response mode, the capability a target must have. |
+| `axi_toolkit.plex.ids` | The six `plex://` forms in circulation, and which one is safe to hand a media player. Two of the others break a consumer and one raises inside it. |
+| `axi_toolkit.plex.filters` | The music filter language: stars, field scoping, the one inequality real Plex offers for an integer, relative dates and sort directions. |
 
 What deliberately does **not** exist: an `agent/` package, framework adapters, an MCP
 server, a dual sync/async API, and any client class wrapping an HTTP library. The agent
@@ -75,6 +77,16 @@ The vocabulary is closed — `run`, `retry`, `set_env`, `choose`, `note` — and
 the one kind that may name a tool at all, as the placeholder `{tool}` and never as the
 name. Every literal recovery line both source tools emit today (232 of them) round-trips
 through `parse` and `line` **byte for byte**; that is a generated check, not a claim.
+
+`axi_toolkit.plex` is where that stopped being a round trip and became a rewrite. Its
+two modules came out of a tool whose refusals named it — ``Run `plex-axi search --track
+'<title>'` to get this server's rating key`` — and every one of them is now intent. So a
+digest could not gate the move: the source text was *meant* to change. What is gated
+instead is the behaviour. Ninety-one scenarios run against the tool's own copy and
+against this one, and the refusals are compared as the lines they render for `plex-axi`
+— then rendered a second time under another name, because a line that reproduces the
+tool's bytes by *storing* its name has been copied rather than extracted, and the
+rendered output alone cannot tell those two apart.
 
 ## The requirements layer
 
