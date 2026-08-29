@@ -44,6 +44,10 @@ FORBIDDEN = (
     "metaobjects",
 )
 
+#: Every importable module in the package, packages included. Hand-written because each
+#: name is a subprocess and the list is short -- and checked against the tree below,
+#: because a module that arrives without being added here is one this suite silently
+#: stops making its promise about, which is how the promise would first be broken.
 MODULES = (
     "axi_toolkit",
     "axi_toolkit.errors",
@@ -51,8 +55,11 @@ MODULES = (
     "axi_toolkit.envconfig",
     "axi_toolkit.toon",
     "axi_toolkit.toon_spec",
+    "axi_toolkit.render",
     "axi_toolkit.render.cli",
     "axi_toolkit.render.prose",
+    "axi_toolkit.ha",
+    "axi_toolkit.ha.services",
 )
 
 
@@ -125,6 +132,21 @@ def test_importing_a_module_loads_no_http_library(module):
         name for name in loaded if name.split(".")[0] in FORBIDDEN or name in FORBIDDEN
     )
     assert offenders == [], f"{module} pulled in {offenders}"
+
+
+def test_every_module_in_the_package_is_one_of_the_modules_checked():
+    """The list above is only a promise about the package while it names all of it."""
+    package = ROOT / "src" / "axi_toolkit"
+    found = set()
+    for path in package.rglob("*.py"):
+        if "__pycache__" in path.parts:
+            continue
+        parts = path.relative_to(package.parent).with_suffix("").parts
+        found.add(".".join(parts[:-1] if parts[-1] == "__init__" else parts))
+    assert found == set(MODULES), (
+        "modules not checked for purity: "
+        f"{sorted(found - set(MODULES))}; named but absent: {sorted(set(MODULES) - found)}"
+    )
 
 
 def test_the_whole_package_imports_with_nothing_installed():

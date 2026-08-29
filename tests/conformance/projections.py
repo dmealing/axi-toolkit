@@ -325,6 +325,82 @@ def subject_env_config_error_codes() -> list[str]:
     return _code_literals(tree)
 
 
+# ================================== capability: the extracted domain tier, read twice
+#
+# Until a tool takes the module back from here, two copies of it exist in two
+# repositories -- which is the failure this package was built to end, so it is gated
+# rather than trusted to a memo. The gate is temporary by construction: it compares
+# this package against a source checkout, so it stops having anything to say the day
+# the tool imports this module instead of carrying its own.
+
+
+#: The module in the source tool that ``axi_toolkit.ha.services`` was moved from.
+_HA_SERVICE_MODEL = "servicemodel"
+
+
+def _definition_digests(source: str) -> list[str]:
+    """Every top-level definition as ``<name> <digest>``, plus one row for the module.
+
+    The ``<module>`` row hashes the whole file with its docstring elided, and that
+    elision is the entire allowance the move was granted: the tool's docstring cites a
+    file in its own repository, and the citation would dangle here. Everything else --
+    each definition, the comments between them, the import list, the blank lines -- is
+    inside that digest, so any other difference between the two copies is drift and the
+    row goes red on it.
+
+    The per-definition rows are therefore redundant for detection and are not redundant
+    for reading: a bare digest mismatch says only that something moved, and a set
+    difference over named rows says which function it was.
+    """
+    tree = ast.parse(source)
+    lines = source.splitlines(keepends=True)
+
+    rows: list[str] = []
+    for node in tree.body:
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            names = [node.name]
+        elif isinstance(node, ast.Assign):
+            names = [t.id for t in node.targets if isinstance(t, ast.Name)]
+        elif isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
+            names = [node.target.id]
+        else:
+            continue
+        segment = "".join(lines[node.lineno - 1 : node.end_lineno])
+        rows.extend(f"{name} {_sha256(segment)}" for name in names)
+
+    body = list(lines)
+    first = tree.body[0] if tree.body else None
+    if (
+        isinstance(first, ast.Expr)
+        and isinstance(first.value, ast.Constant)
+        and isinstance(first.value.value, str)
+    ):
+        del body[first.lineno - 1 : first.end_lineno]
+    rows.append(f"<module> {_sha256(''.join(body))}")
+    return sorted(rows)
+
+
+def _sha256(text: str) -> str:
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def capture_ha_service_model_definitions() -> list[str]:
+    """The copy the tool still runs, read out of its checkout."""
+    path = source_root("ha") / f"{_HA_SERVICE_MODEL}.py"
+    return _definition_digests(path.read_text(encoding="utf-8"))
+
+
+def subject_ha_service_model_definitions() -> list[str]:
+    """The copy this package ships, read the same way.
+
+    Off ``__file__`` rather than off a path this file knows, so the check judges the
+    module that was imported -- an installed wheel in CI, ``src/`` in a checkout.
+    """
+    from axi_toolkit.ha import services
+
+    return _definition_digests(Path(services.__file__).read_text(encoding="utf-8"))
+
+
 # ================================================================== population
 
 

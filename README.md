@@ -32,6 +32,7 @@ files instead of re-vendoring 179 cases and hoping they stayed in step.
 | `axi_toolkit.render.prose` | The same intent → a sentence naming the caller's own tool. |
 | `axi_toolkit.redact` | `register_secret`, `register_pattern`, and one filter with a documented ordering. |
 | `axi_toolkit.envconfig` | Environment-only credentials, control-character rejection, userinfo splitting. |
+| `axi_toolkit.ha.services` | Home Assistant's published service model, read: fields and their selectors, the response mode, the capability a target must have. |
 
 What deliberately does **not** exist: an `agent/` package, framework adapters, an MCP
 server, a dual sync/async API, and any client class wrapping an HTTP library. The agent
