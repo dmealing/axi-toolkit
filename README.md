@@ -75,18 +75,26 @@ error.as_dict()
 
 The vocabulary is closed — `run`, `retry`, `set_env`, `choose`, `note` — and `note` is
 the one kind that may name a tool at all, as the placeholder `{tool}` and never as the
-name. Every literal recovery line both source tools emit today (232 of them) round-trips
+name. Every literal recovery line both source tools emit today (222 of them) round-trips
 through `parse` and `line` **byte for byte**; that is a generated check, not a claim.
 
 `axi_toolkit.plex` is where that stopped being a round trip and became a rewrite. Its
 two modules came out of a tool whose refusals named it — ``Run `plex-axi search --track
 '<title>'` to get this server's rating key`` — and every one of them is now intent. So a
-digest could not gate the move: the source text was *meant* to change. What is gated
-instead is the behaviour. Ninety-one scenarios run against the tool's own copy and
-against this one, and the refusals are compared as the lines they render for `plex-axi`
-— then rendered a second time under another name, because a line that reproduces the
-tool's bytes by *storing* its name has been copied rather than extracted, and the
-rendered output alone cannot tell those two apart.
+digest could not gate the move: the source text was *meant* to change. What was gated
+instead was the behaviour — ninety-one scenarios run against the tool's own copy and
+against this one, the refusals compared as the lines they render for `plex-axi`, then
+rendered a second time under another name, because a line that reproduces the tool's
+bytes by *storing* its name has been copied rather than extracted and the rendered
+output alone cannot tell those two apart.
+
+**That gate is retired, along with the three others this repository ever raised.** A
+cross-repository gate is a substitute for having one copy of a module; both tools have
+now deleted their copies and import this package, so the substitute has nothing left to
+compare and is deleted rather than left to describe files that are gone. The behaviour
+is stated by `tests/test_plex_ids.py`, `tests/test_plex_filters.py` and
+`tests/test_ha_services.py` — and, past them, by each tool's own suite, which now runs
+against this code. `AGENTS.md`, "Retired gates", is the record.
 
 ## The requirements layer
 

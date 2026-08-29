@@ -99,9 +99,6 @@ metadata:
           - field.string[]:
               name: envConfigErrorCodes
               required: true
-          - field.string[]:
-              name: plexDomainDefinitions
-              required: true
 
     # ------------------------------------------------------- 2. population facts
     # "Every shape reality contains has a branch here." The relation is COVERAGE:
@@ -163,16 +160,6 @@ metadata:
               required: true
           - field.object:
               name: plexNormalizedUrls
-              objectRef: WireCase
-              isArray: true
-              required: true
-          - field.object:
-              name: plexIdBehaviour
-              objectRef: WireCase
-              isArray: true
-              required: true
-          - field.object:
-              name: plexFilterBehaviour
               objectRef: WireCase
               isArray: true
               required: true
@@ -340,8 +327,6 @@ metadata:
         implementedBy:
           - axi_toolkit::conformance::WireFacts.haRecoveryLines
           - axi_toolkit::conformance::WireFacts.plexRecoveryLines
-          - axi_toolkit::conformance::WireFacts.plexIdBehaviour
-          - axi_toolkit::conformance::WireFacts.plexFilterBehaviour
 
     # ==================================================================== REDACTION
     - requirement.functional:
@@ -485,57 +470,43 @@ metadata:
           - axi_toolkit::conformance::WireFacts.redactionSamples
 
     # ------------------------------------------------------------ the domain tier
-    # ONE HALF IS LEFT IN THIS LEDGER, and the other one's absence is deliberate. The
-    # Home Assistant half was here too, as `theHomeAssistantServiceModelIsHere` and the
-    # `haServiceModelDefinitions` fact behind it: that module moved verbatim, so while
-    # two copies of it existed the gate could be a digest of its source text. `ha-axi`
-    # has since deleted its copy and now imports `axi_toolkit.ha.services`, so there is
-    # one copy and nothing left to compare it against. Both entries were REMOVED rather
-    # than annotated as retired -- a requirement is prescriptive and never a journal of
-    # what happened, and a check whose authority no longer exists is a fossil that reads
-    # as coverage. What states that module's behaviour now is `tests/test_ha_services.py`,
-    # which is the right instrument once there is one copy. AGENTS.md carries the why.
+    # NOTHING IS LEFT TO CHECK HERE, and every absence is deliberate. FOUR GATES STOOD
+    # in this section and all four are gone: `haServiceModelDefinitions`, and then
+    # `plexDomainDefinitions`, `plexIdBehaviour` and `plexFilterBehaviour`. Each was one
+    # half of a comparison between this package and the tool a module came from, and
+    # each was DELETED on the day that tool deleted its copy and imported this one --
+    # `ha-axi` first, `plex-axi` next. A cross-repository comparison is a substitute for
+    # having one copy; once you have one copy the substitute is not merely unnecessary,
+    # it is wrong, because it keeps passing offline against a committed capture while
+    # describing a file that no longer exists.
     #
-    # The Plex half is still two copies, and it never could have been gated that way:
-    # the move rewrote every recovery line into intent, so a digest of it would fail by
-    # construction and what is judged instead is the surface it offers and the bytes it
-    # renders.
-    - requirement.functional:
-        name: theDomainTierFollows
-        level: 1
-        status: live
-        trackedBy:
-          - "axi-core-arch-m3 report, section 10, step 3"
-        statement: >-
-          Each domain half moves here behind the toolkit it depends on, in its own
-          change, so no adoption ever has to take two at once.
-        counterexample: >-
-          A domain module extracted before the toolkit it depends on, so the first
-          adoption has to take both at once.
-        children:
-          - requirement.functional:
-              name: thePlexIdAndFilterLanguageFollows
-              level: 5
-              status: live
-              trackedBy:
-                - "axi-core-arch-m3 report, section 10, step 3"
-              statement: >-
-                The Plex id language and the pure half of the filter language are in this
-                package, offering the same surface and answering the same way as the tool
-                they came from -- with every recovery line carried as intent rather than
-                as the tool's own words.
-              counterexample: >-
-                A move that changed what a refusal says on the way, so the tool taking it
-                back prints a line its own suite fails on; or one that reproduced the line
-                by storing the tool's name in it, which no sibling could then reuse.
-              implementedBy:
-                - axi_toolkit::conformance::CapabilityFacts.plexDomainDefinitions
-                - axi_toolkit::conformance::WireFacts.plexIdBehaviour
-                - axi_toolkit::conformance::WireFacts.plexFilterBehaviour
+    # Three requirements went with them. `theHomeAssistantServiceModelIsHere` and
+    # `thePlexIdAndFilterLanguageFollows` each claimed a module was here as its tool had
+    # it, which is a claim only that tool's copy could judge. `theDomainTierFollows`
+    # held those two leaves: both halves it named have moved and been adopted, and the
+    # sequencing it prescribed -- a domain half never overtaking the toolkit it depends
+    # on -- can no longer be violated, because the toolkit is here and both tools
+    # already run on it.
+    #
+    # Removed rather than annotated as retired, and rather than repointed at "the tool
+    # no longer carries a copy": a requirement is prescriptive and never a journal of
+    # what happened, and a check whose authority is gone would be a snapshot of self --
+    # a change-detector reading in `reqgen list` exactly as the strong claim did. What
+    # states those modules' behaviour now is `tests/test_ha_services.py`,
+    # `tests/test_plex_ids.py` and `tests/test_plex_filters.py` -- and, past them, each
+    # tool's own suite, which now runs against this code rather than beside it.
+    # AGENTS.md carries the why, for all four.
 
     - requirement.architectural:
         name: anExtractedModuleIsGatedAgainstItsOriginUntilTheToolTakesIt
-        status: live
+        # PLANNED, and it has been live twice. No module lives in two places today, so
+        # there is nothing to gate and this names no fact -- which is the honest status
+        # rather than a weakened one: a live requirement with no check would read as
+        # coverage, which is the rule `reqgen.bind` enforces. It is kept, where the four
+        # above were deleted, because it is the one prescription here that is not
+        # discharged: the next extraction -- the Plex probing layer -- reopens the
+        # window, and on that day this goes back to `live` with the new gate named here.
+        status: planned
         statement: >-
           While a module lives here and in the tool it came from, the two copies are
           compared on every run, by whichever comparison states what the move left
@@ -550,7 +521,3 @@ metadata:
           which is worse than no gate because it reads as one. Or one left standing after
           adoption, describing a file that is gone while the committed capture keeps it
           green.
-        implementedBy:
-          - axi_toolkit::conformance::CapabilityFacts.plexDomainDefinitions
-          - axi_toolkit::conformance::WireFacts.plexIdBehaviour
-          - axi_toolkit::conformance::WireFacts.plexFilterBehaviour

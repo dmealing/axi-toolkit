@@ -4,7 +4,7 @@ The corpus check -- every literal recovery line either tool emits, round-tripped
 for byte -- is generated, because the corpus is a captured fact and belongs in
 ``capture.json`` rather than in a list somebody typed. What is here is the other half:
 each rendering rule stated once, in the open, so a reader can see what the renderer
-does without reconstructing it from 232 examples, and so the renderer is pinned
+does without reconstructing it from the captured corpus, and so the renderer is pinned
 independently of the parser that feeds the corpus check.
 
 The last group is the property the extraction exists for. A recovery renders with the

@@ -128,7 +128,15 @@ def test_a_parent_naming_no_fact_is_fine_because_its_children_carry_the_claim():
 
 
 def test_a_planned_leaf_may_name_nothing_and_may_dangle():
-    """Planned is the one status where the nodes do not exist yet, by definition."""
+    """Planned is the one status where the nodes do not exist yet, by definition.
+
+    Both spellings of "not yet" are legal and the declaration uses the second one:
+    naming a fact that has not been written, and naming none at all. The gate policy
+    `anExtractedModuleIsGatedAgainstItsOriginUntilTheToolTakesIt` sits at `planned` with
+    no `@implementedBy` because no module currently lives in two repositories, so there
+    is nothing to gate -- and a `live` requirement with no check would read as coverage,
+    which is the rule the previous test states.
+    """
     facts = [fact("toonEncodeCaseCount")]
     bind(
         facts,
@@ -136,6 +144,7 @@ def test_a_planned_leaf_may_name_nothing_and_may_dangle():
             requirement(
                 "later", status="planned", targets=("axi_toolkit::conformance::WireFacts.notYet",)
             ),
+            requirement("someday", sub_type="architectural", level=None, status="planned"),
             requirement(
                 "now", targets=("axi_toolkit::conformance::CapabilityFacts.toonEncodeCaseCount",)
             ),

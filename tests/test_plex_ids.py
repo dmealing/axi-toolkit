@@ -4,8 +4,9 @@
 changed, and it is the reason this move was not a copy: ``validate_rating_key``
 took an ``invocation`` string that already began with the tool's name, and it now
 takes ``command`` -- the words after it -- so the recovery it raises is intent and
-the name arrives at the renderer. The conformance layer proves the rendered bytes
-are the tool's own; what is below states the behaviour in this project's words.
+the name arrives at the renderer. The conformance layer proved the rendered bytes
+were the tool's own until the tool deleted its copy and imported this module; that
+gate is retired, and what is below is now what states this module's behaviour.
 
 **What came across.** The tool's ``tests/test_ids.py`` is 149 lines and ten test
 functions. Six of them address the module and are here under "ported"; the other

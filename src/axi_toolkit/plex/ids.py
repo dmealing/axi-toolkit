@@ -50,8 +50,11 @@ expressions, the notes and the refusals are the tool's. What moved is where the
 tool's *name* lives: :func:`validate_rating_key` used to take an ``invocation``
 string that already began ``plex-axi ``, and it now takes ``command`` -- the
 words *after* the tool name -- so the recovery it raises is intent rather than a
-rendered line. ``axi_toolkit.render.cli`` puts the name back at the boundary, and
-the conformance layer proves the bytes are the same ones the tool prints today.
+rendered line. ``axi_toolkit.render.cli`` puts the name back at the boundary. The
+conformance layer proved the rendered bytes were the tool's own until the tool
+deleted its copy and imported this module; that gate is retired, and
+``tests/test_plex_ids.py`` is what states this module's behaviour -- see "Retired
+gates" in AGENTS.md.
 """
 
 from __future__ import annotations

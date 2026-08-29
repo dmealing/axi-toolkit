@@ -64,21 +64,6 @@
         "ha": "yes",
         "plex": "yes",
         "subject": "declares:UsageError"
-      },
-      {
-        "ha": "1",
-        "plex": "1",
-        "subject": "exit:EXIT_ERROR"
-      },
-      {
-        "ha": "0",
-        "plex": "0",
-        "subject": "exit:EXIT_OK"
-      },
-      {
-        "ha": "2",
-        "plex": "2",
-        "subject": "exit:EXIT_USAGE"
       }
     ],
     "errorExitCodes": [
@@ -643,400 +628,6 @@
         "expected": "PLEX_URL is not a usable URL: '://nope'\n  Set PLEX_URL to your server's local address, e.g. export PLEX_URL=http://plex.example.com:32400"
       }
     ],
-    "plexDomainDefinitions": [
-      "filters.ABSOLUTE_DATE",
-      "filters.BARE_OPERATOR",
-      "filters.FIELD_MAP",
-      "filters.LIBTYPES",
-      "filters.POINTS_PER_STAR",
-      "filters.RATED_MIN_ZERO_NOTE",
-      "filters.RATING_OPERATOR",
-      "filters.RELATIVE_DATE",
-      "filters.SORT_DIRECTIONS",
-      "filters.assert_server_side",
-      "filters.build_filters",
-      "filters.describe_filter",
-      "filters.parse_relative_date",
-      "filters.parse_sort",
-      "filters.parse_stars",
-      "filters.rating_predicate",
-      "filters.stars",
-      "ids.LOCAL_STABILITY_NOTE",
-      "ids.STABILITY_NOTE",
-      "ids.handoff",
-      "ids.media_content_id",
-      "ids.media_id_for",
-      "ids.stability_note",
-      "ids.validate_rating_key"
-    ],
-    "plexFilterBehaviour": [
-      {
-        "case": "constant:LIBTYPES",
-        "expected": "tuple ('track', 'album', 'artist')"
-      },
-      {
-        "case": "constant:POINTS_PER_STAR",
-        "expected": "int 2"
-      },
-      {
-        "case": "constant:BARE_OPERATOR",
-        "expected": "str '='"
-      },
-      {
-        "case": "constant:RATING_OPERATOR",
-        "expected": "str '>'"
-      },
-      {
-        "case": "constant:RATED_MIN_ZERO_NOTE",
-        "expected": "str '--rated-min 0 is the bottom of the scale, so no rating filter was applied: this is every item, rated or not. Run `--rated-min 0.5` for the rated ones'"
-      },
-      {
-        "case": "constant:SORT_DIRECTIONS",
-        "expected": "tuple ('asc', 'desc')"
-      },
-      {
-        "case": "constant:RELATIVE_DATE",
-        "expected": "regex '^-?\\\\d+(mon|[smhdwy])$'"
-      },
-      {
-        "case": "constant:ABSOLUTE_DATE",
-        "expected": "regex '^\\\\d{4}-\\\\d{2}-\\\\d{2}$'"
-      },
-      {
-        "case": "field_map:every-flag",
-        "expected": "dict {'album': {'track': 'album.title', 'album': 'album.title', 'artist': 'album.title'}, 'artist': {'track': 'artist.title', 'album': 'artist.title', 'artist': 'artist.title'}, 'genre': {'track': 'artist.genre', 'album': 'artist.genre', 'artist': 'artist.genre'}, 'mood': {'track': 'track.mood', 'album': 'album.mood', 'artist': 'artist.mood'}, 'style': {'track': 'artist.style', 'album': 'artist.style', 'artist': 'artist.style'}, 'track': {'track': 'track.title', 'album': 'track.title', 'artist': 'track.title'}, 'year': {'track': 'album.year', 'album': 'album.year', 'artist': 'album.year'}}"
-      },
-      {
-        "case": "stars:unrated-none",
-        "expected": "NoneType None"
-      },
-      {
-        "case": "stars:unrated-empty",
-        "expected": "NoneType None"
-      },
-      {
-        "case": "stars:zero",
-        "expected": "int 0"
-      },
-      {
-        "case": "stars:whole",
-        "expected": "int 4"
-      },
-      {
-        "case": "stars:half",
-        "expected": "float 3.5"
-      },
-      {
-        "case": "stars:string",
-        "expected": "int 5"
-      },
-      {
-        "case": "parse_stars:whole",
-        "expected": "float 4.0"
-      },
-      {
-        "case": "parse_stars:half",
-        "expected": "float 4.5"
-      },
-      {
-        "case": "parse_stars:zero",
-        "expected": "float 0.0"
-      },
-      {
-        "case": "parse_stars:top",
-        "expected": "float 5.0"
-      },
-      {
-        "case": "parse_stars:not-a-number",
-        "expected": "raised UsageError BAD_RATING: --rated-min needs a rating in stars from 0 to 5, got 'high'\n  Run the command again with `--rated-min 4`"
-      },
-      {
-        "case": "parse_stars:none",
-        "expected": "raised UsageError BAD_RATING: --rated-min needs a rating in stars from 0 to 5, got None\n  Run the command again with `--rated-min 4`"
-      },
-      {
-        "case": "parse_stars:too-high",
-        "expected": "raised UsageError BAD_RATING: --stars is in stars from 0 to 5, got 6\n  Run the command again with `--stars 4`\n  Ratings print in stars too, so a rating read from a result can be passed back"
-      },
-      {
-        "case": "parse_stars:negative",
-        "expected": "raised UsageError BAD_RATING: --rated-min is in stars from 0 to 5, got -1\n  Run the command again with `--rated-min 4`\n  Ratings print in stars too, so a rating read from a result can be passed back"
-      },
-      {
-        "case": "describe_filter:three-keys-in-order",
-        "expected": "dict {'field': 'artist.genre', 'operator': '=', 'value': 'jazz'}"
-      },
-      {
-        "case": "rating_predicate:zero",
-        "expected": "tuple (None, None, None)"
-      },
-      {
-        "case": "rating_predicate:negative",
-        "expected": "tuple (None, None, None)"
-      },
-      {
-        "case": "rating_predicate:half-star",
-        "expected": "tuple ('track.userRating>>', 0, {'field': 'track.userRating', 'operator': '>', 'value': '0 (at least 0.5 stars)'})"
-      },
-      {
-        "case": "rating_predicate:one-star",
-        "expected": "tuple ('track.userRating>>', 1, {'field': 'track.userRating', 'operator': '>', 'value': '1 (at least 1 star)'})"
-      },
-      {
-        "case": "rating_predicate:four-stars",
-        "expected": "tuple ('track.userRating>>', 7, {'field': 'track.userRating', 'operator': '>', 'value': '7 (at least 4 stars)'})"
-      },
-      {
-        "case": "rating_predicate:between-half-stars",
-        "expected": "tuple ('track.userRating>>', 8, {'field': 'track.userRating', 'operator': '>', 'value': '8 (at least 4.25 stars)'})"
-      },
-      {
-        "case": "rating_predicate:album",
-        "expected": "tuple ('album.userRating>>', 5, {'field': 'album.userRating', 'operator': '>', 'value': '5 (at least 3 stars)'})"
-      },
-      {
-        "case": "build_filters:nothing-asked-for",
-        "expected": "tuple ({}, [], '')"
-      },
-      {
-        "case": "build_filters:every-field",
-        "expected": "tuple ({'artist.title': 'Example Artist', 'album.title': 'Example Album', 'track.title': 'Example Track', 'artist.genre': 'jazz', 'track.mood': 'calm', 'artist.style': 'bebop', 'album.year': '1959'}, [{'field': 'artist.title', 'operator': '=', 'value': 'Example Artist'}, {'field': 'album.title', 'operator': '=', 'value': 'Example Album'}, {'field': 'track.title', 'operator': '=', 'value': 'Example Track'}, {'field': 'artist.genre', 'operator': '=', 'value': 'jazz'}, {'field': 'track.mood', 'operator': '=', 'value': 'calm'}, {'field': 'artist.style', 'operator': '=', 'value': 'bebop'}, {'field': 'album.year', 'operator': '=', 'value': '1959'}], '')"
-      },
-      {
-        "case": "build_filters:mood-scopes-to-the-libtype",
-        "expected": "tuple ({'artist.mood': 'calm'}, [{'field': 'artist.mood', 'operator': '=', 'value': 'calm'}], '')"
-      },
-      {
-        "case": "build_filters:genre-scopes-to-the-artist",
-        "expected": "tuple ({'artist.genre': 'jazz'}, [{'field': 'artist.genre', 'operator': '=', 'value': 'jazz'}], '')"
-      },
-      {
-        "case": "build_filters:blank-values-are-skipped",
-        "expected": "tuple ({'track.title': 'Example Track'}, [{'field': 'track.title', 'operator': '=', 'value': 'Example Track'}], '')"
-      },
-      {
-        "case": "build_filters:rated-min",
-        "expected": "tuple ({'track.userRating>>': 7}, [{'field': 'track.userRating', 'operator': '>', 'value': '7 (at least 4 stars)'}], '')"
-      },
-      {
-        "case": "build_filters:rated-min-half",
-        "expected": "tuple ({'track.userRating>>': 0}, [{'field': 'track.userRating', 'operator': '>', 'value': '0 (at least 0.5 stars)'}], '')"
-      },
-      {
-        "case": "build_filters:rated-min-zero",
-        "expected": "tuple ({}, [], '--rated-min 0 is the bottom of the scale, so no rating filter was applied: this is every item, rated or not. Run `--rated-min 0.5` for the rated ones')"
-      },
-      {
-        "case": "build_filters:rated-min-refused",
-        "expected": "raised UsageError BAD_RATING: --rated-min needs a rating in stars from 0 to 5, got 'nine'\n  Run the command again with `--rated-min 4`"
-      },
-      {
-        "case": "assert_server_side:clean",
-        "expected": "NoneType None"
-      },
-      {
-        "case": "assert_server_side:one",
-        "expected": "raised AxiError CLIENT_SIDE_FILTER: refusing to filter on userRating__gte after the server has already answered\n  This is a bug in plex-axi: every filter must be a server-side Plex predicate\n  Report it at https://github.com/dmealing/plex-axi/issues"
-      },
-      {
-        "case": "assert_server_side:several",
-        "expected": "raised AxiError CLIENT_SIDE_FILTER: refusing to filter on userRating__gte, viewCount__gt after the server has already answered\n  This is a bug in plex-axi: every filter must be a server-side Plex predicate\n  Report it at https://github.com/dmealing/plex-axi/issues"
-      },
-      {
-        "case": "parse_relative_date:days",
-        "expected": "str '30d'"
-      },
-      {
-        "case": "parse_relative_date:signed",
-        "expected": "str '30d'"
-      },
-      {
-        "case": "parse_relative_date:months",
-        "expected": "str '6mon'"
-      },
-      {
-        "case": "parse_relative_date:years",
-        "expected": "str '2y'"
-      },
-      {
-        "case": "parse_relative_date:absolute",
-        "expected": "str '2024-01-31'"
-      },
-      {
-        "case": "parse_relative_date:padded",
-        "expected": "str '30d'"
-      },
-      {
-        "case": "parse_relative_date:prose",
-        "expected": "raised UsageError BAD_PERIOD: --since needs a period like 30d, 6mon or 2y, or a date as YYYY-MM-DD, got 'last week'\n  Run the command again with `--since 30d`\n  units: s seconds, m minutes, h hours, d days, w weeks, mon months, y years"
-      },
-      {
-        "case": "parse_relative_date:unknown-unit",
-        "expected": "raised UsageError BAD_PERIOD: --since needs a period like 30d, 6mon or 2y, or a date as YYYY-MM-DD, got '30x'\n  Run the command again with `--since 30d`\n  units: s seconds, m minutes, h hours, d days, w weeks, mon months, y years"
-      },
-      {
-        "case": "parse_sort:omitted",
-        "expected": "NoneType None"
-      },
-      {
-        "case": "parse_sort:empty",
-        "expected": "NoneType None"
-      },
-      {
-        "case": "parse_sort:bare-field",
-        "expected": "str 'addedAt'"
-      },
-      {
-        "case": "parse_sort:with-direction",
-        "expected": "str 'addedAt:desc'"
-      },
-      {
-        "case": "parse_sort:upper-case-direction",
-        "expected": "str 'addedAt:desc'"
-      },
-      {
-        "case": "parse_sort:padded",
-        "expected": "str 'addedAt:asc'"
-      },
-      {
-        "case": "parse_sort:comma-joined-field",
-        "expected": "str 'artist.titleSort,album.year:desc'"
-      },
-      {
-        "case": "parse_sort:no-field",
-        "expected": "raised UsageError BAD_SORT: --sort needs a field before the direction, got ':desc'\n  Run the command again with `--sort addedAt:desc`\n  Run the same command with a bad field name to see the sorts this server offers"
-      },
-      {
-        "case": "parse_sort:unknown-direction",
-        "expected": "raised UsageError BAD_SORT: --sort direction must be asc or desc, got 'sideways'\n  Run the command again with `--sort addedAt:desc`\n  The field half is checked against this server; only the direction is fixed"
-      }
-    ],
-    "plexIdBehaviour": [
-      {
-        "case": "stability_note:catalogue",
-        "expected": "str 'rating_key is local to this server and changes when an item is re-matched or the library is rebuilt; guid is the identifier that survives, so keep them together'"
-      },
-      {
-        "case": "stability_note:locally-matched",
-        "expected": "str \"rating_key is local to this server and changes when an item is re-matched or the library is rebuilt; this item's guid is local:// plus that same rating key, so it changes with it -- match this one by artist and title, not by either identifier\""
-      },
-      {
-        "case": "stability_note:no-guid",
-        "expected": "str 'rating_key is local to this server and changes when an item is re-matched or the library is rebuilt; guid is the identifier that survives, so keep them together'"
-      },
-      {
-        "case": "stability_note:omitted",
-        "expected": "str 'rating_key is local to this server and changes when an item is re-matched or the library is rebuilt; guid is the identifier that survives, so keep them together'"
-      },
-      {
-        "case": "stability_note:padded-local",
-        "expected": "str \"rating_key is local to this server and changes when an item is re-matched or the library is rebuilt; this item's guid is local:// plus that same rating key, so it changes with it -- match this one by artist and title, not by either identifier\""
-      },
-      {
-        "case": "media_content_id:numeric",
-        "expected": "str 'plex://0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f/311'"
-      },
-      {
-        "case": "media_content_id:integer",
-        "expected": "str 'plex://0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f/311'"
-      },
-      {
-        "case": "media_content_id:padded",
-        "expected": "str 'plex://0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f/311'"
-      },
-      {
-        "case": "media_content_id:catalogue-guid",
-        "expected": "raised ValueError: a media content id can only be built from a numeric rating key"
-      },
-      {
-        "case": "media_content_id:no-machine-id",
-        "expected": "raised ValueError: a media content id needs the server's machineIdentifier"
-      },
-      {
-        "case": "media_id_for:catalogue",
-        "expected": "str 'plex://0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f/311'"
-      },
-      {
-        "case": "media_id_for:locally-matched",
-        "expected": "str 'plex://0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f/311'"
-      },
-      {
-        "case": "media_id_for:no-guid",
-        "expected": "str 'plex://0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f/311'"
-      },
-      {
-        "case": "media_id_for:no-rating-key",
-        "expected": "NoneType None"
-      },
-      {
-        "case": "media_id_for:guid-shaped-key",
-        "expected": "NoneType None"
-      },
-      {
-        "case": "media_id_for:no-machine-id",
-        "expected": "NoneType None"
-      },
-      {
-        "case": "handoff:catalogue",
-        "expected": "dict {'media_id': 'plex://0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f/311', 'rating_key': 311, 'guid': 'plex://track/a1b2c3d4e5f60718293a0100', 'note': 'rating_key is local to this server and changes when an item is re-matched or the library is rebuilt; guid is the identifier that survives, so keep them together'}"
-      },
-      {
-        "case": "handoff:locally-matched",
-        "expected": "dict {'media_id': 'plex://0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f/311', 'rating_key': 311, 'guid': 'local://311', 'note': \"rating_key is local to this server and changes when an item is re-matched or the library is rebuilt; this item's guid is local:// plus that same rating key, so it changes with it -- match this one by artist and title, not by either identifier\"}"
-      },
-      {
-        "case": "handoff:no-guid",
-        "expected": "dict {'media_id': 'plex://0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f/311', 'rating_key': 311, 'guid': '', 'note': 'rating_key is local to this server and changes when an item is re-matched or the library is rebuilt; guid is the identifier that survives, so keep them together'}"
-      },
-      {
-        "case": "handoff:no-rating-key",
-        "expected": "raised ValueError: a media content id can only be built from a numeric rating key"
-      },
-      {
-        "case": "validate_rating_key:numeric",
-        "expected": "str '311'"
-      },
-      {
-        "case": "validate_rating_key:padded",
-        "expected": "str '311'"
-      },
-      {
-        "case": "validate_rating_key:catalogue-guid",
-        "expected": "raised UsageError GUID_NOT_RATING_KEY: 'plex://track/a1b2c3d4e5f60718293a0100' is a guid, not a rating key\n  A guid names an item in Plex's catalogue; a rating key names a row on this server\n  Run `plex-axi search --track '<title>'` to get this server's rating key"
-      },
-      {
-        "case": "validate_rating_key:local-guid",
-        "expected": "raised UsageError GUID_NOT_RATING_KEY: 'local://311' is a guid, not a rating key\n  Plex gives an item it never matched a `local://` guid, which is this server's rating key with a scheme in front of it\n  Run `plex-axi track 311`"
-      },
-      {
-        "case": "validate_rating_key:local-guid-in-a-longer-command",
-        "expected": "raised UsageError GUID_NOT_RATING_KEY: 'local://311' is a guid, not a rating key\n  Plex gives an item it never matched a `local://` guid, which is this server's rating key with a scheme in front of it\n  Run `plex-axi playlist add 'Example Playlist' 311`"
-      },
-      {
-        "case": "validate_rating_key:media-id",
-        "expected": "raised UsageError MEDIA_ID_NOT_RATING_KEY: 'plex://0f0f0f0f/311' is a media id, not a rating key\n  Pass the number after the last slash, which is what `rating_key:` reports\n  Run `plex-axi track <rating_key>`"
-      },
-      {
-        "case": "validate_rating_key:legacy-media-id",
-        "expected": "raised UsageError MEDIA_ID_NOT_RATING_KEY: 'plex://311' is a media id, not a rating key\n  Pass the number after the last slash, which is what `rating_key:` reports\n  Run `plex-axi track <rating_key>`"
-      },
-      {
-        "case": "validate_rating_key:guid-namespaced-key",
-        "expected": "raised UsageError MEDIA_ID_NOT_RATING_KEY: 'plex://track/311' is a media id, not a rating key\n  Pass the number after the last slash, which is what `rating_key:` reports\n  Run `plex-axi track <rating_key>`"
-      },
-      {
-        "case": "validate_rating_key:not-a-number",
-        "expected": "raised UsageError BAD_RATING_KEY: a rating key is a number, got 'not-a-key'\n  Run `plex-axi track <rating_key>`\n  Run `plex-axi search --artist '<name>'` to find one"
-      },
-      {
-        "case": "validate_rating_key:trailing-letter",
-        "expected": "raised UsageError BAD_RATING_KEY: a rating key is a number, got '12a'\n  Run `plex-axi track <rating_key>`\n  Run `plex-axi search --artist '<name>'` to find one"
-      },
-      {
-        "case": "validate_rating_key:empty",
-        "expected": "raised UsageError BAD_RATING_KEY: a rating key is a number, got ''\n  Run `plex-axi track <rating_key>`\n  Run `plex-axi search --artist '<name>'` to find one"
-      }
-    ],
     "plexNormalizedUrls": [
       {
         "case": "host.example.com",
@@ -1079,10 +670,6 @@
       {
         "case": "A Plex token is a single unbroken string; check for a line break",
         "expected": "A Plex token is a single unbroken string; check for a line break"
-      },
-      {
-        "case": "A guid names an item in Plex's catalogue; a rating key names a row on this server",
-        "expected": "A guid names an item in Plex's catalogue; a rating key names a row on this server"
       },
       {
         "case": "A rating is per-account: a token shared into this server may not carry one",
@@ -1161,10 +748,6 @@
         "expected": "Pass `--section <title|key>`, or export PLEX_SECTION to set a default"
       },
       {
-        "case": "Pass the number after the last slash, which is what `rating_key:` reports",
-        "expected": "Pass the number after the last slash, which is what `rating_key:` reports"
-      },
-      {
         "case": "Plex Home users are managed separately and are not in the sharing record; read as one by exporting that user's own PLEX_TOKEN instead",
         "expected": "Plex Home users are managed separately and are not in the sharing record; read as one by exporting that user's own PLEX_TOKEN instead"
       },
@@ -1173,16 +756,8 @@
         "expected": "Plex for Sonos needs a Plex Pass subscription and speakers linked to the account; check both in the Plex app"
       },
       {
-        "case": "Plex gives an item it never matched a `local://` guid, which is this server's rating key with a scheme in front of it",
-        "expected": "Plex gives an item it never matched a `local://` guid, which is this server's rating key with a scheme in front of it"
-      },
-      {
         "case": "Plex holds one media type per playlist, and an audio playlist takes music only",
         "expected": "Plex holds one media type per playlist, and an audio playlist takes music only"
-      },
-      {
-        "case": "Ratings print in stars too, so a rating read from a result can be passed back",
-        "expected": "Ratings print in stars too, so a rating read from a result can be passed back"
       },
       {
         "case": "Re-run with `--debug` for a diagnostic trace on stderr",
@@ -1357,10 +932,6 @@
         "expected": "Run `plex-axi search --artist '<name>'` to find a music rating key"
       },
       {
-        "case": "Run `plex-axi search --artist '<name>'` to find one",
-        "expected": "Run `plex-axi search --artist '<name>'` to find one"
-      },
-      {
         "case": "Run `plex-axi search --artist '<name>'` to find rating keys",
         "expected": "Run `plex-axi search --artist '<name>'` to find rating keys"
       },
@@ -1379,10 +950,6 @@
       {
         "case": "Run `plex-axi search --track '<title>'` to find this server's rating key",
         "expected": "Run `plex-axi search --track '<title>'` to find this server's rating key"
-      },
-      {
-        "case": "Run `plex-axi search --track '<title>'` to get this server's rating key",
-        "expected": "Run `plex-axi search --track '<title>'` to get this server's rating key"
       },
       {
         "case": "Run `plex-axi sessions` to see whether the server agrees it is playing",
@@ -1445,10 +1012,6 @@
         "expected": "Run the command without `--user`; everything else works against the local server with plex.tv down"
       },
       {
-        "case": "Run the same command with a bad field name to see the sorts this server offers",
-        "expected": "Run the same command with a bad field name to see the sorts this server offers"
-      },
-      {
         "case": "Run the same command with a larger `--max-distance` to widen the search",
         "expected": "Run the same command with a larger `--max-distance` to widen the search"
       },
@@ -1493,10 +1056,6 @@
         "expected": "Sonic analysis is a server-side feature; an unanalysed library has no neighbours"
       },
       {
-        "case": "The field half is checked against this server; only the direction is fixed",
-        "expected": "The field half is checked against this server; only the direction is fixed"
-      },
-      {
         "case": "The file is generated; edit the commands, not the skill",
         "expected": "The file is generated; edit the commands, not the skill"
       },
@@ -1523,10 +1082,6 @@
       {
         "case": "The token is already sent as a header, from PLEX_TOKEN; drop the parameter",
         "expected": "The token is already sent as a header, from PLEX_TOKEN; drop the parameter"
-      },
-      {
-        "case": "This is a bug in plex-axi: every filter must be a server-side Plex predicate",
-        "expected": "This is a bug in plex-axi: every filter must be a server-side Plex predicate"
       },
       {
         "case": "This is a bug in plex-axi: it builds every comparison itself, so one this server rejects is a wrong assumption about Plex rather than a wrong argument",
@@ -1587,10 +1142,6 @@
       {
         "case": "plex-axi reads music only; a video library is deliberately out of scope",
         "expected": "plex-axi reads music only; a video library is deliberately out of scope"
-      },
-      {
-        "case": "units: s seconds, m minutes, h hours, d days, w weeks, mon months, y years",
-        "expected": "units: s seconds, m minutes, h hours, d days, w weeks, mon months, y years"
       },
       {
         "case": "usage: plex-axi [command] [subcommand] [args] [flags]",
