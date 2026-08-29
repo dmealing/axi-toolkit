@@ -3,7 +3,7 @@
 ``src/axi_toolkit/ha/services.py`` is the tool's ``servicemodel.py`` with one edit: the
 module docstring pointed at a file in that repository, which would dangle here. Nothing
 below it changed, and the drift gate in the conformance layer proves that rather than
-asserting it -- ``haServiceModelSource`` hashes both copies with the docstring elided
+asserting it -- ``haServiceModelDefinitions`` hashes both copies with the docstring elided
 and fails on any other difference.
 
 **What came across, and what could not.** The tool's ``tests/test_service_model.py`` is
