@@ -54,13 +54,6 @@ CHECKS = {
             "thePureModulesImportNoHttpLibrary",
         ),
     ),
-    "haServiceModelDefinitions": (
-        "equal",
-        (
-            "theDomainTierFollows.theHomeAssistantServiceModelIsHere",
-            "anExtractedModuleIsGatedAgainstItsOriginUntilTheToolTakesIt",
-        ),
-    ),
     "plexDomainDefinitions": (
         "equal",
         (
@@ -219,7 +212,6 @@ SUBJECTS = {
     "errorExitCodes": lambda captured: projections.subject_error_exit_codes(),
     "errorFaultClasses": lambda captured: projections.subject_error_fault_classes(),
     "errorTypeNames": lambda captured: projections.subject_error_type_names(),
-    "haServiceModelDefinitions": lambda captured: projections.subject_ha_service_model_definitions(),
     "plexDomainDefinitions": lambda captured: projections.subject_plex_domain_definitions(),
     "toonCaseOptionNames": lambda captured: projections.subject_toon_case_option_names(),
     "toonEncodeCaseCount": lambda captured: projections.subject_toon_encode_case_count(),
@@ -291,15 +283,6 @@ def test_error_type_names():
     Breaking it looks like: A tool taking this package and finding an exit code or an error type it used has gone missing.
     """
     _judge("errorTypeNames")
-
-
-def test_ha_service_model_definitions():
-    """The reader for the service model an installation publishes is in this package, definition for definition as the tool it came from has it.
-
-    Requirement: theDomainTierFollows.theHomeAssistantServiceModelIsHere, anExtractedModuleIsGatedAgainstItsOriginUntilTheToolTakesIt (functional, live).
-    Breaking it looks like: A move that quietly improved something on the way, so the tool taking it back gets a behaviour change it did not ask for and cannot see.
-    """
-    _judge("haServiceModelDefinitions")
 
 
 def test_plex_domain_definitions():

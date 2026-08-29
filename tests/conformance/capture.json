@@ -597,29 +597,6 @@
         "expected": "usage: ha-axi [command] [subcommand] [args] [flags]"
       }
     ],
-    "haServiceModelDefinitions": [
-      "<module> 9c0312ae92153aa9ccdb71575b5c48e2372117d9fcd22c4759eaae628f38c927",
-      "RESPONSE_NONE 766bc6d790782b570d74b7cbf3d06a485a8e2a8c8a80f293eee5e15ecb1d4b6e",
-      "RESPONSE_OPTIONAL fc77bbcde9eaf2c9316c080a681421536217fa583ff607d4b81380aec724f5ce",
-      "RESPONSE_REQUIRED 84175c7aa38b10ea7749a3566f643cd0da6f80c4cd016dc42ff184d5469d5aea",
-      "TARGET_KEYS 64a8264c28fc99eebf7a673478fbbff30af9a2ff58d4b04b73d11406b54f52b3",
-      "_entries ac7cde595c51f5a0e7c1ae25e24a6368d974cddc05c0afa82a95d8c3e8462a23",
-      "domains 3a7599128861cd956a963a8b17c140639f86c173b5d7418b85ff7e8ba01e8159",
-      "entity_features 9b5ee7a7174e78a1f400b567339ec4085f69515757cde7a0c5ff1806503ea48f",
-      "feature_masks 3f23c3b7da7aef3241b4554ca0fa920451412389d15d7834115994cbe501820c",
-      "field_names 1866618cda546c72cbe9937c03c19d8975075be8cec052d819c1457be93f218a",
-      "fields 9b74d3e3bea43a3cf7cbe71fea4fee40b33bbbaddb1b9b29691121ff54c6dc18",
-      "find_domain 2e1d858d4cd4523ffec4cc7eee7d1ff98d1d12a299136e18cc991cc7dbe939cc",
-      "find_service 2a0a3761806ca012b19ed37be9000e9f6796c78a83533314a84f01737f4add8d",
-      "near 0db97e0e53b5a119d0852df148c990a7c0bfcaa890df070a92e111646bed666e",
-      "required_field_names a85d04c81134009cc3313ace482d9d5fc89e8b40970b688da4cdea1bc924b092",
-      "response_mode b9fadcc423c76118cffda1b1a7493263497f941b2ff3ae76e2fff3b5bc255d08",
-      "satisfies 1616513da86127ad50d93a21f9961361281340f75f60b2be47db457f7f393f50",
-      "selector_kind d1595b5918552a8b4b6bad771347746cd15dafac6639003cc2e94697281dd1b9",
-      "selector_options 7b46bfe5a178616d60d07f924e963e421c4a59026f67d8adcd31c9e9134eb5a4",
-      "service_names b267b4ad8c9f08dcd0991a42564679abd6873a9f5fb9e57c1bf574c068c9abb8",
-      "target_domains 9d5c8af0530a4fd1185fd0cf6d642b55d7c07653c4383e341304a838afcb19ed"
-    ],
     "plexCredentialMessages": [
       {
         "case": "missing:both",

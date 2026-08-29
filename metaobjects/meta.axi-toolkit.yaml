@@ -100,9 +100,6 @@ metadata:
               name: envConfigErrorCodes
               required: true
           - field.string[]:
-              name: haServiceModelDefinitions
-              required: true
-          - field.string[]:
               name: plexDomainDefinitions
               required: true
 
@@ -488,36 +485,34 @@ metadata:
           - axi_toolkit::conformance::WireFacts.redactionSamples
 
     # ------------------------------------------------------------ the domain tier
-    # Both halves are here. They were gated differently and had to be: the Home
-    # Assistant half moved verbatim and is judged by its source text, while the Plex
-    # half rewrote every recovery line into intent, so a digest of it would fail by
-    # construction and what is judged instead is the surface it offers and the bytes
-    # it renders.
+    # ONE HALF IS LEFT IN THIS LEDGER, and the other one's absence is deliberate. The
+    # Home Assistant half was here too, as `theHomeAssistantServiceModelIsHere` and the
+    # `haServiceModelDefinitions` fact behind it: that module moved verbatim, so while
+    # two copies of it existed the gate could be a digest of its source text. `ha-axi`
+    # has since deleted its copy and now imports `axi_toolkit.ha.services`, so there is
+    # one copy and nothing left to compare it against. Both entries were REMOVED rather
+    # than annotated as retired -- a requirement is prescriptive and never a journal of
+    # what happened, and a check whose authority no longer exists is a fossil that reads
+    # as coverage. What states that module's behaviour now is `tests/test_ha_services.py`,
+    # which is the right instrument once there is one copy. AGENTS.md carries the why.
+    #
+    # The Plex half is still two copies, and it never could have been gated that way:
+    # the move rewrote every recovery line into intent, so a digest of it would fail by
+    # construction and what is judged instead is the surface it offers and the bytes it
+    # renders.
     - requirement.functional:
         name: theDomainTierFollows
         level: 1
         status: live
         trackedBy:
-          - "axi-core-arch-m3 report, section 10, steps 2 and 3"
+          - "axi-core-arch-m3 report, section 10, step 3"
         statement: >-
-          The two domain halves -- the Home Assistant service model and the Plex id and
-          filter language -- move here behind the toolkit, each in its own change.
+          Each domain half moves here behind the toolkit it depends on, in its own
+          change, so no adoption ever has to take two at once.
         counterexample: >-
           A domain module extracted before the toolkit it depends on, so the first
           adoption has to take both at once.
         children:
-          - requirement.functional:
-              name: theHomeAssistantServiceModelIsHere
-              level: 5
-              status: live
-              statement: >-
-                The reader for the service model an installation publishes is in this
-                package, definition for definition as the tool it came from has it.
-              counterexample: >-
-                A move that quietly improved something on the way, so the tool taking it
-                back gets a behaviour change it did not ask for and cannot see.
-              implementedBy:
-                - axi_toolkit::conformance::CapabilityFacts.haServiceModelDefinitions
           - requirement.functional:
               name: thePlexIdAndFilterLanguageFollows
               level: 5
@@ -545,14 +540,17 @@ metadata:
           While a module lives here and in the tool it came from, the two copies are
           compared on every run, by whichever comparison states what the move left
           invariant: source text where the move was verbatim, and the surface plus the
-          rendered answer where it deliberately restated recovery as data.
+          rendered answer where it deliberately restated recovery as data. The day the
+          tool imports this package instead, that comparison goes in the same change:
+          the window it existed for has closed and it has nothing left to read.
         counterexample: >-
           A fix landing in the tool's copy and not in this one, so an extraction meant to
           end the duplication doubled it instead -- invisible until somebody diffs two
           checkouts by hand. Or a gate weakened to a comparison the rewrite could pass,
-          which is worse than no gate because it reads as one.
+          which is worse than no gate because it reads as one. Or one left standing after
+          adoption, describing a file that is gone while the committed capture keeps it
+          green.
         implementedBy:
-          - axi_toolkit::conformance::CapabilityFacts.haServiceModelDefinitions
           - axi_toolkit::conformance::CapabilityFacts.plexDomainDefinitions
           - axi_toolkit::conformance::WireFacts.plexIdBehaviour
           - axi_toolkit::conformance::WireFacts.plexFilterBehaviour

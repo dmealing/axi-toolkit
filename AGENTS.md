@@ -106,10 +106,12 @@ case is a synthetic Windows drive path.
   *move* rather than a reconciliation of two copies: it reads the service model an
   installation publishes at `GET /api/services`, and it arrived from one tool with one
   edit, its docstring's citation of a file that would dangle here. Everything below that
-  docstring is byte-for-byte the code the tool still runs, and the drift gate below
-  proves it rather than asserting it. Pure and stdlib-only (`difflib`): the caller
-  fetches the model and decides whether the read is worth paying for, which is why the
-  `ha` extra is still empty and the distribution still declares no runtime dependency.
+  docstring was byte-for-byte the code the tool ran, and a drift gate proved that rather
+  than asserting it until the tool deleted its copy and imported this module instead —
+  see **Retired gates** below, and do not re-add that gate. Pure and stdlib-only
+  (`difflib`): the caller fetches the model and decides whether the read is worth paying
+  for, which is why the `ha` extra is still empty and the distribution still declares no
+  runtime dependency.
 - **`plex/ids.py` + `plex/filters.py`** — the second domain module and the first move
   that was *not* verbatim. `ids.py` came whole; `filters.py` is the pure half of the
   tool's `music.py`, and the half is the judgement: anything taking a `server`, a
@@ -183,18 +185,15 @@ Consequences worth keeping straight:
 - **`tests/conformance/capture.json` is machine-written and never hand-edited.** It
   holds every expected value in the repository. Re-read it with `reqgen capture`, which
   needs both source checkouts; nothing else does.
-- **A module extracted but not yet adopted is gated against its origin.** While
-  `ha/services.py` also exists in the tool it came from, `haServiceModelDefinitions`
-  compares the two: one row per top-level definition, plus a `<module>` row hashing the
-  whole file with its docstring elided — that elision being the one edit the move was
-  allowed. It is a `CapabilityFacts` member, so the relation is equality and it reads
-  both ways: a definition here the tool does not have is an invention, one the tool has
-  and this does not is a gap. Its reach is the reach every capture-backed check has and
-  no more: drift introduced **here** goes red on the next `pytest`, drift introduced
-  **there** goes red at the next `reqgen capture`. It is meant to be deleted when the
-  tool imports this module instead of carrying its own copy.
+- **A module extracted but not yet adopted is gated against its origin, and the gate is
+  deleted the day it is adopted.** Both halves of that rule are load-bearing and the
+  second one has now been exercised once; **Retired gates** below is the worked example.
+  A live gate's reach is the reach every capture-backed check has and no more: drift
+  introduced **here** goes red on the next `pytest`, drift introduced **there** goes red
+  at the next `reqgen capture`. The three live instances are the Plex ones, because
+  `plex-axi` still carries its own copies.
 - **A gate states what the move left invariant, and a rewrite leaves different things
-  invariant than a copy does.** `haServiceModelDefinitions` works because that module
+  invariant than a copy does.** A digest of the source text works only for a module that
   moved verbatim; the Plex move deliberately rewrote every recovery line, so a digest
   would have failed by construction and weakening it to pass would have been worse than
   having no gate. What is invariant there is the **surface** and the **rendered
@@ -221,6 +220,57 @@ Consequences worth keeping straight:
 - **Do not model the TOON encoder's row shapes.** A prior measurement put that at 155
   lines of metadata replacing 50 lines of Python plus a build step and a large
   dependency, for no drift the checksummed fixtures do not already catch.
+
+### Retired gates
+
+**`haServiceModelDefinitions` was here and was deleted. Do not re-add it.** Its absence
+is a decision, not an oversight, and this is the record of why — both halves, because
+the reasoning generalises to the three Plex gates, which will reach the same day.
+
+**Why it existed.** `axi_toolkit.ha.services` arrived from `ha-axi`'s `servicemodel.py`
+as a *move*, and for a while the move produced **two copies of the same code in two
+repositories** — which is the exact failure this package was built to end. So the window
+was gated rather than trusted to a memo: the fact hashed one row per top-level
+definition plus a `<module>` row over the whole file with its docstring elided (that
+elision being the one edit the move was allowed), on a `CapabilityFacts` member, so the
+relation was equality and it read both ways — a definition here the tool lacked was an
+invention, one the tool had and this lacked was a gap.
+
+**Why it went.** `ha-axi` deleted its copy and now imports `axi_toolkit.ha.services`
+(`dmealing/ha-axi` PR #24). There is one copy of that code and it lives here, so the
+gate had nothing left to compare against. A cross-repo gate is a **substitute for having
+one copy**; once you have one copy, the substitute is not merely unnecessary, it is
+actively wrong, because it keeps passing offline against a committed capture while
+describing a file that no longer exists. `tests/test_ha_services.py` is the instrument
+that states that module's behaviour now, and an ordinary test suite is the right one.
+
+**Why removal rather than repointing.** The obvious alternative — repoint the fact at
+"the tool no longer carries a copy" — was considered and rejected. That is a new and
+much weaker claim wearing the old one's name: it would go green on a tool that had
+deleted the file *and* broken its import, and it would read in `reqgen list` exactly as
+the strong claim did. So would any subject-only projection over this package's own
+source: with the authority gone, the "capture" would be a snapshot of self, which is a
+change-detector and not a check. The requirement `theHomeAssistantServiceModelIsHere`
+went with the fact for the same reason, and because the metamodel rules on it directly —
+`requirement.status`'s own description says a requirement is *prescriptive* and never a
+journal of what happened, so a capability that no longer applies is **deleted**, not
+annotated as retired, and the record of it belongs to version control and to notes like
+this one. There is no `retired` or `superseded` status to reach for; the enum is
+`planned` / `live` / `partial` and nothing else. (`reqgen.DANGLING_OK` still names
+`abandoned` and `superseded`. Those are stale against metaobjects 0.24.0's vocabulary
+and unreachable: writing either gets `ERR_BAD_ATTR_VALUE` out of the loader, before
+`bind` ever sees it. Verified, not assumed.)
+
+**What the failure actually looked like, because the Plex gates will hit it.** Not a red
+test. `pytest` stayed green — it reads the committed capture and never touches a source
+checkout, which is the whole point of the design. What broke was `reqgen capture`, and
+it broke *badly*: a bare `FileNotFoundError` traceback out of `pathlib`, aborting the
+**entire** capture (`do_capture` builds every fact before it writes, so nothing at all
+is recorded) and printing an absolute local path — the one thing that must never reach a
+commit message or a pull request body on a public repository. Whoever runs `reqgen
+capture` next after `plex-axi` adopts will get that, most likely while debugging
+something unrelated. Recognise it: it means a gate outlived its window, and the fix is
+to retire the gate, not to repoint it.
 
 Regenerate and gate:
 
@@ -279,11 +329,12 @@ environment are configured. The one-time account actions are done; a release cut
 an oversight to be tidied away. This package is pre-1.0 **on purpose**: the extraction is
 not finished. Step 2 has landed — `servicemodel.py` is here as `axi_toolkit.ha.services`
 — and so has step 3's first half, the Plex id and filter language as `axi_toolkit.plex`.
-Neither tool has adopted either yet, and step 3's second half, the probing layer that
-reads a section's advertised fields plus the `plexapi` exception classification, has not
-moved. That remainder changes the public surface substantially, and adoption is what
-will show whether the surface here is the right one. It stays in 0.x until both have
-landed.
+`ha-axi` has adopted its half and deleted its copy; `plex-axi` has not adopted anything
+yet, and step 3's second half, the probing layer that reads a section's advertised
+fields plus the `plexapi` exception classification, has not moved. That remainder
+changes the public surface substantially, and adoption is what will show whether the
+surface here is the right one — one adopter is one data point, not a verdict. It stays
+in 0.x until both have landed.
 
 Without the flag, release-please applies strict semver, and the rename commit's `feat!:`
 marker alone would have made the very first artifact ever to appear on PyPI a 1.0.0 — a
