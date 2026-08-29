@@ -1,10 +1,13 @@
-"""The Home Assistant service model reader, moved here whole.
+"""The Home Assistant service model reader, and the whole statement of its behaviour.
 
-``src/axi_toolkit/ha/services.py`` is the tool's ``servicemodel.py`` with one edit: the
-module docstring pointed at a file in that repository, which would dangle here. Nothing
-below it changed, and the drift gate in the conformance layer proves that rather than
-asserting it -- ``haServiceModelDefinitions`` hashes both copies with the docstring elided
-and fails on any other difference.
+``src/axi_toolkit/ha/services.py`` arrived as the tool's ``servicemodel.py`` with one
+edit -- the module docstring pointed at a file in that repository, which would dangle
+here -- and nothing below it changed. While both copies existed that last claim did not
+have to be trusted: a conformance gate hashed the two files against each other with the
+docstring elided and failed on any other difference. ``ha-axi`` has since deleted its
+copy and imports this module, so there is one copy, the gate has been retired, and
+**this file is what states the module's behaviour now** -- which is the right instrument
+once the duplication is gone. AGENTS.md, "Retired gates", carries the reasoning.
 
 **What came across, and what could not.** The tool's ``tests/test_service_model.py`` is
 648 lines, and forty-five of them address this module. The rest drive ``service call``

@@ -327,87 +327,32 @@ def subject_env_config_error_codes() -> list[str]:
 
 # ================================== capability: the extracted domain tier, read twice
 #
-# Until a tool takes the module back from here, two copies of it exist in two
+# Until a tool takes a module back from here, two copies of it exist in two
 # repositories -- which is the failure this package was built to end, so it is gated
-# rather than trusted to a memo. The gate is temporary by construction: it compares
-# this package against a source checkout, so it stops having anything to say the day
-# the tool imports this module instead of carrying its own.
-
-
-#: The module in the source tool that ``axi_toolkit.ha.services`` was moved from.
-_HA_SERVICE_MODEL = "servicemodel"
-
-
-def _definition_digests(source: str) -> list[str]:
-    """Every top-level definition as ``<name> <digest>``, plus one row for the module.
-
-    The ``<module>`` row hashes the whole file with its docstring elided, and that
-    elision is the entire allowance the move was granted: the tool's docstring cites a
-    file in its own repository, and the citation would dangle here. Everything else --
-    each definition, the comments between them, the import list, the blank lines -- is
-    inside that digest, so any other difference between the two copies is drift and the
-    row goes red on it.
-
-    The per-definition rows are therefore redundant for detection and are not redundant
-    for reading: a bare digest mismatch says only that something moved, and a set
-    difference over named rows says which function it was.
-    """
-    tree = ast.parse(source)
-    lines = source.splitlines(keepends=True)
-
-    rows: list[str] = []
-    for node in tree.body:
-        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
-            names = [node.name]
-        elif isinstance(node, ast.Assign):
-            names = [t.id for t in node.targets if isinstance(t, ast.Name)]
-        elif isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
-            names = [node.target.id]
-        else:
-            continue
-        segment = "".join(lines[node.lineno - 1 : node.end_lineno])
-        rows.extend(f"{name} {_sha256(segment)}" for name in names)
-
-    body = list(lines)
-    first = tree.body[0] if tree.body else None
-    if (
-        isinstance(first, ast.Expr)
-        and isinstance(first.value, ast.Constant)
-        and isinstance(first.value.value, str)
-    ):
-        del body[first.lineno - 1 : first.end_lineno]
-    rows.append(f"<module> {_sha256(''.join(body))}")
-    return sorted(rows)
-
-
-def _sha256(text: str) -> str:
-    return hashlib.sha256(text.encode("utf-8")).hexdigest()
-
-
-def capture_ha_service_model_definitions() -> list[str]:
-    """The copy the tool still runs, read out of its checkout."""
-    path = source_root("ha") / f"{_HA_SERVICE_MODEL}.py"
-    return _definition_digests(path.read_text(encoding="utf-8"))
-
-
-def subject_ha_service_model_definitions() -> list[str]:
-    """The copy this package ships, read the same way.
-
-    Off ``__file__`` rather than off a path this file knows, so the check judges the
-    module that was imported -- an installed wheel in CI, ``src/`` in a checkout.
-    """
-    from axi_toolkit.ha import services
-
-    return _definition_digests(Path(services.__file__).read_text(encoding="utf-8"))
+# rather than trusted to a memo. Every gate here is temporary by construction: it
+# compares this package against a source checkout, so it has nothing left to say the
+# day the tool imports the module instead of carrying its own -- and on that day it is
+# DELETED, in the same change, rather than left to describe a file that is gone.
+#
+# THE HOME ASSISTANT GATE WAS HERE AND IS GONE, which is the worked example of that
+# rule. `axi_toolkit.ha.services` moved out of `ha-axi` verbatim, so while both copies
+# existed the comparison could be a digest of the source text -- a `capture_` half that
+# read the tool's file and a `subject_` half that read this one, definition by
+# definition. `ha-axi` has since deleted its copy and imports this module, so the
+# capture had nothing to read -- and note what that failure looked like, because the
+# Plex gates below will reach it too: `reqgen capture` died on a bare FileNotFoundError
+# and wrote nothing at all, while `pytest` stayed green against the committed capture.
+# The gate went red only where nobody was looking. `tests/test_ha_services.py` states
+# that module's behaviour now, which is the right instrument once there is one copy.
 
 
 # --- the Plex domain tier -----------------------------------------------------
 #
-# The Home Assistant half above could be gated by hashing, because it moved
-# verbatim. This half could not: the move deliberately rewrote every recovery
-# line into intent, so a digest would fail by construction and weakening it to
-# pass would be worse than having no gate. What is invariant here is the surface
-# and the rendered behaviour, and those are what the two facts below state.
+# The Home Assistant half could be gated by hashing, because it moved verbatim.
+# This half could not: the move deliberately rewrote every recovery line into
+# intent, so a digest would fail by construction and weakening it to pass would
+# be worse than having no gate. What is invariant here is the surface and the
+# rendered behaviour, and those are what the two facts below state.
 #
 # This one is the surface. `ids.py` moved whole, so equality over its public
 # definitions reads both ways with nothing declared: a definition the tool grew
