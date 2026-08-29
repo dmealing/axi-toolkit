@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/dmealing/axi-toolkit/compare/v0.3.0...v0.4.0) (2026-08-29)
+
+
+### Features
+
+* **plex:** move the Plex id and filter language in as axi_toolkit.plex ([#8](https://github.com/dmealing/axi-toolkit/issues/8)) ([b8d029f](https://github.com/dmealing/axi-toolkit/commit/b8d029f8fb8905798847fc1f18cb695c7065517e))
+
 ## [0.3.0](https://github.com/dmealing/axi-toolkit/compare/v0.2.0...v0.3.0) (2026-08-29)
 
 
