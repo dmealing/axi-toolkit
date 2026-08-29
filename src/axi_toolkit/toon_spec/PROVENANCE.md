@@ -53,8 +53,9 @@ git clone --depth 1 https://github.com/toon-format/spec.git       # into a scrat
 cp <clone>/tests/fixtures/encode/*.json src/axi_toolkit/toon_spec/encode/
 cp <clone>/LICENSE src/axi_toolkit/toon_spec/LICENSE
 (cd src/axi_toolkit/toon_spec/encode && sha256sum *.json) > src/axi_toolkit/toon_spec/checksums.txt
-python scripts/reqgen.py capture          # the published case count is a captured fact
-pytest tests/test_toon_conformance.py
+scripts/dev-setup.sh --reqgen
+.venv/bin/python scripts/reqgen.py capture          # the published case count is a captured fact
+.venv/bin/pytest tests/test_toon_conformance.py
 ```
 
 Then update the table above with the new commit and version, and update `CASE_COUNT` in

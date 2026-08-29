@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 # Build this repository's development environment: a virtualenv at .venv with
-# the package installed into it in editable mode. Nothing outside .venv/ is
-# touched.
+# the package installed into it in editable mode. No other Python environment,
+# console script or site-packages directory is created, modified or removed.
 #
 # WHY THIS IS A SCRIPT AND NOT A DOCUMENTED `pip install -e`. The tools that
 # consume this package are normally installed as isolated user-level tools —
@@ -22,7 +22,8 @@ usage() {
 Usage: scripts/dev-setup.sh [--reqgen] [--python INTERPRETER] [--recreate]
 
 Creates .venv at the repository root and installs the package into it in
-editable mode. Nothing outside .venv/ is created, modified or removed.
+editable mode. No other Python environment, console script or site-packages
+directory is created, modified or removed.
 
   --reqgen              also install the requirements-layer toolchain,
                         i.e. .[dev,reqgen]; needs Python 3.11 or newer
@@ -36,6 +37,7 @@ EOF
 
 extras='dev'
 python=''
+python_was_given=''
 recreate=''
 
 while [ "$#" -gt 0 ]; do
@@ -46,8 +48,9 @@ while [ "$#" -gt 0 ]; do
       shift
       [ "$#" -gt 0 ] || { echo "dev-setup: --python needs an interpreter" >&2; exit 2; }
       python="$1"
+      python_was_given='yes'
       ;;
-    --python=*) python="${1#--python=}" ;;
+    --python=*) python="${1#--python=}"; python_was_given='yes' ;;
     -h|--help) usage; exit 0 ;;
     *) echo "dev-setup: unknown argument: $1" >&2; usage >&2; exit 2 ;;
   esac
@@ -65,34 +68,56 @@ version_ok() {
     "$2" >/dev/null 2>&1
 }
 
-if [ -n "$python" ]; then
-  command -v "$python" >/dev/null 2>&1 ||
-    { echo "dev-setup: no such interpreter: $python" >&2; exit 1; }
-  version_ok "$python" "$floor" ||
-    { echo "dev-setup: $python is older than 3.$floor, which .[$extras] needs" >&2; exit 1; }
-else
-  for candidate in python3 python3.11 python3.12 python3.13; do
-    if command -v "$candidate" >/dev/null 2>&1 && version_ok "$candidate" "$floor"; then
-      python="$candidate"
-      break
-    fi
-  done
-  [ -n "$python" ] ||
-    { echo "dev-setup: found no Python 3.$floor or newer; pass --python INTERPRETER" >&2; exit 1; }
-fi
+get_base_prefix() {
+  "$1" -c 'import sys; print(sys.base_prefix)' 2>/dev/null
+}
 
 root=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
 cd "$root"
 
-if [ -x .venv/bin/python ] && [ -z "$recreate" ] && ! version_ok .venv/bin/python "$floor"; then
+# Decide whether a venv needs to be created, and if so select/validate an interpreter.
+# Three paths: --recreate was given; .venv is missing/dangling; or .venv is healthy but
+# doesn't match the floor or (when --python was given explicitly) the requested interpreter.
+if [ -n "$recreate" ] || [ ! -x .venv/bin/python ]; then
+  need_create='yes'
+elif ! version_ok .venv/bin/python "$floor"; then
   echo "dev-setup: the existing .venv is older than 3.$floor; rebuilding it"
-  recreate='yes'
+  need_create='yes'
+elif [ -n "$python_was_given" ]; then
+  # --python was given explicitly: the venv must match that interpreter.
+  # Compare via sys.base_prefix, not the raw argument string.
+  if [ -n "$python" ]; then
+    command -v "$python" >/dev/null 2>&1 ||
+      { echo "dev-setup: no such interpreter: $python" >&2; exit 1; }
+    version_ok "$python" "$floor" ||
+      { echo "dev-setup: $python is older than 3.$floor, which .[$extras] needs" >&2; exit 1; }
+    requested_base=$(get_base_prefix "$python")
+    venv_base=$(get_base_prefix .venv/bin/python)
+    if [ "$requested_base" != "$venv_base" ]; then
+      echo "dev-setup: the existing .venv is from a different interpreter; rebuilding it"
+      need_create='yes'
+    fi
+  fi
 fi
 
-if [ -n "$recreate" ]; then
+if [ -n "$need_create" ]; then
+  # A venv will be created: select or validate the interpreter.
+  if [ -n "$python" ]; then
+    command -v "$python" >/dev/null 2>&1 ||
+      { echo "dev-setup: no such interpreter: $python" >&2; exit 1; }
+    version_ok "$python" "$floor" ||
+      { echo "dev-setup: $python is older than 3.$floor, which .[$extras] needs" >&2; exit 1; }
+  else
+    for candidate in python3 python3.11 python3.12 python3.13; do
+      if command -v "$candidate" >/dev/null 2>&1 && version_ok "$candidate" "$floor"; then
+        python="$candidate"
+        break
+      fi
+    done
+    [ -n "$python" ] ||
+      { echo "dev-setup: found no Python 3.$floor or newer; pass --python INTERPRETER" >&2; exit 1; }
+  fi
   "$python" -m venv --clear .venv
-elif [ ! -x .venv/bin/python ]; then
-  "$python" -m venv .venv
 fi
 
 .venv/bin/python -m pip install --upgrade pip

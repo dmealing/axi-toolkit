@@ -149,7 +149,8 @@ outside a virtualenv overwrites the launcher for one of them with a copy bound t
 whatever interpreter was ambient — so deleting the checkout later breaks a command the
 reader depends on and never installed from here. `scripts/dev-setup.sh` is the whole
 setup for that reason: it puts the same `.venv` in place that `.github/workflows/ci.yml`
-builds, and nothing outside `.venv/` is touched.
+builds, and no other Python environment, console script or site-packages directory is
+created, modified or removed.
 
 This repository is public. `scripts/leakcheck.py` blocks installation-specific data —
 addresses, credentials, home paths, hardware identifiers — from files, commit messages
