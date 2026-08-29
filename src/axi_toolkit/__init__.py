@@ -5,7 +5,7 @@ duplication had already cost: a TOON specification violation was fixed in one co
 not the other, and the divergence stayed invisible until somebody ran both encoders
 against the same fixtures. This package is the one copy.
 
-What is here is the toolkit tier and nothing else:
+What is here is the toolkit tier, plus the first module of the domain tier above it:
 
 - :mod:`axi_toolkit.toon` -- a strict TOON encoder, and :mod:`axi_toolkit.toon_spec`, the
   specification's own conformance fixtures vendored beside it so a tool asserts its
@@ -14,6 +14,10 @@ What is here is the toolkit tier and nothing else:
 - :mod:`axi_toolkit.render` -- that data as a shell line, or as a sentence.
 - :mod:`axi_toolkit.redact` -- the credential boundary.
 - :mod:`axi_toolkit.envconfig` -- environment-only credentials.
+- :mod:`axi_toolkit.ha` -- the Home Assistant domain tier, so far the reader for the
+  service model an installation publishes. Optional by layout rather than by import
+  guard: nothing in the toolkit tier imports it, and its ``ha`` extra is empty because
+  what it needs is ``difflib``.
 
 What is deliberately not here: an agent package, framework adapters, an MCP server, a
 dual sync/async API, and any client class wrapping an HTTP library. The agent surface

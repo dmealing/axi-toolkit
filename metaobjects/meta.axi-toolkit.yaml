@@ -99,6 +99,9 @@ metadata:
           - field.string[]:
               name: envConfigErrorCodes
               required: true
+          - field.string[]:
+              name: haServiceModelDefinitions
+              required: true
 
     # ------------------------------------------------------- 2. population facts
     # "Every shape reality contains has a branch here." The relation is COVERAGE:
@@ -469,15 +472,14 @@ metadata:
           - axi_toolkit::conformance::PopulationFacts.recoveryShapeCells
           - axi_toolkit::conformance::WireFacts.redactionSamples
 
-    # ------------------------------------------------------------------- planned
-    # The domain tier. Declared now because the layout it lands in is decided and the
-    # ordering is published; `planned` is the one status whose @implementedBy may
-    # dangle, and it never counts toward coverage.
+    # ------------------------------------------------------------ the domain tier
+    # Half delivered. The Home Assistant half is here; the Plex half is not, and
+    # `planned` is the one status whose @implementedBy may dangle, so the half that has
+    # not landed carries no check and counts toward no coverage.
     - requirement.functional:
         name: theDomainTierFollows
         level: 1
-        status: planned
-        disposition: deferred
+        status: partial
         trackedBy:
           - "axi-core-arch-m3 report, section 10, steps 2 and 3"
         statement: >-
@@ -486,3 +488,43 @@ metadata:
         counterexample: >-
           A domain module extracted before the toolkit it depends on, so the first
           adoption has to take both at once.
+        children:
+          - requirement.functional:
+              name: theHomeAssistantServiceModelIsHere
+              level: 5
+              status: live
+              statement: >-
+                The reader for the service model an installation publishes is in this
+                package, definition for definition as the tool it came from has it.
+              counterexample: >-
+                A move that quietly improved something on the way, so the tool taking it
+                back gets a behaviour change it did not ask for and cannot see.
+              implementedBy:
+                - axi_toolkit::conformance::CapabilityFacts.haServiceModelDefinitions
+          - requirement.functional:
+              name: thePlexIdAndFilterLanguageFollows
+              level: 5
+              status: planned
+              disposition: deferred
+              trackedBy:
+                - "axi-core-arch-m3 report, section 10, step 3"
+              statement: >-
+                The Plex id and filter language moves here behind the toolkit, in its own
+                change.
+              counterexample: >-
+                Both domain halves landing in one change, so a regression in either has
+                two places to have come from.
+
+    - requirement.architectural:
+        name: anExtractedModuleIsGatedAgainstItsOriginUntilTheToolTakesIt
+        status: live
+        statement: >-
+          While a module lives here and in the tool it came from, the two copies are
+          compared on every run, and the only difference allowed is the docstring
+          reference that could not resolve in both repositories.
+        counterexample: >-
+          A fix landing in the tool's copy and not in this one, so an extraction meant to
+          end the duplication doubled it instead -- invisible until somebody diffs two
+          checkouts by hand.
+        implementedBy:
+          - axi_toolkit::conformance::CapabilityFacts.haServiceModelDefinitions

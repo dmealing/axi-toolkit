@@ -86,11 +86,41 @@ case is a synthetic Windows drive path.
 - **`envconfig.py`** — every per-tool difference (variable names, scheme default, port
   default, path-suffix stripping) is on a `CredentialSpec` the tool declares. None of
   them can be decided here; they are properties of the system behind the tool.
+- **`ha/services.py`** — the first module of the domain tier, and the first that is a
+  *move* rather than a reconciliation of two copies: it reads the service model an
+  installation publishes at `GET /api/services`, and it arrived from one tool with one
+  edit, its docstring's citation of a file that would dangle here. Everything below that
+  docstring is byte-for-byte the code the tool still runs, and the drift gate below
+  proves it rather than asserting it. Pure and stdlib-only (`difflib`): the caller
+  fetches the model and decides whether the read is worth paying for, which is why the
+  `ha` extra is still empty and the distribution still declares no runtime dependency.
 
 ## The requirements layer
 
-`metaobjects/meta.axi-toolkit.yaml` is the source of truth and `scripts/reqgen.py` is the
-only thing that reads it.
+`metaobjects/meta.axi-toolkit.yaml` is the source of truth. `scripts/reqgen.py` is the
+only thing that *generates* from it, and `.metaobjects/config.json` is what lets a second
+reader find it without being told where it is.
+
+**`.metaobjects/config.json` is what makes this directory a project.** It is the only
+marker the `meta` CLI recognises: without it the toolchain falls back to a bare
+`metaobjects/` guess and the project root is wherever the walk-up happens to stop. It
+declares the metadata **directory**, not the one file in it, because `reqgen` loads the
+directory — naming the file would let a second declaration land beside it and be read by
+one of the two readers only, which is the drift class this whole layer exists to remove.
+
+**The positional argument is the PROJECT ROOT, not the metadata directory** — the
+opposite of the Python and C# ports' `docs` positionals, and filed upstream as
+metaobjects issue #344. `meta docs metaobjects` fails; run it bare from the root:
+
+```sh
+meta docs --out <dir>       # requirements.md and requirements.toon come out with it
+```
+
+The `meta` CLI is the Node package and is a separate install from the Python
+`metaobjects` loader `reqgen` imports, whose floor is 3.11 — so `python3 -m metaobjects`
+against a 3.10 system interpreter reports "no module named" while the CLI works fine.
+That is two toolchains, not a broken one; never reconcile them with
+`pip install --break-system-packages`.
 
 **The modelling rule, because it was got wrong before.** `@implementedBy` is legal at
 **L4 (an object) and L5 (a member) only**, and it resolves to nodes in the model. So a
@@ -115,6 +145,16 @@ Consequences worth keeping straight:
 - **`tests/conformance/capture.json` is machine-written and never hand-edited.** It
   holds every expected value in the repository. Re-read it with `reqgen capture`, which
   needs both source checkouts; nothing else does.
+- **A module extracted but not yet adopted is gated against its origin.** While
+  `ha/services.py` also exists in the tool it came from, `haServiceModelDefinitions`
+  compares the two: one row per top-level definition, plus a `<module>` row hashing the
+  whole file with its docstring elided — that elision being the one edit the move was
+  allowed. It is a `CapabilityFacts` member, so the relation is equality and it reads
+  both ways: a definition here the tool does not have is an invention, one the tool has
+  and this does not is a gap. Its reach is the reach every capture-backed check has and
+  no more: drift introduced **here** goes red on the next `pytest`, drift introduced
+  **there** goes red at the next `reqgen capture`. It is meant to be deleted when the
+  tool imports this module instead of carrying its own copy.
 - **Do not model the TOON encoder's row shapes.** A prior measurement put that at 155
   lines of metadata replacing 50 lines of Python plus a build step and a large
   dependency, for no drift the checksummed fixtures do not already catch.
@@ -146,22 +186,29 @@ the committed capture.
   check compares against comes from the capture.
 - Both TOON suites are kept and are not interchangeable: one states the encoder's
   behaviour in this project's words, the other runs the specification's opinion.
+- `tests/test_ha_services.py` is mostly **new**, and the reason is worth knowing before
+  the next module moves: the tool's own file for this module is 648 lines of which
+  forty-five address the module. The rest drive its commands end to end against a REST
+  double and cannot follow the module out, because what they test is the command path.
+  Four cases came across unchanged; the other eleven functions arrived uncovered and are
+  stated directly here. Expect that ratio again on the Plex half.
 
 ## Release
 
 release-please on `main`, same shape as the sibling projects. The PyPI publish job is
-written and gated behind `release_created`, but **the PyPI project does not exist yet**:
-registering the name is a one-time account action only the maintainer can perform, and
-trusted publishing needs the `pypi` environment configured before the first release.
-Nothing should attempt to publish before then.
+written and gated behind `release_created`, and it has now fired: **`axi-toolkit` 0.2.0
+is on PyPI**, wheel and sdist with attestations, and the trusted publisher and the `pypi`
+environment are configured. The one-time account actions are done; a release cut from
+`main` publishes without further setup.
 
 ### Why `bump-minor-pre-major` is on
 
 `release-please-config.json` sets `"bump-minor-pre-major": true`. That is deliberate, not
-an oversight to be tidied away. This package is pre-1.0 **on purpose**: steps 2 and 3 of
-the extraction still have to move `servicemodel.py` and the Plex id/filter language into
-it, and those change the public surface substantially. It stays in 0.x until that has
-landed.
+an oversight to be tidied away. This package is pre-1.0 **on purpose**: the extraction is
+not finished. Step 2's first half has landed — `servicemodel.py` is here as
+`axi_toolkit.ha.services` — but the tool has not yet adopted it, and step 3's Plex
+id/filter language has not moved at all. Both remaining halves change the public surface
+substantially. It stays in 0.x until they have landed.
 
 Without the flag, release-please applies strict semver, and the rename commit's `feat!:`
 marker alone would have made the very first artifact ever to appear on PyPI a 1.0.0 — a
