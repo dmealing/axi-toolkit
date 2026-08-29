@@ -148,7 +148,8 @@ def load_declaration() -> tuple[dict, list]:
         raise SystemExit(
             "reqgen needs the metaobjects loader, which validates the declaration "
             "before anything is generated from it.\n"
-            "    python3.11 -m pip install 'axi-toolkit[reqgen]'\n"
+            "    scripts/dev-setup.sh --reqgen\n"
+            "    .venv/bin/python scripts/reqgen.py ...\n"
             f"({exc})"
         ) from exc
 

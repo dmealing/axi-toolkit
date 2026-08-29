@@ -61,6 +61,37 @@ third-party data must stay byte-for-byte — is exempted in `PATH_ALLOWANCES`, p
 *and* per rule. There is one entry: the vendored TOON fixture whose backslash-escaping
 case is a synthetic Windows drive path.
 
+## The development environment: `.venv`, always
+
+**`scripts/dev-setup.sh` is the only setup command. Never run `pip install` — editable
+or otherwise — outside `.venv`, and never document one.** The script creates `.venv` at
+the repository root and installs `.[dev]` into it (`--reqgen` for `.[dev,reqgen]`, which
+raises the interpreter floor to 3.11); everything afterwards is called by path out of
+it — `.venv/bin/pytest`, `.venv/bin/ruff`, `.venv/bin/python scripts/reqgen.py`.
+
+**The reason is damage outside the checkout, and it is not hypothetical.** The tools this
+package serves are normally installed as isolated user-level tools: one environment per
+tool, with a launcher on `PATH` pointing into it. An editable install into whatever
+interpreter is ambient overwrites that launcher with one bound to the ambient
+interpreter and leaves an editable pointer at the checkout — a `.pth` and a `.dist-info`
+whose `direct_url.json` records the path. Nothing reports this. When the checkout goes,
+which is the normal end of a throwaway clone, the reader's own command dies with
+`ModuleNotFoundError`, and a sibling tool can be left silently pinned to a version
+several releases behind its published one. A contributor's clone must not be able to
+break the installation of the tool they are contributing to.
+
+**This is one pattern, not two.** `.github/workflows/ci.yml` already builds `.venv` and
+calls the tools by path out of it — its own comment says why: on a self-hosted runner
+`~/.local/bin` is ahead on `PATH` and the user site is on the interpreter's path, so a
+bare `pytest` or `ruff` is whatever the machine happens to have. The script exists so
+the documented path is the path CI proves, and so that a reader who does not know any of
+the above still ends up isolated. The floor split the script encodes — 3.9 for the
+package, 3.11 for the requirements toolchain — is the same one that keeps `test` and
+`requirements` separate jobs.
+
+A future reader will be tempted to "simplify" this back to a single bare editable-install
+line. That is the defect, not the simplification.
+
 ## Architecture
 
 - **`toon.py` + `toon_spec/`** — a strict TOON encoder (spec v4.1) and the
@@ -361,8 +392,9 @@ retire it, not to repoint it.
 Regenerate and gate:
 
 ```sh
-python3.11 scripts/reqgen.py list | check | generate
-AXI_TOOLKIT_SOURCE_HA=<checkout> AXI_TOOLKIT_SOURCE_PLEX=<checkout> python3.11 scripts/reqgen.py capture
+scripts/dev-setup.sh --reqgen   # a .venv on 3.11+, with the toolchain in it
+.venv/bin/python scripts/reqgen.py list | check | generate
+AXI_TOOLKIT_SOURCE_HA=<checkout> AXI_TOOLKIT_SOURCE_PLEX=<checkout> .venv/bin/python scripts/reqgen.py capture
 ```
 
 The `requirements` CI job runs `list` and `check`. It is separate from `test` because
@@ -372,9 +404,11 @@ package's own floor at 3.9.
 
 ## Testing
 
-`pytest` runs the whole suite with **no credentials, no source checkouts and no
-network**. That property is the design, not a convenience: the conformance layer reads
-the committed capture.
+`.venv/bin/pytest` runs the whole suite with **no credentials, no source checkouts and
+no network**. That property is the design, not a convenience: the conformance layer
+reads the committed capture. (By path, out of the virtualenv `scripts/dev-setup.sh`
+built — see **The development environment** above; a bare `pytest` is whatever the
+machine happens to have, run against whatever interpreter it was installed for.)
 
 - `tests/conformance/test_requirements_generated.py` is generated. **Do not edit it** —
   change the declaration and regenerate; CI fails on a stale copy.
