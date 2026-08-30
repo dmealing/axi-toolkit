@@ -103,9 +103,15 @@ of it.
 ``--engine python`` runs the transcription in this file -- a line-by-line port of
 the same grammar -- so a machine with no ``node`` still gets a verdict rather than
 a skip. ``tests/test_commit_message.py`` runs the whole corpus through both and
-asserts they agree on the verdict *and* on the reported line, column and token; a
-guard whose fallback disagreed with the thing it stands in for would be worse than
-none.
+asserts they agree on the verdict and, where they reject, on the reported line,
+column, offending token, valid tokens and message text; a guard whose fallback
+disagreed with the thing it stands in for would be worse than none. That suite is
+also why ``_utf16_units`` exists: a JavaScript string is a sequence of UTF-16 code
+units and a Python ``str`` is a sequence of code points, so a port that scanned
+code points reported a different column -- and named a different offending token --
+for any line carrying an emoji. The suite skips its parity cases where ``node`` is
+off ``PATH``, which is the machine the transcription is for, and fails rather than
+skips when ``CI`` is set.
 
 ``--engine auto`` (the default, and what the hooks use) prefers ``node``.
 
@@ -199,6 +205,50 @@ _JS_TRIM = frozenset(
 )
 
 
+def _utf16_units(text):
+    """The string as JavaScript indexes it: one character per UTF-16 code unit.
+
+    A JavaScript string is a sequence of UTF-16 code units and a Python ``str``
+    is a sequence of code points, so ``charAt``, ``substring`` and ``.length``
+    all count an astral character -- an emoji, most obviously -- as two where
+    Python counts one. The scanner's offsets and columns are that arithmetic, so
+    a transcription that scanned code points reported a column one lower per
+    astral character earlier in the line, and reported the offending token as the
+    whole character where upstream reports its leading surrogate on its own.
+    Neither changes the verdict, and both make the two engines disagree about
+    where the fault is -- which is the one thing the fallback may not do.
+
+    Splitting astral characters into their surrogate pair here makes every
+    production below index exactly what upstream indexes, so nothing else in the
+    transcription has to know about the difference. Python holds an unpaired
+    surrogate in a ``str`` quite happily; it is only encoding one that fails,
+    which is what ``_printable`` is for.
+    """
+    if all(ord(character) <= 0xFFFF for character in text):
+        return text
+    units = []
+    for character in text:
+        code = ord(character)
+        if code > 0xFFFF:
+            code -= 0x10000
+            units.append(chr(0xD800 + (code >> 10)))
+            units.append(chr(0xDC00 + (code & 0x3FF)))
+        else:
+            units.append(character)
+    return "".join(units)
+
+
+def _printable(text):
+    """``text`` with anything a Python stream cannot encode escaped.
+
+    Upstream reports the offending token as one UTF-16 code unit, so an astral
+    character is reported as an unpaired surrogate. Printing one raises
+    ``UnicodeEncodeError``, which would replace the report with a traceback --
+    and did, on the ``node`` engine, before there was a suite to notice.
+    """
+    return text.encode("utf-8", "backslashreplace").decode("utf-8")
+
+
 def _is_whitespace(token):
     return token in _WHITESPACE
 
@@ -244,7 +294,9 @@ class _Node:
 
 class _Scanner:
     def __init__(self, text):
-        self.text = text
+        # Upstream's `text` is a JavaScript string, and every offset, length and
+        # column below is UTF-16 arithmetic over it. See `_utf16_units`.
+        self.text = _utf16_units(text)
         self.line = 1
         self.column = 1
         self.offset = 0
@@ -920,9 +972,9 @@ def report(problems, label, stream=None):
             where += f", column {problem.column}"
         if problem.part_count > 1:
             where += f" (conventional-commit section {problem.part_index + 1})"
-        print(f"  {where}: {problem.error}", file=stream)
+        print(f"  {where}: {_printable(str(problem.error))}", file=stream)
         if problem.source_line:
-            print(f"    {problem.source_line}", file=stream)
+            print(f"    {_printable(problem.source_line)}", file=stream)
             print(f"    {' ' * max(problem.column - 1, 0)}^", file=stream)
         for line in problem.advice():
             print(f"  {line}", file=stream)
@@ -1450,7 +1502,8 @@ def run_demo(engine, stream=None):
     for label, message in DEMO_ACCEPTED.items():
         problems = check(message, engine=engine)
         if problems:
-            failures.append(f"rejected a message it must accept: {label} ({problems[0].error})")
+            detail = _printable(str(problems[0].error))
+            failures.append(f"rejected a message it must accept: {label} ({detail})")
     for label, (title, number, body) in DEMO_PULL_REQUESTS_REJECTED.items():
         problems, faults = check_pull_request(title, number, body, engine=engine)
         if not problems and not faults:
@@ -1458,7 +1511,7 @@ def run_demo(engine, stream=None):
     for label, (title, number, body) in DEMO_PULL_REQUESTS_ACCEPTED.items():
         problems, faults = check_pull_request(title, number, body, engine=engine)
         if problems or faults:
-            detail = problems[0].error if problems else faults[0]
+            detail = _printable(str(problems[0].error)) if problems else faults[0]
             failures.append(f"rejected a pull request it must accept: {label} ({detail})")
     total = (
         len(DEMO_REJECTED)
