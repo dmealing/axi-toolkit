@@ -442,6 +442,10 @@ machine happens to have, run against whatever interpreter it was installed for.)
   gates' subject halves made. `tests/test_ha_services.py` is the same instrument for the
   Home Assistant half. Past both is `plex-axi`'s and `ha-axi`'s own suites, which now run
   against this code rather than beside it.
+- `tests/test_commit_message.py` is the only suite that wants a tool outside Python. It
+  needs `node`, and where `node` is absent its parity cases skip — see **The commit-message
+  guard** under **Release** for why a skip there is legitimate and why it still may not
+  reach CI silently.
 
 ## Release
 
@@ -450,6 +454,52 @@ written and gated behind `release_created`, and it has now fired: **`axi-toolkit
 is on PyPI**, wheel and sdist with attestations, and the trusted publisher and the `pypi`
 environment are configured. The one-time account actions are done; a release cut from
 `main` publishes without further setup.
+
+### The commit-message guard, and what verifies its vendored parser
+
+`scripts/commitcheck.py` answers one question — would release-please read this commit, or
+drop it — and it answers it two ways. `--engine node` runs
+`vendor/conventional-commits-parser/`, a byte-for-byte copy of the four dependency-free
+modules of the parser release-please actually runs. `--engine python` runs a transcription
+of the same grammar in `commitcheck.py`, so a machine with no `node` gets a verdict rather
+than a skip. `--engine auto`, the default and what the hooks use, prefers `node`.
+
+**`tests/test_commit_message.py` is what makes the second engine trustworthy, and it did
+not exist for a long time while two documents said it did.** `PROVENANCE.md` and
+`commitcheck.py`'s own docstring both named it as the thing asserting dual-engine
+agreement, the vendored checksums and the `THROW_SITES` count; `git log --all` had never
+seen the file, and the documented refresh procedure printed a `pytest` invocation that
+collected zero tests and exited 0. Three load-bearing guarantees were asserted by prose
+alone. The suite now states all three, and each was proved to fail by perturbing what it
+checks. A second reference is still dangling and is deliberately left as prose:
+`commitcheck.py`'s `KNOWN_UNPARSEABLE` comment cites `tests/fixtures/commit-messages/`,
+which has also never existed.
+
+Four things about it are worth carrying forward:
+
+- **A JavaScript string is UTF-16 code units; a Python `str` is code points.** The
+  transcription scanned code points, so for any line carrying an emoji it reported a column
+  one lower per astral character and named the whole character as the offending token where
+  upstream names its leading surrogate. Verdicts were unaffected, which is why nothing
+  noticed. `_utf16_units` splits astral characters into their surrogate pair on the way into
+  the scanner, so every production below indexes exactly what upstream indexes and nothing
+  else in the port has to know. That is also why `_printable` exists: upstream's offending
+  token can be an unpaired surrogate, which no UTF-8 stream can encode, and printing one
+  replaced the whole report with a `UnicodeEncodeError` traceback on the *default* engine.
+- **Two of the four throw sites are unreachable.** `message()` can reach `lib/parser.js:17`
+  (no `<summary>`) and `:177` (a scope that never closes). Lines 30 and 48 each need
+  `newline()` to fail immediately after `text()` has run, and `text()` consumes to a newline
+  or to EOF. A 300,000-message random search agreed. The suite pins the reachable set rather
+  than implying it exercises all four, so a refresh that makes a third reachable goes red.
+- **Three places state the throw line numbers and the suite holds all three to the file:**
+  `THROW_SITES`, the `# lib/parser.js:NN` marker on each of the four `raise` statements, and
+  a sentence of prose in `PROVENANCE.md` that the suite parses. Rewording that sentence
+  breaks the test, which is the point.
+- **`node` is not everywhere, and a skip must not read as a pass.** The parity cases skip
+  when `node` is off `PATH` — that machine is the entire reason the transcription exists —
+  but `test_the_node_engine_is_available_under_ci` *fails* when `CI` is set, and `ci.yml`'s
+  `test` job now installs node solely so the guarantee is actually verified there. Nothing
+  in the package needs `node`; do not read that step as a dependency.
 
 ### Forcing a release when every landed commit is hidden
 
