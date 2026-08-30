@@ -161,9 +161,9 @@ THROW_SITES = 4
 
 #: Commits that are known to be unparseable, already accounted for, and must not
 #: re-fail the release audit for ever. Scoped exactly like ``PATH_ALLOWANCES`` in
-#: ``leakcheck.py``: one full SHA, one reason, printed by ``--rules``, and pinned
-#: by the suite so an entry that has outlived its cause fails rather than quietly
-#: covering something new.
+#: ``leakcheck.py``: one full SHA, one reason, printed by ``--rules``. Nothing
+#: verifies that an entry has outlived its cause, so the first entry added to
+#: this dict must bring its pinning test with it.
 #:
 #: Empty here, and that is a measured fact rather than an assumption: every
 #: commit in this repository's history was run through the parser and all of them
