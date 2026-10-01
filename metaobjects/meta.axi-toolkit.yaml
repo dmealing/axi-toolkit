@@ -506,7 +506,9 @@ metadata:
         # above were deleted, because it is the one prescription here that is not
         # discharged: the next extraction -- the Plex probing layer -- reopens the
         # window, and on that day this goes back to `live` with the new gate named here.
+        # DEFERRED is the ruling on that gap: it waits on the Plex probing layer moving.
         status: planned
+        disposition: deferred
         statement: >-
           While a module lives here and in the tool it came from, the two copies are
           compared on every run, by whichever comparison states what the move left
