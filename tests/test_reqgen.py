@@ -152,6 +152,25 @@ def test_a_planned_leaf_may_name_nothing_and_may_dangle():
     )
 
 
+def test_a_retired_leaf_names_nothing_and_claims_nothing():
+    """`retired` states a capability must not be rebuilt, so it has no check to generate.
+
+    The loader refuses `@implementedBy` on a retired entry outright, so the only shape
+    `bind` can see is a leaf naming nothing -- which must bind cleanly, because a
+    prohibition is not a live claim with a missing check.
+    """
+    facts = [fact("toonEncodeCaseCount")]
+    bind(
+        facts,
+        [
+            requirement("withdrawn", status="retired"),
+            requirement(
+                "now", targets=("axi_toolkit::conformance::CapabilityFacts.toonEncodeCaseCount",)
+            ),
+        ],
+    )
+
+
 @pytest.mark.parametrize("level", [1, 2, 3])
 def test_implemented_by_above_the_binding_floor_is_refused(level):
     """L1-L3 are levels of abstraction; only an object or a member is a node."""
