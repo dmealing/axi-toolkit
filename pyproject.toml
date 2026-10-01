@@ -40,7 +40,7 @@ dev = [
 # pytest. Its own floor is 3.11, which is why it is not in `dev`: the test matrix
 # runs down to 3.9 and must not need it.
 reqgen = [
-  "metaobjects==0.24.0",
+  "metaobjects==1.0.10",
 ]
 
 [project.urls]

@@ -184,8 +184,9 @@ directory — naming the file would let a second declaration land beside it and 
 one of the two readers only, which is the drift class this whole layer exists to remove.
 
 **The positional argument is the PROJECT ROOT, not the metadata directory** — the
-opposite of the Python and C# ports' `docs` positionals, and filed upstream as
-metaobjects issue #344. `meta docs metaobjects` fails; run it bare from the root:
+opposite of the Python and C# ports' `docs` positionals. Upstream issue #344 is closed:
+`meta docs metaobjects` still fails (exit 2), but the error now names the project root to
+use instead. Run it bare from the root:
 
 ```sh
 meta docs --out <dir>       # requirements.md and requirements.toon come out with it
@@ -337,11 +338,16 @@ The requirements went with the facts, for the same reason and because the metamo
 rules on it directly — `requirement.status`'s own description says a requirement is
 *prescriptive* and never a journal of what happened, so a capability that no longer
 applies is **deleted**, not annotated as retired, and the record of it belongs to
-version control and to notes like this one. There is no `retired` or `superseded` status
-to reach for; the enum is `planned` / `live` / `partial` and nothing else.
-(`reqgen.DANGLING_OK` still names `abandoned` and `superseded`. Those are stale against
-metaobjects 0.24.0's vocabulary and unreachable: writing either gets `ERR_BAD_ATTR_VALUE`
-out of the loader, before `bind` ever sees it. Verified, not assumed.)
+version control and to notes like this one. That ruling was made on metaobjects 0.24.0,
+whose `@status` enum was `planned` / `live` / `partial` and nothing else.
+**Since 0.24.2 the closed set has a fourth member, `retired`**, chartered as a standing
+prohibition ("this must not be rebuilt") rather than a journal entry, with an optional
+`@supersededBy` naming the replacing requirement. The loader refuses `@implementedBy` on a
+retired entry (`ERR_REQUIREMENT_RETIRED_HAS_IMPLEMENTORS`), so one generates no check and
+`reqgen.bind` treats it like any other non-active leaf. `abandoned` and `superseded` are
+still not in the set (`ERR_BAD_ATTR_VALUE`), and `reqgen.DANGLING_OK` is `planned` alone.
+The four gates above stay deleted; `retired` is the slot to use if the ledger itself
+should ever carry the "do not re-add" rule, with its statement written as a prohibition.
 
 **Three requirements went; one stayed, at `planned`.** `theHomeAssistantServiceModelIsHere`
 and `thePlexIdAndFilterLanguageFollows` each claimed a module was here as its tool had

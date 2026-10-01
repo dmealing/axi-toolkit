@@ -73,8 +73,12 @@ RELATION_BY_OBJECT = {
 }
 
 #: Statuses whose ``@implementedBy`` may name nodes that do not exist. On ``planned``
-#: they do not exist yet; on the other two they are meant to be gone.
-DANGLING_OK = frozenset({"planned", "abandoned", "superseded"})
+#: they do not exist yet. It is the only one: ``retired`` (the fourth member of the
+#: closed set since metaobjects 0.24.2) may not carry ``@implementedBy`` at all -- the
+#: loader refuses it with ERR_REQUIREMENT_RETIRED_HAS_IMPLEMENTORS before ``bind`` runs --
+#: and ``abandoned`` / ``superseded`` are not in the set, so writing either is an
+#: ERR_BAD_ATTR_VALUE load error.
+DANGLING_OK = frozenset({"planned"})
 
 #: Statuses that make a claim about the code as it stands.
 ACTIVE = frozenset({"live", "partial"})
@@ -511,7 +515,7 @@ def do_list(facts: dict[str, Fact], requirements: list) -> int:
     for fact in sorted(facts.values(), key=lambda f: (f.object, f.name)):
         claims = ", ".join(req.path.rpartition(".")[2] for req in _claims(fact))
         print(f"{fact.name:34} {fact.relation:13} {claims}")
-    counted = dict.fromkeys(("live", "partial", "planned", "abandoned", "superseded"), 0)
+    counted = dict.fromkeys(("live", "partial", "planned", "retired"), 0)
     for req in requirements:
         counted[req.status] = counted.get(req.status, 0) + 1
     print()
