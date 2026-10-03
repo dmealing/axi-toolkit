@@ -36,9 +36,9 @@ scripts/install-hooks.sh                 # sets core.hooksPath to .githooks
 
 Its rule set is the **union** of both source tools' scanners, not a subset: a shared
 repository sees fixtures from both domains, and a scanner that catches more in a public
-repository is strictly better than one tuned to today's contents. CI runs `--demo`
-before the real scan, so a scanner that stopped detecting anything fails the build
-rather than passing silently. If it flags a line that legitimately needs the shape, add
+repository is strictly better than one tuned to today's contents. `scripts/ci-local.sh`
+runs `--demo` before the real scan, so a scanner that stopped detecting anything fails
+the check rather than passing silently. If it flags a line that legitimately needs the shape, add
 `leakcheck: allow=<rule>` on that line — scoped to that one rule, never blanket. Do not
 weaken a rule to make a commit pass, and do not bypass the hooks.
 
@@ -371,7 +371,7 @@ two Plex files alone reach **100% statement and branch coverage of `axi_toolkit.
 and they already carry, over every refusal each module raises, the "no recovery stores a
 tool name" assertion the gates' subject halves made. Past them is the stronger
 instrument the gates were only ever standing in for: **each tool's own suite now runs
-against this code**, so a behaviour change here fails there, on the tool's next CI run
+against this code**, so a behaviour change here fails there, on the tool's next gate run
 rather than at somebody's next hand-diff of two checkouts.
 
 **What the failure actually looked like, all four times.** Not a red test. `pytest`
@@ -403,7 +403,9 @@ scripts/dev-setup.sh --reqgen   # a .venv on 3.11+, with the toolchain in it
 AXI_TOOLKIT_SOURCE_HA=<checkout> AXI_TOOLKIT_SOURCE_PLEX=<checkout> .venv/bin/python scripts/reqgen.py capture
 ```
 
-The `requirements` CI job runs `list` and `check`. It is separate from `test` because
+`scripts/ci-local.sh --only requirements` runs `list` and `check`, on every gate run;
+`ci.yml`'s `requirements` job calls it, though with GitHub Actions disabled that job runs
+nowhere. It is separate from `test` because
 the metadata toolchain needs Python 3.11 while the test matrix goes down to 3.9 — the
 generator needs it, the generated checks never do, and that split is what keeps the
 package's own floor at 3.9.
@@ -417,7 +419,7 @@ built — see **The development environment** above; a bare `pytest` is whatever
 machine happens to have, run against whatever interpreter it was installed for.)
 
 - `tests/conformance/test_requirements_generated.py` is generated. **Do not edit it** —
-  change the declaration and regenerate; CI fails on a stale copy.
+  change the declaration and regenerate; `scripts/ci-local.sh` fails on a stale copy.
 - Its last test breaks every check in turn and requires each to fail. A check that has
   never failed is not yet a check.
 - `tests/test_toon_conformance.py` holds `CASE_COUNT`, the one deliberate literal in the
@@ -504,7 +506,9 @@ Four things about it are worth carrying forward:
 - **`node` is not everywhere, and a skip must not read as a pass.** The parity cases skip
   when `node` is off `PATH` — that machine is the entire reason the transcription exists —
   but `test_the_node_engine_is_available_under_ci` *fails* when `CI` is set, and `ci.yml`'s
-  `test` job now installs node solely so the guarantee is actually verified there. Nothing
+  `test` job installs node solely so the guarantee is verified there — with GitHub Actions
+  disabled that job runs nowhere, and `scripts/ci-local.sh` verifies it only where `node`
+  is on `PATH`. Nothing
   in the package needs `node`; do not read that step as a dependency.
 
 ### Forcing a release when every landed commit is hidden
