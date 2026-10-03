@@ -6,7 +6,7 @@ reading two of them and the installations they were developed against. That is
 the failure mode: not a bug, but a commit that quietly describes, or grants
 access to, somebody's home automation instance, media server or workstation. A
 rule a human has to remember is not a control, so this scanner runs from a
-pre-commit hook, a commit-msg hook, and CI.
+pre-commit hook, a commit-msg hook, and the local checks (`scripts/ci-local.sh`).
 
 The rule set is the union of the two source tools' own scanners rather than a
 subset. A shared repository sees fixtures and captures from both domains, and a

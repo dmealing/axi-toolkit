@@ -8,9 +8,9 @@ here rather than trusted.
 Loading real metadata needs the metadata toolchain, whose floor is Python 3.11 while
 this suite runs down to 3.9. Nothing here loads any: the rules operate on the model
 objects, so they are tested on models built in the test. The real declaration is loaded
-by the ``requirements`` CI job, which runs ``reqgen check`` and fails on a stale
-generated file -- a gate rather than a skipped test, because a skipped agreement check
-reads exactly like a passing one.
+by the ``requirements`` section of ``scripts/ci-local.sh``, which runs ``reqgen check``
+and fails on a stale generated file -- a gate rather than a skipped test, because a
+skipped agreement check reads exactly like a passing one.
 """
 
 from __future__ import annotations
@@ -311,7 +311,7 @@ def test_the_generated_module_is_what_the_declaration_produces_now():
     """Not a regeneration: the committed file is compared against the rendering.
 
     Rendering needs only the model, so this runs on every Python the matrix covers,
-    while the CI job that loads the real declaration runs on one.
+    while the requirements step that loads the real declaration runs on one.
     """
     facts = {
         "axi_toolkit::conformance::CapabilityFacts.toonEncodeCaseCount": fact("toonEncodeCaseCount")

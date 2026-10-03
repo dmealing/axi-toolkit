@@ -2,7 +2,8 @@
 # Block a commit that would publish installation-specific data.
 #
 # Install with: scripts/install-hooks.sh
-# The same scan runs in CI, so bypassing this hook only delays the failure.
+# The same scan runs in scripts/ci-local.sh and the gate, so bypassing this hook
+# only delays the failure.
 set -e
 
 root=$(git rev-parse --show-toplevel)

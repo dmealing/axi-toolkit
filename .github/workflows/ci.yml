@@ -17,6 +17,11 @@
 # check (the leak scan, the one gate that must run before a human reads a diff)
 # rather than a matrix. This workflow is the full matrix; it runs on `main`,
 # nightly, and on demand.
+#
+# Every check is a section of `scripts/ci-local.sh`, which the no-mistakes gate
+# also runs; each job here only schedules one section on the runner. GitHub
+# Actions is currently disabled on this repository, so today the script and the
+# gate are the only things that run these checks.
 name: ci (self-hosted)
 
 on:
@@ -49,11 +54,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      # Prove the scanner still detects what it claims to before trusting it.
-      - name: Self-test against a synthetic dirty fixture
-        run: python3 scripts/leakcheck.py --demo
-      - name: Scan every tracked file
-        run: python3 scripts/leakcheck.py
+      # --demo first: prove the scanner still detects what it claims to before
+      # trusting its scan of every tracked file.
+      - run: scripts/ci-local.sh --only leakcheck
 
   # A commit message release-please cannot parse is dropped from the changelog
   # and the version bump while the release workflow exits 0. `release.yml` fails
@@ -79,12 +82,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
-      - name: Self-test the checker
-        run: python3 scripts/commitcheck.py --demo
-      - name: Audit every commit since the last release
+      - name: Self-test the checker, then audit every commit since the last release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: python3 scripts/commitcheck.py --since-release --pull-requests require
+        run: scripts/ci-local.sh --only commits
 
   # EVERY job that needs third-party packages installs into a fresh `.venv` and
   # calls the tools by path out of it. That is not ceremony. This runner runs as
@@ -109,8 +110,7 @@ jobs:
       - run: python -m venv --clear .venv
       - run: .venv/bin/python -m pip install --upgrade pip
       - run: .venv/bin/pip install -e ".[dev]"
-      - run: .venv/bin/ruff check .
-      - run: .venv/bin/ruff format --check .
+      - run: scripts/ci-local.sh --only lint
 
   test:
     name: test (py${{ matrix.python-version }})
@@ -144,7 +144,7 @@ jobs:
       # reads the committed capture, which is the property that lets the whole
       # suite run here at all — and the floor is 3.9 precisely because the
       # metadata toolchain (3.11+) is not needed to run what it generated.
-      - run: .venv/bin/pytest
+      - run: scripts/ci-local.sh --only test
 
   # The declaration is the source of truth, so a generated file that no longer
   # matches it is a failure rather than a stale artefact somebody will notice.
@@ -168,8 +168,7 @@ jobs:
       # Loads the declaration under the sealed-registry discipline and applies
       # the binding rules — an invented attribute, a requirement with no check,
       # a reference that no longer resolves, all fail here.
-      - run: .venv/bin/python scripts/reqgen.py list
-      - run: .venv/bin/python scripts/reqgen.py check
+      - run: scripts/ci-local.sh --only requirements
 
   # Nothing watches a workflow that runs on main and overnight, so a failure has
   # to come and find someone.

@@ -112,7 +112,7 @@ sealed, so inventing one is a load error rather than a code-review question.
 Every expected value lives in `tests/conformance/capture.json`, machine-written from two
 authorities that need no credentials: the vendored specification fixtures, and the two
 source CLIs read from a local checkout at capture time. All four projection kinds
-therefore run offline, in ordinary CI, with no secrets.
+therefore run offline, in `scripts/ci-local.sh`, with no secrets.
 
 ```sh
 scripts/dev-setup.sh --reqgen                 # .venv, with the 3.11 toolchain in it
