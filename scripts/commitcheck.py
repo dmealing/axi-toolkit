@@ -1375,8 +1375,8 @@ def audit_pull_request(number, *, engine, root=".", stream=None, slug=None):
 #
 # Built from shapes rather than from remembered verdicts: a checker that stopped
 # detecting anything reads as a checker with nothing to report, which is how a
-# guard dies quietly. `--demo` runs in CI ahead of the real audit for the same
-# reason `leakcheck.py --demo` does.
+# guard dies quietly. `--demo` runs ahead of the real audit in
+# `scripts/ci-local.sh` for the same reason `leakcheck.py --demo` does.
 # ---------------------------------------------------------------------------
 
 #: Messages the grammar must refuse, each with the shape it is there to pin.

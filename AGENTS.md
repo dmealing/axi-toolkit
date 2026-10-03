@@ -84,10 +84,10 @@ break the installation of the tool they are contributing to.
 calls the tools by path out of it — its own comment says why: on a self-hosted runner
 `~/.local/bin` is ahead on `PATH` and the user site is on the interpreter's path, so a
 bare `pytest` or `ruff` is whatever the machine happens to have. The script exists so
-the documented path is the path CI proves, and so that a reader who does not know any of
-the above still ends up isolated. The floor split the script encodes — 3.9 for the
-package, 3.11 for the requirements toolchain — is the same one that keeps `test` and
-`requirements` separate jobs.
+the documented path is the path the checks prove, and so that a reader who does not
+know any of the above still ends up isolated. The floor split the script encodes —
+3.9 for the package, 3.11 for the requirements toolchain — is the same one that keeps
+`test` and `requirements` separate jobs.
 
 A future reader will be tempted to "simplify" this back to a single bare editable-install
 line. That is the defect, not the simplification.

@@ -4,8 +4,11 @@
 # looks at a diff: this repository is public and it is built by reading two
 # tools and the installations they were developed against, so an address, a
 # token or a real entity name in a diff is the failure that matters. Everything
-# heavier — lint, the Python matrix, the requirements gate — runs in `ci.yml` on
-# the maintainer's self-hosted runner, on `main` rather than on pull requests.
+# heavier — lint, the Python matrix, the requirements gate — runs through
+# `scripts/ci-local.sh`: the no-mistakes gate calls it on every change, and
+# `ci.yml` schedules it one section per job on `main` rather than on pull
+# requests, though GitHub Actions is currently disabled here so the workflow
+# itself runs nowhere.
 #
 # That is not a reduction in rigour, and a thin-looking PR check should not be
 # read as one: every change goes through the local no-mistakes gate — review,
