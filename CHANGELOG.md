@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.2](https://github.com/dmealing/axi-toolkit/compare/v0.4.1...v0.4.2) (2026-10-05)
+
+
+### Bug Fixes
+
+* **toolkit:** align with hass-axi rename, add delegation-parameter redaction, fix TOON encoder regex ([#18](https://github.com/dmealing/axi-toolkit/issues/18)) ([9dad76e](https://github.com/dmealing/axi-toolkit/commit/9dad76e8c91adb484202e5dcb5bd47b301764241))
+
 ## [0.4.1](https://github.com/dmealing/axi-toolkit/compare/v0.4.0...v0.4.1) (2026-08-29)
 
 
