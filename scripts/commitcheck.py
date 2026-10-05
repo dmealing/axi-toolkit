@@ -130,8 +130,11 @@ GitHub, with a token from ``GITHUB_TOKEN``, ``GH_TOKEN`` or ``gh auth token``.
 ``--pull-requests require`` (the workflows) fails without one rather than
 checking a different artefact and calling it green.
 
-Exit status is 0 when every message parses and 1 when one does not, so the hooks
-and the release workflow can both use it directly.
+Exit status is 0 when release-please would read everything and 1 when it would
+not. 1 covers an unclosed commit-override block in a pull request body as well
+as a message that fails to parse: the body replaces the message whether or not
+what it substitutes parses, so the audits fault the body itself. The hooks and
+the release workflow can both use the status directly.
 
 Standard library only, so the hooks run without the project's virtualenv.
 """
