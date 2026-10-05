@@ -33,6 +33,14 @@ transcription exists -- so the parity cases skip when ``node`` is off ``PATH``. 
 is not a pass, and a whole guarantee going unverified in CI must not be silent, so
 ``test_the_node_engine_is_available_under_ci`` fails rather than skips when ``CI`` is
 set.
+
+**And one thing that is not a guarantee about the parser at all.** release-please does
+not parse the commit message when the pull request body so much as names the override
+marker: it parses the block in the body instead. An unclosed block whose text happens
+to *parse* leaves every count healthy while the changelog entry is an accidental
+paragraph, so ``--since-release`` and ``--commit`` fault the body itself rather than
+only the parse. The last section here pins that, against throwaway repositories and
+with nothing reaching the network.
 """
 
 from __future__ import annotations
@@ -43,6 +51,7 @@ import io
 import os
 import random
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -410,6 +419,150 @@ def test_a_report_survives_a_token_no_stream_can_encode():
         rendered = stream.getvalue()
         rendered.encode("utf-8")  # raises if an unpaired surrogate reached the report
         assert "\\ud83d" in rendered, f"{engine} did not name the leading surrogate"
+
+
+# ---------------------------------------------------------------------------
+# The audits fault a body that replaces the message, whether or not it parses.
+# ---------------------------------------------------------------------------
+
+
+def _repo(tmp_path, commits):
+    """A throwaway repository with one commit per message, oldest first."""
+    root = tmp_path / "repo"
+    root.mkdir()
+
+    def run(*args):
+        subprocess.run(["git", "-C", str(root), *args], check=True, capture_output=True, text=True)
+
+    run("init", "-q", "-b", "main")
+    run("config", "user.email", "nobody@example.com")
+    run("config", "user.name", "Nobody")
+    run("config", "core.hooksPath", str(tmp_path / "no-hooks"))
+    run("config", "commit.gpgsign", "false")
+    (root / ".release-please-manifest.json").write_text('{\n  ".": "1.0.0"\n}\n')
+    run("add", ".release-please-manifest.json")
+    run("commit", "-q", "-m", "chore: release 1.0.0")
+    run("tag", "v1.0.0")
+    for message in commits:
+        run("commit", "-q", "--allow-empty", "-m", message)
+    return root
+
+
+def _head(root):
+    return subprocess.run(
+        ["git", "-C", str(root), "rev-parse", "HEAD"], capture_output=True, text=True, check=True
+    ).stdout.strip()
+
+
+def _with_bodies(monkeypatch, bodies):
+    """A reachable repository whose commits carry ``bodies``. No network."""
+    monkeypatch.setattr(commitcheck, "github_token", lambda: "a token")
+    monkeypatch.setattr(commitcheck, "repo_slug", lambda root=".": "owner/name")
+    monkeypatch.setattr(commitcheck, "github_json", lambda path, **kwargs: {"full_name": path})
+    monkeypatch.setattr(
+        commitcheck,
+        "pull_request_body_for_commit",
+        lambda sha, **kwargs: bodies.get(sha),
+    )
+
+
+GOOD_MESSAGE = "fix: a real fix\n\nbody text\n"
+
+
+def _unclosed_body_that_parses():
+    """A body that only *mentions* the marker, followed by a paragraph that parses."""
+    return (
+        "A paragraph explaining that a body naming "
+        f"{commitcheck.OVERRIDE_START}\n"
+        "\n"
+        "fix: the paragraph after the mention, which parses\n"
+    )
+
+
+def test_the_audit_fails_on_a_perfect_message_whose_body_replaces_it(tmp_path, capsys, monkeypatch):
+    """Every commit message in the range is impeccable, and the audit must still fail.
+
+    The pull request body is what release-please will read.
+    """
+    root = _repo(tmp_path, [GOOD_MESSAGE])
+    body = f"prose {commitcheck.OVERRIDE_START} block from the body"
+    _with_bodies(monkeypatch, {_head(root): body})
+    assert commitcheck.audit_range("v1.0.0..HEAD", engine="python", root=root) == 1
+    out = capsys.readouterr().out
+    assert "1 carry a commit-override block" in out
+    assert "release-please would consider: 0" in out
+
+
+def test_the_audit_fails_when_the_replacing_text_parses(tmp_path, capsys, monkeypatch):
+    """The quiet variant of the hijack, which the parse cannot see at all.
+
+    An unclosed block whose text happens to parse leaves every count healthy --
+    release-please really can read *something* -- and the something is an
+    accidental paragraph. The fault lives in the body, not the parse, so the
+    post-merge audit applies the same rule the pull request check does.
+    """
+    root = _repo(tmp_path, [GOOD_MESSAGE])
+    body = _unclosed_body_that_parses()
+    _with_bodies(monkeypatch, {_head(root): body})
+    assert not commitcheck.check(GOOD_MESSAGE, engine="python", pull_request_body=body)
+    assert commitcheck.audit_range("v1.0.0..HEAD", engine="python", root=root) == 1
+    out = capsys.readouterr().out
+    assert "silently dropped:              0" in out
+    assert "messages replaced by an unclosed override block: 1" in out
+    assert "the body silently replaced this message" in out
+
+
+def test_an_allowance_never_covers_a_replaced_message(tmp_path, capsys, monkeypatch):
+    """``KNOWN_UNPARSEABLE`` exempts a loss that is accounted for, and nothing else.
+
+    The entry says the *message's* content was restated elsewhere. A body that
+    replaces the message with an accidental paragraph is a different,
+    unaccounted loss, and honouring the allowance for it would put the blind
+    spot back one layer up.
+    """
+    root = _repo(tmp_path, [GOOD_MESSAGE])
+    head = _head(root)
+    _with_bodies(monkeypatch, {head: f"prose {commitcheck.OVERRIDE_START} block from the body"})
+    monkeypatch.setitem(
+        commitcheck.KNOWN_UNPARSEABLE, head, "the message is accounted for elsewhere"
+    )
+    assert commitcheck.audit_range("v1.0.0..HEAD", engine="python", root=root) == 1
+    out = capsys.readouterr().out
+    assert "known-unparseable, accounted for: 1" in out
+    assert "the body silently replaced this message" in out
+
+
+def test_commit_audit_reports_a_replacement_even_when_it_parses(tmp_path, capsys, monkeypatch):
+    """``--commit`` answers the factual question, and a replacement is not a parse question.
+
+    A readable block that was never meant to be the message is still the wrong
+    string becoming the changelog entry.
+    """
+    root = _repo(tmp_path, [GOOD_MESSAGE])
+    head = _head(root)
+    _with_bodies(monkeypatch, {head: _unclosed_body_that_parses()})
+    assert commitcheck.audit_commit(head, engine="python", root=root) == 1
+    out = capsys.readouterr().out
+    assert "verdict: readable" not in out
+    assert "closes the block" in out
+
+
+def test_a_deliberate_closed_override_passes_both_audits(tmp_path, capsys, monkeypatch):
+    """The fault is the *unclosed* block. A closed one is a decision and stays allowed."""
+    root = _repo(tmp_path, [GOOD_MESSAGE])
+    head = _head(root)
+    body = (
+        f"prose\n\n{commitcheck.OVERRIDE_START}\n"
+        "fix: the message the author chose instead\n"
+        f"{commitcheck.OVERRIDE_END}\n"
+    )
+    assert not commitcheck.override_faults(body)
+    _with_bodies(monkeypatch, {head: body})
+    assert commitcheck.audit_range("v1.0.0..HEAD", engine="python", root=root) == 0
+    assert commitcheck.audit_commit(head, engine="python", root=root) == 0
+    out = capsys.readouterr().out
+    assert "replaced by an unclosed override block" not in out
+    assert "verdict: readable" in out
 
 
 # ---------------------------------------------------------------------------
