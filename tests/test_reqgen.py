@@ -16,6 +16,7 @@ skipped agreement check reads exactly like a passing one.
 from __future__ import annotations
 
 import importlib.util
+import json
 import sys
 from pathlib import Path
 
@@ -341,8 +342,6 @@ def test_the_committed_generated_module_matches_the_committed_capture():
     The two come from one declaration and so cannot drift; this is the assertion that
     says so out loud, and it needs neither the toolchain nor a regeneration.
     """
-    import json
-
     from conformance import test_requirements_generated as generated
 
     captured = set(
@@ -358,3 +357,128 @@ def test_snake_case_matches_the_projection_naming_convention():
     assert reqgen.snake("toonEncodeCaseCount") == "toon_encode_case_count"
     assert reqgen.snake("haRecoveryLines") == "ha_recovery_lines"
     assert reqgen.snake("encoderDigest") == "encoder_digest"
+
+
+# ------------------------------------------- the capture is all or nothing
+
+
+def test_a_capture_that_cannot_read_a_tool_writes_nothing(monkeypatch, tmp_path):
+    """The failure names the fact and the variable, and no file appears."""
+    monkeypatch.delenv("AXI_TOOLKIT_SOURCE_HA", raising=False)
+    monkeypatch.delenv("AXI_TOOLKIT_SOURCE_PLEX", raising=False)
+    target = tmp_path / "capture.json"
+    monkeypatch.setattr(reqgen, "CAPTURE_PATH", target)
+    facts = {
+        "toonEncodeCaseCount": fact("toonEncodeCaseCount", sub_type="int", is_array=False),
+        "encoderDigest": fact("encoderDigest", "DifferentialFacts"),
+    }
+    with pytest.raises(reqgen.CaptureError, match="encoderDigest: AXI_TOOLKIT_SOURCE_HA is not"):
+        reqgen.do_capture(facts)
+    assert not target.exists()
+
+
+def test_a_committed_capture_that_cannot_be_read_is_a_message_not_a_traceback(
+    monkeypatch, tmp_path
+):
+    """A bad merge leaves a file that is not JSON; drift says so in one line."""
+    target = tmp_path / "capture.json"
+    target.write_text("<<<<<<< not json")
+    monkeypatch.setattr(reqgen, "CAPTURE_PATH", target)
+    monkeypatch.setattr(reqgen, "_rel", lambda path: path.name)
+    facts = {"toonEncodeCaseCount": fact("toonEncodeCaseCount", sub_type="int", is_array=False)}
+    with pytest.raises(reqgen.CaptureError, match=r"capture\.json cannot be read as a capture"):
+        reqgen.do_drift(facts)
+
+
+def test_an_unexpected_failure_is_reported_without_the_path_it_carried(monkeypatch, tmp_path):
+    """A bare ``FileNotFoundError`` prints where the checkout is. This one does not."""
+    from conformance import projections
+
+    monkeypatch.setenv("AXI_TOOLKIT_SOURCE_HA", str(tmp_path))
+
+    def explode():
+        raise FileNotFoundError(f"[Errno 2] No such file or directory: '{tmp_path}/src/gone.py'")
+
+    monkeypatch.setattr(projections, "capture_encoder_digest", explode)
+    with pytest.raises(reqgen.CaptureError) as caught:
+        reqgen.build_capture({"encoderDigest": fact("encoderDigest", "DifferentialFacts")})
+    message = str(caught.value)
+    assert "in the tool it reads or in the projection itself" in message
+    assert "encoderDigest: `capture_encoder_digest` raised FileNotFoundError" in message
+    assert "<AXI_TOOLKIT_SOURCE_HA>/src/gone.py" in message
+    assert str(tmp_path) not in message
+
+
+# --------------------------------------------------------------------- drift
+
+
+def test_a_capture_the_tools_still_agree_with_reports_nothing():
+    facts = {"count": 3, "rows": [{"case": "a", "expected": "a"}]}
+    assert reqgen.drift_report(facts, json.loads(json.dumps(facts))) == []
+
+
+def test_drift_names_the_fact_and_shows_what_went_and_what_came():
+    committed = {"lines": [{"case": "old tool line"}, {"case": "kept"}], "same": ["x"]}
+    fresh = {"lines": [{"case": "kept"}, {"case": "new tool line"}], "same": ["x"]}
+    assert reqgen.drift_report(committed, fresh) == [
+        "lines: 1 committed row(s) gone, 1 new",
+        '  - {"case": "old tool line"}',
+        '  + {"case": "new tool line"}',
+    ]
+
+
+def test_drift_reports_a_scalar_fact_by_both_values():
+    assert reqgen.drift_report({"count": 3}, {"count": 4}) == [
+        "count: committed 3, the tools now say 4"
+    ]
+
+
+def test_drift_reports_rows_that_only_changed_order():
+    """The committed file is then not what a capture would write, so it is still drift."""
+    assert reqgen.drift_report({"rows": ["a", "b"]}, {"rows": ["b", "a"]}) == [
+        "rows: the same rows in a different order"
+    ]
+
+
+def test_drift_reports_a_fact_on_one_side_only():
+    assert reqgen.drift_report({"gone": [1]}, {"arrived": [1]}) == [
+        "arrived: declared, and not in the committed capture",
+        "gone: in the committed capture, and no longer declared",
+    ]
+
+
+def test_a_long_drift_is_counted_rather_than_printed_whole():
+    fresh = {"rows": [f"row {index:02}" for index in range(reqgen._DRIFT_ROWS_SHOWN + 5)]}
+    report = reqgen.drift_report({"rows": []}, fresh)
+    assert report[0] == f"rows: 0 committed row(s) gone, {reqgen._DRIFT_ROWS_SHOWN + 5} new"
+    assert report[-1] == "  + ... and 5 more"
+    assert len(report) == reqgen._DRIFT_ROWS_SHOWN + 2
+
+
+_TOOL_DIGESTS = ("first-axi", "second-axi")
+
+
+def _encoders(first: str, second: str, here: str):
+    return reqgen.encoder_report(dict(zip(_TOOL_DIGESTS, (first, second))), here)
+
+
+def test_three_copies_of_the_encoder_with_one_digest_are_identical():
+    identical, line = _encoders("a" * 64, "a" * 64, "a" * 64)
+    assert identical
+    assert "is byte-identical in all three copies" in line
+
+
+@pytest.mark.parametrize(
+    "digests",
+    [
+        ("b" * 64, "a" * 64, "a" * 64),
+        ("a" * 64, "b" * 64, "a" * 64),
+        ("a" * 64, "a" * 64, "b" * 64),
+    ],
+)
+def test_any_one_copy_of_the_encoder_differing_is_reported(digests):
+    """Including this package's: the tools agreeing with each other is not enough."""
+    identical, line = _encoders(*digests)
+    assert not identical
+    assert "is NOT byte-identical" in line
+    assert "first-axi" in line and "second-axi" in line and "this package" in line

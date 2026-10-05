@@ -54,6 +54,12 @@ CHECKS = {
             "thePureModulesImportNoHttpLibrary",
         ),
     ),
+    "redactionRules": (
+        "equal",
+        (
+            "aCredentialCannotReachStdout.everyToolRedactionRuleIsRunHereInItsOrder",
+        ),
+    ),
     "toonCaseOptionNames": (
         "equal",
         (
@@ -189,6 +195,7 @@ SUBJECTS = {
     "errorExitCodes": lambda captured: projections.subject_error_exit_codes(),
     "errorFaultClasses": lambda captured: projections.subject_error_fault_classes(),
     "errorTypeNames": lambda captured: projections.subject_error_type_names(),
+    "redactionRules": lambda captured: projections.subject_redaction_rules(),
     "toonCaseOptionNames": lambda captured: projections.subject_toon_case_option_names(),
     "toonEncodeCaseCount": lambda captured: projections.subject_toon_encode_case_count(),
     "toonExercisedDelimiters": lambda captured: projections.subject_toon_exercised_delimiters(),
@@ -257,6 +264,15 @@ def test_error_type_names():
     Breaking it looks like: A tool taking this package and finding an exit code or an error type it used has gone missing.
     """
     _judge("errorTypeNames")
+
+
+def test_redaction_rules():
+    """The credential shapes each tool's redactor applies, and the order it applies them in, are the ones this package runs for that tool.
+
+    Requirement: aCredentialCannotReachStdout.everyToolRedactionRuleIsRunHereInItsOrder (functional, live).
+    Breaking it looks like: A tool gains a shape no sample happens to exercise, the capture refreshes clean, and this package lets that credential through.
+    """
+    _judge("redactionRules")
 
 
 def test_toon_case_option_names():

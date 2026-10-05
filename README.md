@@ -120,6 +120,7 @@ scripts/dev-setup.sh --reqgen                 # .venv, with the 3.11 toolchain i
 .venv/bin/python scripts/reqgen.py check      # fail if the generated checks are stale
 AXI_TOOLKIT_SOURCE_HA=<checkout> AXI_TOOLKIT_SOURCE_PLEX=<checkout> \
   .venv/bin/python scripts/reqgen.py capture  # re-read the authorities
+scripts/ci-local.sh --only drift              # fail if the capture is not what both tools' main say
 ```
 
 The generator is only worth its lines because of four things a hand-written suite does

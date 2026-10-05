@@ -221,14 +221,28 @@ Consequences worth keeping straight:
   claims are all enforced in `reqgen.bind` and tested in `tests/test_reqgen.py`.
 - **`tests/conformance/capture.json` is machine-written and never hand-edited.** It
   holds every expected value in the repository. Re-read it with `reqgen capture`, which
-  needs both source checkouts; nothing else does. **Retiring the drift gates did not
-  change that**, and it is worth saying because it looks as though it should have: with
-  both tools now importing this package, the obvious guess is that the capture has
-  nothing left to read out of a checkout. Measured rather than guessed — **18 of the 24
-  capture halves still refuse to run without one**, because the toolkit-tier facts
-  (`errorExitCodes`, `haRecoveryLines`, `plexNormalizedUrls`, every `DifferentialFacts`
-  row, …) read the tools' *own* modules, which they still have. Only the six TOON facts
-  read the vendored fixtures instead. Both variables stay required.
+  needs both source checkouts; `reqgen drift` does too, and nothing else does.
+  **Retiring the drift gates did not change that**, and it is worth saying because it
+  looks as though it should have: with both tools now importing this package, the
+  obvious guess is that the capture has nothing left to read out of a checkout. Measured
+  rather than guessed — **19 of the 25 capture halves still refuse to run without
+  one**, because the toolkit-tier facts (`errorExitCodes`, `haRecoveryLines`,
+  `plexNormalizedUrls`, `redactionRules`, every `DifferentialFacts` row, …) read the
+  tools' *own* modules, which they still have. Only the six TOON facts read the vendored
+  fixtures instead. Both variables stay required.
+- **The capture is checked against the tools by the gate, not by memory.**
+  `scripts/ci-local.sh --only drift` fetches both tools at `main`, re-reads every fact
+  with `reqgen drift`, and fails when the committed capture is not what they say or the
+  three copies of `toon.py` are not one file. It exists because the capture once sat
+  stale through a package rename, a new redaction shape and an encoder fix in the tools
+  with every check here green: `pytest` judges this package against the capture, and
+  nothing judged the capture. With no network it prints `SKIPPED` and **fails**;
+  `AXI_TOOLKIT_ALLOW_OFFLINE=1` is the explicit override, and the section is then
+  reported as skipped, never as passed. A capture that cannot read a tool raises
+  `SourceError` naming the package, command or module it looked for, and writes
+  nothing. `redactionRules` is the fact that makes a new shape visible: it records the
+  patterns each tool's `redact` applies, in order, so a shape no sample exercises is
+  still a changed row.
 - **A module extracted but not yet adopted is gated against its origin, and the gate is
   deleted the day it is adopted.** Both halves of that rule are load-bearing and both
   have now been exercised to the end: **four gates were raised and all four are
@@ -236,7 +250,7 @@ Consequences worth keeping straight:
   why each existed, why each went, and the two techniques worth reusing. A live gate's
   reach is the reach every capture-backed check has and no more: drift introduced
   **here** goes red on the next `pytest`, drift introduced **there** goes red at the
-  next `reqgen capture`. **There are no live instances today**, which is why
+  next `reqgen drift`, which the gate runs. **There are no live instances today**, which is why
   `anExtractedModuleIsGatedAgainstItsOriginUntilTheToolTakesIt` is the ledger's only
   `planned` entry and names no fact: no module lives in two places, so there is nothing
   to gate. The next extraction — the Plex probing layer — reopens the window and puts it
@@ -402,6 +416,7 @@ Regenerate and gate:
 scripts/dev-setup.sh --reqgen   # a .venv on 3.11+, with the toolchain in it
 .venv/bin/python scripts/reqgen.py list | check | generate
 AXI_TOOLKIT_SOURCE_HA=<checkout> AXI_TOOLKIT_SOURCE_PLEX=<checkout> .venv/bin/python scripts/reqgen.py capture
+scripts/ci-local.sh --only drift   # is the capture still what both tools' main say
 ```
 
 `scripts/ci-local.sh --only requirements` runs `list` and `check`, on every gate run;

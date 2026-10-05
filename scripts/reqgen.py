@@ -9,7 +9,11 @@ thing that reads it, and it emits three artefacts from that one declaration:
 * ``tests/conformance/test_requirements_generated.py`` -- one check per fact, plus a
   vacuity self-test that breaks each one in turn (``reqgen generate``);
 * a verdict on whether the committed copy of that file is what the declaration would
-  produce now (``reqgen check``).
+  produce now (``reqgen check``);
+* a verdict on whether the committed capture is still what the two source tools say
+  (``reqgen drift``). The checks compare this package to the capture and need nothing
+  but the repository; ``drift`` compares the capture to the tools, which is the half
+  that otherwise waits for somebody to remember to run a capture.
 
 **Why generate rather than hand-write the checks.** A prior measurement was honest
 about this: thirty-one lines of plain pytest reading the same capture caught every
@@ -38,6 +42,7 @@ named, never a warning.
 
 Usage:
   scripts/reqgen.py capture     read both authorities and write the capture
+  scripts/reqgen.py drift       fail if the committed capture is not what they say now
   scripts/reqgen.py generate    write the generated check module
   scripts/reqgen.py check       fail if the committed module is stale
   scripts/reqgen.py list        print the declaration as a table
@@ -84,6 +89,10 @@ DANGLING_OK = frozenset({"planned"})
 ACTIVE = frozenset({"live", "partial"})
 
 _CAMEL = re.compile(r"(?<!^)(?=[A-Z])")
+
+
+class CaptureError(Exception):
+    """An authority could not be read, so no capture exists -- not a partial one."""
 
 
 class DeclarationError(Exception):
@@ -304,14 +313,55 @@ def _projection_functions() -> set[str]:
 # --------------------------------------------------------------------- capture
 
 
-def do_capture(facts: dict[str, Fact]) -> int:
-    sys.path.insert(0, str(REPO_ROOT / "src"))
-    sys.path.insert(0, str(REPO_ROOT / "tests"))
+def _projections():
+    for entry in (REPO_ROOT / "src", REPO_ROOT / "tests"):
+        if str(entry) not in sys.path:
+            sys.path.insert(0, str(entry))
     from conformance import projections
 
+    return projections
+
+
+def build_capture(facts: dict[str, Fact]) -> dict:
+    """Read every fact from its authority, or raise without having produced anything.
+
+    All or nothing, and that is the property: a capture holding the facts that could
+    be read and silently missing the ones that could not would be committed as whole.
+    A failure names the fact and what was missing. It is one line rather than a
+    traceback because the traceback's frames are local paths, and this message is
+    read in a public pull request as often as in a terminal.
+    """
+    projections = _projections()
     captured = {}
     for fact in sorted(facts.values(), key=lambda f: f.name):
-        captured[fact.name] = getattr(projections, fact.capture_fn)()
+        try:
+            captured[fact.name] = getattr(projections, fact.capture_fn)()
+        except projections.SourceError as exc:
+            raise CaptureError(f"a source tool could not be read.\n{fact.name}: {exc}") from None
+        except Exception as exc:
+            # Not known to be the tool's doing: a projection can be wrong as well.
+            detail = _without_paths(str(exc), projections)
+            raise CaptureError(
+                "a capture half failed, in the tool it reads or in the projection itself.\n"
+                f"{fact.name}: `{fact.capture_fn}` raised {type(exc).__name__}: {detail}"
+            ) from exc
+    return captured
+
+
+def _without_paths(text: str, projections) -> str:
+    """``text`` with every checkout location replaced by the variable that named it."""
+    import os
+
+    for variable in projections._SOURCE_ENV.values():
+        raw = os.environ.get(variable)
+        if raw:
+            for spelling in {raw, str(Path(raw).expanduser().resolve())}:
+                text = text.replace(spelling, f"<{variable}>")
+    return text.replace(str(REPO_ROOT), "<repository>").replace(str(Path.home()), "~")
+
+
+def do_capture(facts: dict[str, Fact]) -> int:
+    captured = build_capture(facts)
     payload = {
         "_comment": (
             "Machine-written by scripts/reqgen.py from the authorities named in "
@@ -325,6 +375,94 @@ def do_capture(facts: dict[str, Fact]) -> int:
     total = sum(len(v) if isinstance(v, list) else 1 for v in captured.values())
     print(f"reqgen capture: {len(captured)} facts, {total} recorded values -> {_rel(CAPTURE_PATH)}")
     return 0
+
+
+# ------------------------------------------------------------------------ drift
+
+#: Rows shown per fact and direction before the rest are only counted.
+_DRIFT_ROWS_SHOWN = 8
+
+
+def drift_report(committed: dict, fresh: dict) -> list[str]:
+    """What differs between the committed capture's facts and a fresh read, as lines.
+
+    Empty when nothing does. Rows are compared as sets, because that is what a reader
+    needs -- which lines a tool dropped and which it gained -- and a fact whose rows
+    only changed order is still reported, since the committed file is then not what a
+    capture would write.
+    """
+    lines: list[str] = []
+    for name in sorted(set(committed) | set(fresh)):
+        if name not in fresh:
+            lines.append(f"{name}: in the committed capture, and no longer declared")
+            continue
+        if name not in committed:
+            lines.append(f"{name}: declared, and not in the committed capture")
+            continue
+        old, new = committed[name], fresh[name]
+        if old == new:
+            continue
+        if not (isinstance(old, list) and isinstance(new, list)):
+            lines.append(f"{name}: committed {old!r}, the tools now say {new!r}")
+            continue
+        was = {json.dumps(row, sort_keys=True) for row in old}
+        now = {json.dumps(row, sort_keys=True) for row in new}
+        gone, added = sorted(was - now), sorted(now - was)
+        if not gone and not added:
+            lines.append(f"{name}: the same rows in a different order")
+            continue
+        lines.append(f"{name}: {len(gone)} committed row(s) gone, {len(added)} new")
+        for sign, rows in (("-", gone), ("+", added)):
+            lines.extend(f"  {sign} {row}" for row in rows[:_DRIFT_ROWS_SHOWN])
+            if len(rows) > _DRIFT_ROWS_SHOWN:
+                lines.append(f"  {sign} ... and {len(rows) - _DRIFT_ROWS_SHOWN} more")
+    return lines
+
+
+def encoder_report(tools: dict[str, str], here: str) -> tuple[bool, str]:
+    """Whether the three copies of the encoder are one file, and a line saying so.
+
+    ``tools`` is each tool's name and the digest of its copy, ``here`` this package's.
+    Also in the capture, as ``encoderDigest``. Stated on its own because it is the one
+    fact where "the tools agree with the capture" is not the claim: the claim is that
+    three files are byte-identical, and this compares the three directly.
+    """
+    digests = {**tools, "this package": here}
+    identical = len(set(digests.values())) == 1
+    shown = ", ".join(f"{name} {digest[:12]}" for name, digest in digests.items())
+    verdict = "byte-identical" if identical else "NOT byte-identical"
+    return identical, f"toon.py is {verdict} in all three copies (sha256: {shown})"
+
+
+def do_drift(facts: dict[str, Fact]) -> int:
+    fresh = build_capture(facts)
+    try:
+        committed = json.loads(CAPTURE_PATH.read_text(encoding="utf-8"))["facts"]
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        raise CaptureError(
+            f"{_rel(CAPTURE_PATH)} cannot be read as a capture ({type(exc).__name__})."
+        ) from None
+    lines = drift_report(committed, fresh)
+    projections = _projections()
+    row = fresh["encoderDigest"][0]
+    identical, encoder_line = encoder_report(
+        {projections._TOOL_NAME[tool]: row[tool] for tool in projections.TOOLS},
+        projections.subject_encoder_digest(row["subject"]),
+    )
+    print(f"reqgen drift: {encoder_line}")
+    if not lines and identical:
+        print(f"reqgen drift: {len(fresh)} facts, and {_rel(CAPTURE_PATH)} is what the tools say")
+        return 0
+    if lines:
+        print(f"reqgen drift: {_rel(CAPTURE_PATH)} is not what the two source tools say now.")
+        print("\n".join(lines))
+    print(
+        "A source tool has changed since the capture was written, so the checks are "
+        "judging this package against a tool that no longer exists.\n"
+        "Run `reqgen capture` against both checkouts, read the diff row by row, and "
+        "bring this package back in step before committing it."
+    )
+    return 1
 
 
 # ------------------------------------------------------------------ generation
@@ -529,7 +667,7 @@ def _rel(path: Path) -> str:
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("command", choices=("capture", "generate", "check", "list"))
+    parser.add_argument("command", choices=("capture", "drift", "generate", "check", "list"))
     args = parser.parse_args(argv)
 
     try:
@@ -539,8 +677,13 @@ def main(argv=None) -> int:
         print(f"reqgen: the declaration is not usable.\n{exc}", file=sys.stderr)
         return 1
 
-    if args.command == "capture":
-        return do_capture(facts)
+    if args.command in ("capture", "drift"):
+        try:
+            return do_capture(facts) if args.command == "capture" else do_drift(facts)
+        except CaptureError as exc:
+            wrote = "written" if args.command == "capture" else "compared"
+            print(f"reqgen {args.command}: {exc}\nNothing was {wrote}.", file=sys.stderr)
+            return 2
     if args.command == "generate":
         return do_generate(facts)
     if args.command == "check":

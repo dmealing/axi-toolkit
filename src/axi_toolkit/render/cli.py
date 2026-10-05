@@ -38,12 +38,12 @@ __all__ = ["line", "lines", "parse", "parse_all"]
 _DEFAULT_SEPARATOR = " "
 
 # `Set <VAR> to <describes>`, with the two trailing spellings the source tools use.
-_SET_ENV = re.compile(r"^Set (?P<variable>[A-Z][A-Z0-9_]*) to (?P<rest>.+)$")
+_SET_ENV = re.compile(r"^Set (?P<variable>[A-Z][A-Z0-9_]*) to (?P<rest>.+)\Z")
 _EXAMPLE = ", e.g. "
 _REFERENCE = "; see "
 
 # The first backtick-delimited span on the line, and what sits either side of it.
-_BACKTICKED = re.compile(r"^(?P<lead>[^`]*)`(?P<body>[^`]*)`(?P<rest>.*)$", re.DOTALL)
+_BACKTICKED = re.compile(r"^(?P<lead>[^`]*)`(?P<body>[^`]*)`(?P<rest>.*)\Z", re.DOTALL)
 
 
 def line(recovery: Recovery, tool: str) -> str:

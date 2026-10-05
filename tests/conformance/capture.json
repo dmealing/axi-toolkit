@@ -1495,6 +1495,16 @@
         "subject": "regex:_BEARER"
       }
     ],
+    "redactionRules": [
+      "ha|1|(?i)\\b(bearer\\s+)[A-Za-z0-9._~+/=-]{8,}",
+      "ha|2|(?i)([?&](?:token|access_token|authsig)=)[^&\\s\\\"'<>]+",
+      "ha|3|\\beyJ[A-Za-z0-9_-]{4,}\\.[A-Za-z0-9_-]{4,}\\.[A-Za-z0-9_-]{4,}",
+      "plex|1|(?i)\\b(bearer\\s+)[A-Za-z0-9._~+/=-]{8,}",
+      "plex|2|(?i)(X-Plex-Token=)[A-Za-z0-9._~-]{4,}",
+      "plex|3|(?i)([?&]token=)[A-Za-z0-9._~-]{8,}",
+      "plex|4|(?i)(X-Plex-Token['\\\"]?\\s*[:=]\\s*['\\\"]?)[A-Za-z0-9._~-]{8,}",
+      "plex|5|\\beyJ[A-Za-z0-9_-]{4,}\\.[A-Za-z0-9_-]{4,}\\.[A-Za-z0-9_-]{4,}"
+    ],
     "redactionSamples": [
       {
         "case": "ha|bearer-header",

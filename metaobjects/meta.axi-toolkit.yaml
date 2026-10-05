@@ -99,6 +99,9 @@ metadata:
           - field.string[]:
               name: envConfigErrorCodes
               required: true
+          - field.string[]:
+              name: redactionRules
+              required: true
 
     # ------------------------------------------------------- 2. population facts
     # "Every shape reality contains has a branch here." The relation is COVERAGE:
@@ -351,6 +354,18 @@ metadata:
                 after the tools adopt it.
               implementedBy:
                 - axi_toolkit::conformance::WireFacts.redactionSamples
+          - requirement.functional:
+              name: everyToolRedactionRuleIsRunHereInItsOrder
+              level: 5
+              status: live
+              statement: >-
+                The credential shapes each tool's redactor applies, and the order it
+                applies them in, are the ones this package runs for that tool.
+              counterexample: >-
+                A tool gains a shape no sample happens to exercise, the capture
+                refreshes clean, and this package lets that credential through.
+              implementedBy:
+                - axi_toolkit::conformance::CapabilityFacts.redactionRules
           - requirement.functional:
               name: everyCredentialShapeInUseIsExpressible
               level: 5
