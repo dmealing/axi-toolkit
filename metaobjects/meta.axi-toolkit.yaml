@@ -99,6 +99,9 @@ metadata:
           - field.string[]:
               name: envConfigErrorCodes
               required: true
+          - field.string[]:
+              name: redactionRules
+              required: true
 
     # ------------------------------------------------------- 2. population facts
     # "Every shape reality contains has a branch here." The relation is COVERAGE:
@@ -322,7 +325,7 @@ metadata:
           A recovery is structured intent, never a rendered line: the tool's name is
           supplied when it is rendered and is not present when it is raised.
         counterexample: >-
-          A recovery whose stored form already contains the string "ha-axi", which no
+          A recovery whose stored form already contains the string "hass-axi", which no
           other caller can then reuse.
         implementedBy:
           - axi_toolkit::conformance::WireFacts.haRecoveryLines
@@ -351,6 +354,18 @@ metadata:
                 after the tools adopt it.
               implementedBy:
                 - axi_toolkit::conformance::WireFacts.redactionSamples
+          - requirement.functional:
+              name: everyToolRedactionRuleIsRunHereInItsOrder
+              level: 5
+              status: live
+              statement: >-
+                The credential shapes each tool's redactor applies, and the order it
+                applies them in, are the ones this package runs for that tool.
+              counterexample: >-
+                A tool gains a shape no sample happens to exercise, the capture
+                refreshes clean, and this package lets that credential through.
+              implementedBy:
+                - axi_toolkit::conformance::CapabilityFacts.redactionRules
           - requirement.functional:
               name: everyCredentialShapeInUseIsExpressible
               level: 5
@@ -475,7 +490,7 @@ metadata:
     # `plexDomainDefinitions`, `plexIdBehaviour` and `plexFilterBehaviour`. Each was one
     # half of a comparison between this package and the tool a module came from, and
     # each was DELETED on the day that tool deleted its copy and imported this one --
-    # `ha-axi` first, `plex-axi` next. A cross-repository comparison is a substitute for
+    # `hass-axi` first, `plex-axi` next. A cross-repository comparison is a substitute for
     # having one copy; once you have one copy the substitute is not merely unnecessary,
     # it is wrong, because it keeps passing offline against a committed capture while
     # describing a file that no longer exists.

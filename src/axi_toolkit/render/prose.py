@@ -1,8 +1,8 @@
 """Recovery intent, rendered as a sentence for a caller that is not a shell.
 
 The same :class:`~axi_toolkit.errors.Recovery` the CLI renderer turns into
-``Run `ha-axi area list` to see each area's id`` becomes, here,
-``To see each area's id, use ha-axi's `area list` command.`` -- which is the form a
+``Run `hass-axi area list` to see each area's id`` becomes, here,
+``To see each area's id, use hass-axi's `area list` command.`` -- which is the form a
 caller embedding this package wants when it has to tell a person, or a model, what
 went wrong and what to do about it.
 

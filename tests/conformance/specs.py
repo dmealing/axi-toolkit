@@ -79,9 +79,13 @@ PLEX = CredentialSpec(
 )
 
 
-#: This tool adds no credential shape beyond the two built in: the system it talks to
-#: issues JWTs, which the built-in rule already covers.
-HA_PATTERNS: tuple = ()
+#: One shape beyond the two built in, for a credential carried in a URL's query string.
+#: The system this tool talks to signs the camera and media URLs it hands out that way,
+#: so the value never passed through the tool's own configuration and no registered
+#: literal will catch it. The value class is everything up to the next separator,
+#: quote or angle bracket rather than an alphabet: a signature is not promised to stay
+#: inside one, and the placeholder's own ``<`` is what keeps a second pass inert.
+HA_PATTERNS = (r"(?i)([?&](?:token|access_token|authsig)=)[^&\s\"'<>]+",)
 
 #: Three shapes for a credential that travels in a URL as well as in a header. Each
 #: keeps its prefix so a reader can still see which credential was suppressed.

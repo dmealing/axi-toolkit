@@ -284,8 +284,8 @@ def assert_server_side(leftover: dict) -> None:
 #: A relative date as Plex spells it: a count and a unit. plexapi normalises a
 #: bare ``30d`` to ``-30d`` and passes it through, so a tool accepts the form
 #: without the sign -- "30d ago" is how a caller says it.
-RELATIVE_DATE = re.compile(r"^-?\d+(mon|[smhdwy])$")
-ABSOLUTE_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+RELATIVE_DATE = re.compile(r"^-?\d+(mon|[smhdwy])\Z")
+ABSOLUTE_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}\Z")
 
 
 def parse_relative_date(raw, *, flag: str) -> str:

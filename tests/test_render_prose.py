@@ -13,43 +13,43 @@ import pytest
 from axi_toolkit.errors import choose, note, retry, run, set_env
 from axi_toolkit.render import cli, prose
 
-TOOL = "ha-axi"
+TOOL = "hass-axi"
 
 
 @pytest.mark.parametrize(
     ("recovery", "expected"),
     [
-        (run(("area", "list")), "Use ha-axi's `area list` command."),
+        (run(("area", "list")), "Use hass-axi's `area list` command."),
         (
             run(("area", "list"), purpose="to see each area's id"),
-            "To see each area's id, use ha-axi's `area list` command.",
+            "To see each area's id, use hass-axi's `area list` command.",
         ),
         (
             run(("--timeout", "60", "<command>"), lead="Raise the limit with"),
-            "Raise the limit with ha-axi's `--timeout 60 <command>`.",
+            "Raise the limit with hass-axi's `--timeout 60 <command>`.",
         ),
         (
             retry("--limit 50"),
-            "Run the same ha-axi command again with `--limit 50`.",
+            "Run the same hass-axi command again with `--limit 50`.",
         ),
         (
             retry("--path <dir>", lead="Pass a writable repository root with"),
-            "Pass a writable repository root with `--path <dir>`, then run it again with ha-axi.",
+            "Pass a writable repository root with `--path <dir>`, then run it again with hass-axi.",
         ),
         (
             set_env("HA_URL", "your Home Assistant base URL"),
-            "ha-axi reads HA_URL from the environment: set it to your Home Assistant base URL.",
+            "hass-axi reads HA_URL from the environment: set it to your Home Assistant base URL.",
         ),
         (
             set_env("HA_URL", "your base URL", example="export HA_URL=https://host.example.com"),
-            "ha-axi reads HA_URL from the environment: set it to your base URL, "
+            "hass-axi reads HA_URL from the environment: set it to your base URL, "
             "e.g. export HA_URL=https://host.example.com.",
         ),
         (
             set_env(
                 "PLEX_TOKEN", "an access token", reference="https://support.example.com/tokens"
             ),
-            "ha-axi reads PLEX_TOKEN from the environment: set it to an access token; "
+            "hass-axi reads PLEX_TOKEN from the environment: set it to an access token; "
             "see https://support.example.com/tokens.",
         ),
         (
@@ -58,7 +58,7 @@ TOOL = "ha-axi"
         ),
         (
             note("This is a bug in {tool}; the command did not complete"),
-            "This is a bug in ha-axi; the command did not complete.",
+            "This is a bug in hass-axi; the command did not complete.",
         ),
         (
             note("Retry the command; a dropped connection is often a one-off"),
@@ -73,7 +73,7 @@ def test_each_kind_becomes_a_sentence(recovery, expected):
 def test_sentences_renders_a_whole_block_in_order():
     block = (run(("doctor",)), note("Then look at the log"))
     assert prose.sentences(block, TOOL) == [
-        "Use ha-axi's `doctor` command.",
+        "Use hass-axi's `doctor` command.",
         "Then look at the log.",
     ]
 
@@ -93,7 +93,7 @@ def test_capitalising_a_purpose_leaves_the_rest_of_it_alone():
     rendered = prose.sentence(
         run(("doctor",), purpose="to check HA_URL reaches Home Assistant"), TOOL
     )
-    assert rendered == "To check HA_URL reaches Home Assistant, use ha-axi's `doctor` command."
+    assert rendered == "To check HA_URL reaches Home Assistant, use hass-axi's `doctor` command."
 
 
 def test_the_shell_separator_is_not_carried_into_prose():
@@ -101,7 +101,7 @@ def test_the_shell_separator_is_not_carried_into_prose():
     recovery = run(("doctor",), purpose="the library has not finished scanning", separator=": ")
     assert cli.line(recovery, TOOL).endswith("`: the library has not finished scanning")
     assert prose.sentence(recovery, TOOL) == (
-        "The library has not finished scanning, use ha-axi's `doctor` command."
+        "The library has not finished scanning, use hass-axi's `doctor` command."
     )
 
 
@@ -124,7 +124,7 @@ def test_prose_never_offers_a_command_line_the_caller_cannot_run():
 )
 def test_every_sentence_names_the_tool_it_is_handed(recovery):
     assert "plex-axi" in prose.sentence(recovery, "plex-axi")
-    assert "plex-axi" not in prose.sentence(recovery, "ha-axi")
+    assert "plex-axi" not in prose.sentence(recovery, "hass-axi")
 
 
 def test_a_choice_names_no_tool_because_the_values_are_not_the_tools():

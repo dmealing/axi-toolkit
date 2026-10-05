@@ -31,6 +31,7 @@ from __future__ import annotations
 
 import ast
 import base64
+import functools
 import hashlib
 import importlib
 import json
@@ -49,27 +50,78 @@ TOOLS = ("ha", "plex")
 #: Where each tool's checkout is, at capture time only. Never read by a subject
 #: projection, never recorded in the capture, never needed in CI.
 _SOURCE_ENV = {"ha": "AXI_TOOLKIT_SOURCE_HA", "plex": "AXI_TOOLKIT_SOURCE_PLEX"}
-_PACKAGE = {"ha": "ha_axi", "plex": "plex_axi"}
-_TOOL_NAME = {"ha": "ha-axi", "plex": "plex-axi"}
+_PACKAGE = {"ha": "hass_axi", "plex": "plex_axi"}
+_TOOL_NAME = {"ha": "hass-axi", "plex": "plex-axi"}
 
 
 # ============================================================ reading the sources
 
 
+class SourceError(RuntimeError):
+    """A source tool is not where, or not what, the capture expects.
+
+    Every read of a checkout raises this and nothing else, with a message that names
+    the variable, the package or command that was looked for, and what was found
+    instead. The bare exceptions it replaces named neither the tool nor the thing that
+    was missing, and a ``FileNotFoundError`` printed a local path while it failed. No
+    message built here carries one.
+    """
+
+
 def source_root(tool: str) -> Path:
-    """The ``src/<package>`` directory of one source tool's checkout."""
+    """The ``src/<package>`` directory of one source tool's checkout.
+
+    Checked before anything is read, and both names are checked: the package this
+    module imports and the command its recovery lines are parsed under. A tool that
+    renamed either would otherwise be captured as a tool with no recovery lines that
+    name it, which is a capture that looks whole and is not.
+    """
     variable = _SOURCE_ENV[tool]
     raw = os.environ.get(variable)
     if not raw:
-        raise RuntimeError(
+        raise SourceError(
             f"{variable} is not set. Capture reads the two source tools from a local "
             "checkout; their locations are an input to `reqgen capture` and never "
             "reach a committed file."
         )
-    root = Path(raw).expanduser().resolve() / "src" / _PACKAGE[tool]
-    if not root.is_dir():
-        raise RuntimeError(f"{variable} does not name a checkout containing src/{_PACKAGE[tool]}")
+    return _verified_root(tool, raw)
+
+
+@functools.cache
+def _verified_root(tool: str, raw: str) -> Path:
+    variable, package, command = _SOURCE_ENV[tool], _PACKAGE[tool], _TOOL_NAME[tool]
+    checkout = Path(raw).expanduser().resolve()
+    root = checkout / "src" / package
+    if not (root / "__init__.py").is_file():
+        held = sorted(p.parent.name for p in checkout.glob("src/*/__init__.py"))
+        raise SourceError(
+            f"{variable} names a checkout with no `{package}` package under src/ "
+            f"(src/ holds: {', '.join(held) or 'no package'}). If the tool renamed its "
+            "package, `_PACKAGE` in tests/conformance/projections.py is the line to change."
+        )
+    declared = _declared_commands(checkout, variable)
+    if command not in declared:
+        raise SourceError(
+            f"{variable} names a checkout that declares no `{command}` command "
+            f"(its pyproject.toml declares: {', '.join(declared) or 'none'}). If the tool "
+            "renamed its command, `_TOOL_NAME` in tests/conformance/projections.py is the "
+            "line to change."
+        )
     return root
+
+
+def _declared_commands(checkout: Path, variable: str) -> list[str]:
+    """The commands a checkout installs, read from its ``[project.scripts]`` table."""
+    import tomllib  # 3.11+, like the rest of the capture toolchain; never needed by a check
+
+    try:
+        document = tomllib.loads((checkout / "pyproject.toml").read_text(encoding="utf-8"))
+    except (OSError, tomllib.TOMLDecodeError) as exc:
+        raise SourceError(
+            f"{variable} names a checkout whose pyproject.toml cannot be read "
+            f"({type(exc).__name__}), so the command it installs cannot be confirmed."
+        ) from None
+    return sorted(document.get("project", {}).get("scripts", {}))
 
 
 def source_module(tool: str, name: str):
@@ -77,11 +129,31 @@ def source_module(tool: str, name: str):
     root = source_root(tool).parent
     if str(root) not in sys.path:
         sys.path.insert(0, str(root))
-    return importlib.import_module(f"{_PACKAGE[tool]}.{name}")
+    module = f"{_PACKAGE[tool]}.{name}"
+    try:
+        return importlib.import_module(module)
+    except ImportError as exc:
+        raise SourceError(
+            f"{_SOURCE_ENV[tool]}: the capture imports `{module}` and could not "
+            f"({type(exc).__name__}: {exc.msg}). If the tool moved or renamed that "
+            "module, the capture half that reads it has to follow."
+        ) from None
+
+
+def source_file(tool: str, name: str) -> Path:
+    """One module file in a source tool's package, confirmed to exist."""
+    path = source_root(tool) / f"{name}.py"
+    if not path.is_file():
+        raise SourceError(
+            f"{_SOURCE_ENV[tool]}: the capture reads `{_PACKAGE[tool]}/{name}.py` and the "
+            "package has no such file. If the tool moved or renamed that module, the "
+            "capture half that reads it has to follow."
+        )
+    return path
 
 
 def _tree(tool: str, name: str) -> ast.Module:
-    return ast.parse((source_root(tool) / f"{name}.py").read_text(encoding="utf-8"))
+    return ast.parse(source_file(tool, name).read_text(encoding="utf-8"))
 
 
 def _module_literals(tree: ast.Module, predicate) -> dict[str, object]:
@@ -335,7 +407,7 @@ def subject_env_config_error_codes() -> list[str]:
 # DELETED, in the same change, rather than left to describe a file that is gone.
 #
 # ALL FOUR OF THEM HAVE NOW REACHED THAT DAY, and this is the worked example of the
-# rule. `axi_toolkit.ha.services` moved out of `ha-axi` verbatim, so while both copies
+# rule. `axi_toolkit.ha.services` moved out of `hass-axi` verbatim, so while both copies
 # existed the comparison could be a digest of the source text: `haServiceModelDefinitions`
 # hashed the tool's file and this one, definition by definition. The Plex half could not
 # be gated that way -- the move deliberately rewrote every recovery line into intent, so
@@ -517,6 +589,88 @@ def subject_redaction_shape_cells(cells) -> list[str]:
     return covered
 
 
+# ============================= capability: the rules each redactor runs, in order
+#
+# The samples further down judge what a redactor does to the texts somebody thought to
+# write. This judges the rule list itself, read out of each tool's own `redact`, so a
+# shape a tool gains is a changed row here whether or not any sample happens to
+# exercise it. The first shape a tool added after this package was extracted was
+# caught only because an existing sample, written for the other tool, hit it.
+
+
+def _redaction_rules(tool: str) -> list[str]:
+    """The pattern sources one tool's ``redact`` applies, in the order it applies them."""
+    tree = _tree(tool, "output")
+    sources = _regex_sources(tree)
+    function = next(
+        (n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == "redact"), None
+    )
+    if function is None:
+        raise SourceError(
+            f"{_SOURCE_ENV[tool]}: `{_PACKAGE[tool]}/output.py` defines no `redact` "
+            "function, so the rules it applies cannot be read."
+        )
+    applied = _applied_patterns(function)
+    if not applied:
+        raise SourceError(
+            f"{_SOURCE_ENV[tool]}: `{_PACKAGE[tool]}.output.redact` calls no "
+            "`<PATTERN>.sub(...)` in its own body, so the rules it applies cannot be read. "
+            "If it now delegates to a helper, the capture half has to follow it there."
+        )
+    unread = sorted({name for name in applied if name not in sources})
+    if unread:
+        raise SourceError(
+            f"{_SOURCE_ENV[tool]}: `{_PACKAGE[tool]}.output.redact` applies "
+            f"{', '.join(unread)}, which the capture cannot read as a module-level "
+            "`re.compile` literal. The rule list would be recorded short."
+        )
+    return [sources[name] for name in applied]
+
+
+def _applied_patterns(function: ast.FunctionDef) -> list[str]:
+    """The names ``<NAME>.sub(...)`` is called on, in the order the calls are evaluated.
+
+    Evaluation order, not position on the page: in ``B.sub(x, A.sub(y, text))`` it is
+    ``A`` that runs first, although ``B`` is written first. A call's arguments are
+    visited before the call itself is recorded, which is the order Python runs them in.
+    """
+    applied: list[str] = []
+
+    class Visitor(ast.NodeVisitor):
+        def visit_Call(self, node: ast.Call) -> None:
+            self.generic_visit(node)
+            func = node.func
+            if (
+                isinstance(func, ast.Attribute)
+                and func.attr == "sub"
+                and isinstance(func.value, ast.Name)
+            ):
+                applied.append(func.value.id)
+
+    Visitor().visit(function)
+    return applied
+
+
+def _rule_rows(tool: str, rules) -> list[str]:
+    return [f"{tool}|{position}|{source}" for position, source in enumerate(rules, 1)]
+
+
+def capture_redaction_rules() -> list[str]:
+    return [row for tool in TOOLS for row in _rule_rows(tool, _redaction_rules(tool))]
+
+
+def subject_redaction_rules() -> list[str]:
+    """What this package runs for each tool: its two built-ins around the tool's own."""
+    rows = []
+    for tool in TOOLS:
+        boundary = redact.Redactor()
+        for pattern in specs.PATTERNS[tool]:
+            boundary.register_pattern(pattern)
+        rules = (redact.BEARER.pattern, *boundary.registered_patterns(), redact.JWT.pattern)
+        rows.extend(_rule_rows(tool, rules))
+    return rows
+
+
 def _spec_cell(scheme: str, port, strip: str, aliases: int) -> str:
     return f"scheme={scheme}|port={port or 'none'}|strip={strip or 'none'}|aliases={aliases}"
 
@@ -614,7 +768,7 @@ def _round_trip(tool_name: str, text: str) -> str:
 
 
 def subject_ha_recovery_lines(case: str) -> str:
-    return _round_trip("ha-axi", case)
+    return _round_trip(_TOOL_NAME["ha"], case)
 
 
 def subject_plex_recovery_lines(case: str) -> str:
@@ -809,6 +963,20 @@ def _sample_text(name: str) -> str:
         "token-parameter": f"http://host.example.com:32400/art?X-Plex-Token={_SYNTHETIC_PLEX}",
         "delegation-parameter": f"http://host.example.com:32400/s?token={_SYNTHETIC_PLEX}",
         "token-header": f"X-Plex-Token: {_SYNTHETIC_PLEX}",
+        "access-token-parameter": (
+            f"https://host.example.com/media/example.jpg?width=100&access_token={_SYNTHETIC_BEARER}"
+        ),
+        "signature-parameter": (
+            f"https://host.example.com/media/example.mp3?authsig={_SYNTHETIC_BEARER}&v=2"
+        ),
+        "parameter-value-outside-an-alphabet": (
+            f"https://host.example.com/s?token=ab%2Fcd+{_SYNTHETIC_BEARER}/=="
+        ),
+        # The two cases where the order the rules run in shows in the output. They are
+        # here so the order judged is the one each tool's own redactor runs, rather
+        # than the one this package says it does.
+        "bearer-inside-a-parameter": f"https://host.example.com/s?token=bearer {_SYNTHETIC_BEARER}",
+        "jwt-after-a-parameter-prefix": f"https://host.example.com/s?token=ab.{_synthetic_jwt()}",
         "registered-literal": f"note {_REGISTERED_LITERAL} trailing",
         "userinfo-pair": "pair is someone:example-secret",
         "too-short-to-register": "abc def",
@@ -822,6 +990,11 @@ _SAMPLE_NAMES = (
     "token-parameter",
     "delegation-parameter",
     "token-header",
+    "access-token-parameter",
+    "signature-parameter",
+    "parameter-value-outside-an-alphabet",
+    "bearer-inside-a-parameter",
+    "jwt-after-a-parameter-prefix",
     "registered-literal",
     "userinfo-pair",
     "too-short-to-register",
@@ -879,8 +1052,7 @@ def _pair(subject: str, values: dict[str, str]) -> dict:
 
 def capture_encoder_digest() -> list[dict]:
     digests = {
-        tool: hashlib.sha256((source_root(tool) / "toon.py").read_bytes()).hexdigest()
-        for tool in TOOLS
+        tool: hashlib.sha256(source_file(tool, "toon").read_bytes()).hexdigest() for tool in TOOLS
     }
     return [_pair("toon.py", digests)]
 

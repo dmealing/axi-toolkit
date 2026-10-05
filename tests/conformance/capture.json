@@ -19,8 +19,8 @@
     ],
     "encoderDigest": [
       {
-        "ha": "b3924ca2b2a3fc0dea7f1303c6a0eb3af99985e5eb25d7aac7d71161a99a3c40",
-        "plex": "b3924ca2b2a3fc0dea7f1303c6a0eb3af99985e5eb25d7aac7d71161a99a3c40",
+        "ha": "2022d9b3f4db208e856f92e98e830b5a3818590ca058b8814151014cd8f9d26f",
+        "plex": "2022d9b3f4db208e856f92e98e830b5a3818590ca058b8814151014cd8f9d26f",
         "subject": "toon.py"
       }
     ],
@@ -95,19 +95,19 @@
     "haCredentialMessages": [
       {
         "case": "missing:both",
-        "expected": "HA_URL and HA_TOKEN are not set in the environment\n  Set HA_URL to your Home Assistant base URL, e.g. export HA_URL=https://homeassistant.example.com\n  Set HA_TOKEN to a long-lived access token from your Home Assistant profile page, under Security\n  Run `ha-axi doctor` to verify the connection once both are set"
+        "expected": "HA_URL and HA_TOKEN are not set in the environment\n  Set HA_URL to your Home Assistant base URL, e.g. export HA_URL=https://homeassistant.example.com\n  Set HA_TOKEN to a long-lived access token from your Home Assistant profile page, under Security\n  Run `hass-axi doctor` to verify the connection once both are set"
       },
       {
         "case": "missing:url",
-        "expected": "HA_URL is not set in the environment\n  Set HA_URL to your Home Assistant base URL, e.g. export HA_URL=https://homeassistant.example.com\n  Set HA_TOKEN to a long-lived access token from your Home Assistant profile page, under Security\n  Run `ha-axi doctor` to verify the connection once both are set"
+        "expected": "HA_URL is not set in the environment\n  Set HA_URL to your Home Assistant base URL, e.g. export HA_URL=https://homeassistant.example.com\n  Set HA_TOKEN to a long-lived access token from your Home Assistant profile page, under Security\n  Run `hass-axi doctor` to verify the connection once both are set"
       },
       {
         "case": "missing:token",
-        "expected": "HA_TOKEN is not set in the environment\n  Set HA_URL to your Home Assistant base URL, e.g. export HA_URL=https://homeassistant.example.com\n  Set HA_TOKEN to a long-lived access token from your Home Assistant profile page, under Security\n  Run `ha-axi doctor` to verify the connection once both are set"
+        "expected": "HA_TOKEN is not set in the environment\n  Set HA_URL to your Home Assistant base URL, e.g. export HA_URL=https://homeassistant.example.com\n  Set HA_TOKEN to a long-lived access token from your Home Assistant profile page, under Security\n  Run `hass-axi doctor` to verify the connection once both are set"
       },
       {
         "case": "blank:url",
-        "expected": "HA_URL is not set in the environment\n  Set HA_URL to your Home Assistant base URL, e.g. export HA_URL=https://homeassistant.example.com\n  Set HA_TOKEN to a long-lived access token from your Home Assistant profile page, under Security\n  Run `ha-axi doctor` to verify the connection once both are set"
+        "expected": "HA_URL is not set in the environment\n  Set HA_URL to your Home Assistant base URL, e.g. export HA_URL=https://homeassistant.example.com\n  Set HA_TOKEN to a long-lived access token from your Home Assistant profile page, under Security\n  Run `hass-axi doctor` to verify the connection once both are set"
       },
       {
         "case": "bad_token:space",
@@ -178,8 +178,12 @@
     ],
     "haRecoveryLines": [
       {
-        "case": "  --debug (diagnostics on stderr), --help, -v/--version",
-        "expected": "  --debug (diagnostics on stderr), --help, -v/--version"
+        "case": "    several, comma-separated, are tried in order and the first that answers is used",
+        "expected": "    several, comma-separated, are tried in order and the first that answers is used"
+      },
+      {
+        "case": "  --debug (diagnostics on stderr), --help, -v/-V/--version",
+        "expected": "  --debug (diagnostics on stderr), --help, -v/-V/--version"
       },
       {
         "case": "  --human (readable output), --json (raw JSON output), --timeout <seconds> (default 30),",
@@ -190,12 +194,16 @@
         "expected": "  HA_TOKEN (or HASS_TOKEN) - long-lived access token; there is deliberately no --token flag"
       },
       {
-        "case": "  HA_URL (or HASS_SERVER) - Home Assistant base URL, e.g. https://homeassistant.example.com",
-        "expected": "  HA_URL (or HASS_SERVER) - Home Assistant base URL, e.g. https://homeassistant.example.com"
+        "case": "  HA_URL (or HASS_SERVER) - Home Assistant base URL, e.g. https://homeassistant.example.com;",
+        "expected": "  HA_URL (or HASS_SERVER) - Home Assistant base URL, e.g. https://homeassistant.example.com;"
       },
       {
-        "case": "A command removed or not yet added upstream answers this way; check the instance version with `ha-axi doctor`",
-        "expected": "A command removed or not yet added upstream answers this way; check the instance version with `ha-axi doctor`"
+        "case": "A command removed or not yet added upstream answers this way; check the instance version with `hass-axi doctor`",
+        "expected": "A command removed or not yet added upstream answers this way; check the instance version with `hass-axi doctor`"
+      },
+      {
+        "case": "A command's own flags go after the command, e.g. `hass-axi state list --domain light`",
+        "expected": "A command's own flags go after the command, e.g. `hass-axi state list --domain light`"
       },
       {
         "case": "A long-lived access token is a single unbroken string; check for a line break",
@@ -214,12 +222,28 @@
         "expected": "A new token will not help; the upgrade was refused before Home Assistant saw it"
       },
       {
+        "case": "Add `--fields entity_id,name,value,unit,area,age` for where each sensor is and how old its reading is",
+        "expected": "Add `--fields entity_id,name,value,unit,area,age` for where each sensor is and how old its reading is"
+      },
+      {
+        "case": "Add `--fields when,entity_id,event,cause` for the entity ids",
+        "expected": "Add `--fields when,entity_id,event,cause` for the entity ids"
+      },
+      {
+        "case": "Caveats describe the buckets; the numbers above are not adjusted for them",
+        "expected": "Caveats describe the buckets; the numbers above are not adjusted for them"
+      },
+      {
         "case": "Check HA_TOKEN belongs to an account with administrator rights",
         "expected": "Check HA_TOKEN belongs to an account with administrator rights"
       },
       {
         "case": "Check HA_TOKEN holds a current long-lived access token",
         "expected": "Check HA_TOKEN holds a current long-lived access token"
+      },
+      {
+        "case": "Check HA_URL points at Home Assistant itself, not at a proxy, a login page or another service on that host",
+        "expected": "Check HA_URL points at Home Assistant itself, not at a proxy, a login page or another service on that host"
       },
       {
         "case": "Check HA_URL points at a reachable Home Assistant instance",
@@ -250,6 +274,18 @@
         "expected": "Create a new one on your Home Assistant profile page, under Security"
       },
       {
+        "case": "Fetch it with a tool that writes the response to a file instead",
+        "expected": "Fetch it with a tool that writes the response to a file instead"
+      },
+      {
+        "case": "Fix the template; the message above is Home Assistant's own",
+        "expected": "Fix the template; the message above is Home Assistant's own"
+      },
+      {
+        "case": "Home Assistant answers this way for a request it could not carry out, most often an id that names nothing; check the ids passed",
+        "expected": "Home Assistant answers this way for a request it could not carry out, most often an id that names nothing; check the ids passed"
+      },
+      {
         "case": "Home Assistant authenticates after the upgrade, so a 401 here is usually a proxy in front of it demanding its own credentials",
         "expected": "Home Assistant authenticates after the upgrade, so a 401 here is usually a proxy in front of it demanding its own credentials"
       },
@@ -258,12 +294,16 @@
         "expected": "Home Assistant bans an address after repeated failed logins -- clear it from `ip_bans.yaml` on the instance and restart it"
       },
       {
+        "case": "Home Assistant keeps statistics only for sensors that declare a state_class",
+        "expected": "Home Assistant keeps statistics only for sensors that declare a state_class"
+      },
+      {
         "case": "If it was read from a file, strip the trailing newline, e.g. HA_TOKEN=$(tr -d '\\n' < token.txt)",
         "expected": "If it was read from a file, strip the trailing newline, e.g. HA_TOKEN=$(tr -d '\\n' < token.txt)"
       },
       {
-        "case": "Install it with `pip install 'ha-axi'` or `pip install websockets`",
-        "expected": "Install it with `pip install 'ha-axi'` or `pip install websockets`"
+        "case": "Install it with `pip install 'hass-axi'` or `pip install websockets`",
+        "expected": "Install it with `pip install 'hass-axi'` or `pip install websockets`"
       },
       {
         "case": "Pass a readable path, or use `--template '<text>'`",
@@ -278,28 +318,40 @@
         "expected": "Pass the area_id instead of the name"
       },
       {
+        "case": "Pass the device_id instead of the name",
+        "expected": "Pass the device_id instead of the name"
+      },
+      {
+        "case": "Pass the floor_id instead of the name",
+        "expected": "Pass the floor_id instead of the name"
+      },
+      {
+        "case": "Pass the home directory the agents read their settings from",
+        "expected": "Pass the home directory the agents read their settings from"
+      },
+      {
         "case": "Point HA_URL directly at Home Assistant rather than at a proxy that redirects",
         "expected": "Point HA_URL directly at Home Assistant rather than at a proxy that redirects"
       },
       {
-        "case": "Raise the limit with `ha-axi --timeout 60 <command>`",
-        "expected": "Raise the limit with `ha-axi --timeout 60 <command>`"
+        "case": "Raise the limit with `hass-axi --timeout 60 <command>`",
+        "expected": "Raise the limit with `hass-axi --timeout 60 <command>`"
       },
       {
         "case": "Re-run with `--debug` for a diagnostic trace on stderr",
         "expected": "Re-run with `--debug` for a diagnostic trace on stderr"
       },
       {
-        "case": "Reads still work, e.g. `ha-axi state list`, `ha-axi entity list`, `ha-axi area list`",
-        "expected": "Reads still work, e.g. `ha-axi state list`, `ha-axi entity list`, `ha-axi area list`"
+        "case": "Reads still work, e.g. `hass-axi state list`, `hass-axi entity list`, `hass-axi area list`",
+        "expected": "Reads still work, e.g. `hass-axi state list`, `hass-axi entity list`, `hass-axi area list`"
       },
       {
-        "case": "Report it at https://github.com/dmealing/ha-axi/issues",
-        "expected": "Report it at https://github.com/dmealing/ha-axi/issues"
+        "case": "Report it at https://github.com/dmealing/hass-axi/issues",
+        "expected": "Report it at https://github.com/dmealing/hass-axi/issues"
       },
       {
-        "case": "Restart your agent session to receive ha-axi ambient context at session start",
-        "expected": "Restart your agent session to receive ha-axi ambient context at session start"
+        "case": "Restart your agent session to receive hass-axi ambient context at session start",
+        "expected": "Restart your agent session to receive hass-axi ambient context at session start"
       },
       {
         "case": "Retry the command; a dropped connection is often a one-off",
@@ -314,228 +366,360 @@
         "expected": "Retry the command; the instance did not finish in time"
       },
       {
-        "case": "Run `ha-axi --help` for the full reference",
-        "expected": "Run `ha-axi --help` for the full reference"
+        "case": "Run `hass-axi --help` for the full reference",
+        "expected": "Run `hass-axi --help` for the full reference"
       },
       {
-        "case": "Run `ha-axi --help` to see the available commands",
-        "expected": "Run `ha-axi --help` to see the available commands"
+        "case": "Run `hass-axi --help` to see the available commands",
+        "expected": "Run `hass-axi --help` to see the available commands"
       },
       {
-        "case": "Run `ha-axi --timeout 60 <command>`",
-        "expected": "Run `ha-axi --timeout 60 <command>`"
+        "case": "Run `hass-axi --timeout 60 <command>`",
+        "expected": "Run `hass-axi --timeout 60 <command>`"
       },
       {
-        "case": "Run `ha-axi api --help` for the supported methods",
-        "expected": "Run `ha-axi api --help` for the supported methods"
+        "case": "Run `hass-axi <command> --help` for its flags, or `hass-axi --help` for all of them",
+        "expected": "Run `hass-axi <command> --help` for its flags, or `hass-axi --help` for all of them"
       },
       {
-        "case": "Run `ha-axi api /config`",
-        "expected": "Run `ha-axi api /config`"
+        "case": "Run `hass-axi api --help` for the supported methods",
+        "expected": "Run `hass-axi api --help` for the supported methods"
       },
       {
-        "case": "Run `ha-axi api GET /states`",
-        "expected": "Run `ha-axi api GET /states`"
+        "case": "Run `hass-axi api /config`",
+        "expected": "Run `hass-axi api /config`"
       },
       {
-        "case": "Run `ha-axi api POST /services/light/turn_on --field entity_id=<id>`",
-        "expected": "Run `ha-axi api POST /services/light/turn_on --field entity_id=<id>`"
+        "case": "Run `hass-axi api GET /states`",
+        "expected": "Run `hass-axi api GET /states`"
       },
       {
-        "case": "Run `ha-axi area create --name '<name>'` to add one",
-        "expected": "Run `ha-axi area create --name '<name>'` to add one"
+        "case": "Run `hass-axi api POST /services/light/turn_on --field entity_id=<id>`",
+        "expected": "Run `hass-axi api POST /services/light/turn_on --field entity_id=<id>`"
       },
       {
-        "case": "Run `ha-axi area create --name 'Example Room'`",
-        "expected": "Run `ha-axi area create --name 'Example Room'`"
+        "case": "Run `hass-axi area create --name '<name>' --write` to add one",
+        "expected": "Run `hass-axi area create --name '<name>' --write` to add one"
       },
       {
-        "case": "Run `ha-axi area list` to see each area's id",
-        "expected": "Run `ha-axi area list` to see each area's id"
+        "case": "Run `hass-axi area create --name 'Example Room'`",
+        "expected": "Run `hass-axi area create --name 'Example Room'`"
       },
       {
-        "case": "Run `ha-axi area list` to see each area's id and how much it holds",
-        "expected": "Run `ha-axi area list` to see each area's id and how much it holds"
+        "case": "Run `hass-axi area list` to see each area's id",
+        "expected": "Run `hass-axi area list` to see each area's id"
       },
       {
-        "case": "Run `ha-axi area list` to see the areas that exist",
-        "expected": "Run `ha-axi area list` to see the areas that exist"
+        "case": "Run `hass-axi area list` to see each area's id and how much it holds",
+        "expected": "Run `hass-axi area list` to see each area's id and how much it holds"
       },
       {
-        "case": "Run `ha-axi area update <id|name> --name '<name>'` to rename one",
-        "expected": "Run `ha-axi area update <id|name> --name '<name>'` to rename one"
+        "case": "Run `hass-axi area list` to see the areas that exist",
+        "expected": "Run `hass-axi area list` to see the areas that exist"
       },
       {
-        "case": "Run `ha-axi device list --fields device_id,name` to see each device's id",
-        "expected": "Run `ha-axi device list --fields device_id,name` to see each device's id"
+        "case": "Run `hass-axi area update <id|name> --name '<name>'` to preview a rename, and add --write to send it",
+        "expected": "Run `hass-axi area update <id|name> --name '<name>'` to preview a rename, and add --write to send it"
       },
       {
-        "case": "Run `ha-axi device list` with no filters to see every device",
-        "expected": "Run `ha-axi device list` with no filters to see every device"
+        "case": "Run `hass-axi device list --fields device_id,name` to see each device's id",
+        "expected": "Run `hass-axi device list --fields device_id,name` to see each device's id"
       },
       {
-        "case": "Run `ha-axi doctor` if it keeps answering this way",
-        "expected": "Run `ha-axi doctor` if it keeps answering this way"
+        "case": "Run `hass-axi device list` with no filters to see every device",
+        "expected": "Run `hass-axi device list` with no filters to see every device"
       },
       {
-        "case": "Run `ha-axi doctor` to see whether the REST API answers at the same URL",
-        "expected": "Run `ha-axi doctor` to see whether the REST API answers at the same URL"
+        "case": "Run `hass-axi doctor` if it keeps answering this way",
+        "expected": "Run `hass-axi doctor` if it keeps answering this way"
       },
       {
-        "case": "Run `ha-axi doctor` to see which transport is failing",
-        "expected": "Run `ha-axi doctor` to see which transport is failing"
+        "case": "Run `hass-axi doctor` to check the environment",
+        "expected": "Run `hass-axi doctor` to check the environment"
       },
       {
-        "case": "Run `ha-axi doctor` to test both the REST and WebSocket connections",
-        "expected": "Run `ha-axi doctor` to test both the REST and WebSocket connections"
+        "case": "Run `hass-axi doctor` to check the installation is answering normally",
+        "expected": "Run `hass-axi doctor` to check the installation is answering normally"
       },
       {
-        "case": "Run `ha-axi doctor` to test the connection",
-        "expected": "Run `ha-axi doctor` to test the connection"
+        "case": "Run `hass-axi doctor` to see what each transport reaches",
+        "expected": "Run `hass-axi doctor` to see what each transport reaches"
       },
       {
-        "case": "Run `ha-axi doctor` to test the connection if it keeps happening",
-        "expected": "Run `ha-axi doctor` to test the connection if it keeps happening"
+        "case": "Run `hass-axi doctor` to see whether the REST API answers at the same URL",
+        "expected": "Run `hass-axi doctor` to see whether the REST API answers at the same URL"
       },
       {
-        "case": "Run `ha-axi doctor` to verify the connection once both are set",
-        "expected": "Run `ha-axi doctor` to verify the connection once both are set"
+        "case": "Run `hass-axi doctor` to see which transport is failing",
+        "expected": "Run `hass-axi doctor` to see which transport is failing"
       },
       {
-        "case": "Run `ha-axi entity get <entity_id>` for one entry in full",
-        "expected": "Run `ha-axi entity get <entity_id>` for one entry in full"
+        "case": "Run `hass-axi doctor` to test both the REST and WebSocket connections",
+        "expected": "Run `hass-axi doctor` to test both the REST and WebSocket connections"
       },
       {
-        "case": "Run `ha-axi entity list --area <id|name>` to see the entities in an area",
-        "expected": "Run `ha-axi entity list --area <id|name>` to see the entities in an area"
+        "case": "Run `hass-axi doctor` to test the connection",
+        "expected": "Run `hass-axi doctor` to test the connection"
       },
       {
-        "case": "Run `ha-axi entity list --area <id|name>` to see what one area holds",
-        "expected": "Run `ha-axi entity list --area <id|name>` to see what one area holds"
+        "case": "Run `hass-axi doctor` to test the connection if it keeps happening",
+        "expected": "Run `hass-axi doctor` to test the connection if it keeps happening"
       },
       {
-        "case": "Run `ha-axi entity list --area none` to find entities with no area",
-        "expected": "Run `ha-axi entity list --area none` to find entities with no area"
+        "case": "Run `hass-axi doctor` to verify the connection once both are set",
+        "expected": "Run `hass-axi doctor` to verify the connection once both are set"
       },
       {
-        "case": "Run `ha-axi entity list` to read the registry, which includes disabled entities",
-        "expected": "Run `ha-axi entity list` to read the registry, which includes disabled entities"
+        "case": "Run `hass-axi entity get <entity_id>` for one entry in full",
+        "expected": "Run `hass-axi entity get <entity_id>` for one entry in full"
       },
       {
-        "case": "Run `ha-axi entity list` with no filters to see every entry",
-        "expected": "Run `ha-axi entity list` with no filters to see every entry"
+        "case": "Run `hass-axi entity list --area <id|name>` to read the registry, which REST cannot reach",
+        "expected": "Run `hass-axi entity list --area <id|name>` to read the registry, which REST cannot reach"
       },
       {
-        "case": "Run `ha-axi entity update <entity_id> --name \"<name>\" --area <id|name>` to change one",
-        "expected": "Run `ha-axi entity update <entity_id> --name \"<name>\" --area <id|name>` to change one"
+        "case": "Run `hass-axi entity list --area <id|name>` to see the entities in an area",
+        "expected": "Run `hass-axi entity list --area <id|name>` to see the entities in an area"
       },
       {
-        "case": "Run `ha-axi service call <domain>.<service> --target-entity <entity_id>` to act",
-        "expected": "Run `ha-axi service call <domain>.<service> --target-entity <entity_id>` to act"
+        "case": "Run `hass-axi entity list --area <id|name>` to see what one area holds",
+        "expected": "Run `hass-axi entity list --area <id|name>` to see what one area holds"
       },
       {
-        "case": "Run `ha-axi service call <domain>.<service> --target-entity <entity_id>` to call one",
-        "expected": "Run `ha-axi service call <domain>.<service> --target-entity <entity_id>` to call one"
+        "case": "Run `hass-axi entity list --area none` to find entities with no area",
+        "expected": "Run `hass-axi entity list --area none` to find entities with no area"
       },
       {
-        "case": "Run `ha-axi service call light.turn_on --target-entity <entity_id>`",
-        "expected": "Run `ha-axi service call light.turn_on --target-entity <entity_id>`"
+        "case": "Run `hass-axi entity list --search <text>`, `hass-axi device list` or `hass-axi area list` to find the id",
+        "expected": "Run `hass-axi entity list --search <text>`, `hass-axi device list` or `hass-axi area list` to find the id"
       },
       {
-        "case": "Run `ha-axi service get <domain>.<service>` to see one service's fields",
-        "expected": "Run `ha-axi service get <domain>.<service>` to see one service's fields"
+        "case": "Run `hass-axi entity list` to read the registry, which includes disabled entities",
+        "expected": "Run `hass-axi entity list` to read the registry, which includes disabled entities"
       },
       {
-        "case": "Run `ha-axi service list --domain <domain>` to see one domain's services",
-        "expected": "Run `ha-axi service list --domain <domain>` to see one domain's services"
+        "case": "Run `hass-axi entity list` with no filters to see every entry",
+        "expected": "Run `hass-axi entity list` with no filters to see every entry"
       },
       {
-        "case": "Run `ha-axi service list` to see every domain",
-        "expected": "Run `ha-axi service list` to see every domain"
+        "case": "Run `hass-axi entity update <entity_id> --name \"<name>\" --area <id|name>` to preview a change, and add --write to send it",
+        "expected": "Run `hass-axi entity update <entity_id> --name \"<name>\" --area <id|name>` to preview a change, and add --write to send it"
       },
       {
-        "case": "Run `ha-axi service list` to see the available domains",
-        "expected": "Run `ha-axi service list` to see the available domains"
+        "case": "Run `hass-axi history get <entity_id>` for the recorded state timeline",
+        "expected": "Run `hass-axi history get <entity_id>` for the recorded state timeline"
       },
       {
-        "case": "Run `ha-axi state get <entity_id>` and compare its supported_features attribute",
-        "expected": "Run `ha-axi state get <entity_id>` and compare its supported_features attribute"
+        "case": "Run `hass-axi history get <entity_id>` for time spent in each state",
+        "expected": "Run `hass-axi history get <entity_id>` for time spent in each state"
       },
       {
-        "case": "Run `ha-axi state get <entity_id>` for one entity's full attributes",
-        "expected": "Run `ha-axi state get <entity_id>` for one entity's full attributes"
+        "case": "Run `hass-axi logbook get --entity <entity_id>` for what caused each change",
+        "expected": "Run `hass-axi logbook get --entity <entity_id>` for what caused each change"
       },
       {
-        "case": "Run `ha-axi state get <entity_id>` if the entity exists but is not registered",
-        "expected": "Run `ha-axi state get <entity_id>` if the entity exists but is not registered"
+        "case": "Run `hass-axi logbook get --start 7d` to widen the window",
+        "expected": "Run `hass-axi logbook get --start 7d` to widen the window"
       },
       {
-        "case": "Run `ha-axi state get <entity_id>` to read an entity's supported_features",
-        "expected": "Run `ha-axi state get <entity_id>` to read an entity's supported_features"
+        "case": "Run `hass-axi sensor list --all` to include diagnostic and config sensors",
+        "expected": "Run `hass-axi sensor list --all` to include diagnostic and config sensors"
       },
       {
-        "case": "Run `ha-axi state get <entity_id>` to see an entity's current state",
-        "expected": "Run `ha-axi state get <entity_id>` to see an entity's current state"
+        "case": "Run `hass-axi sensor list --all` to include them",
+        "expected": "Run `hass-axi sensor list --all` to include them"
       },
       {
-        "case": "Run `ha-axi state list --domain <domain>` to browse one domain",
-        "expected": "Run `ha-axi state list --domain <domain>` to browse one domain"
+        "case": "Run `hass-axi sensor list --fields entity_id,name,state_class` to see which do",
+        "expected": "Run `hass-axi sensor list --fields entity_id,name,state_class` to see which do"
       },
       {
-        "case": "Run `ha-axi state list --domain <domain>` to list entity states",
-        "expected": "Run `ha-axi state list --domain <domain>` to list entity states"
+        "case": "Run `hass-axi sensor list` with no filters to see every sensor",
+        "expected": "Run `hass-axi sensor list` with no filters to see every sensor"
       },
       {
-        "case": "Run `ha-axi state list --domain light` to narrow by domain",
-        "expected": "Run `ha-axi state list --domain light` to narrow by domain"
+        "case": "Run `hass-axi service call <domain>.<service> --target-entity <entity_id>` to preview a call, and add --write to send it",
+        "expected": "Run `hass-axi service call <domain>.<service> --target-entity <entity_id>` to preview a call, and add --write to send it"
       },
       {
-        "case": "Run `ha-axi state list --search <text>` to find an entity by name",
-        "expected": "Run `ha-axi state list --search <text>` to find an entity by name"
+        "case": "Run `hass-axi service call <domain>.<service> --target-entity <entity_id>` to preview an action and add --write to send it",
+        "expected": "Run `hass-axi service call <domain>.<service> --target-entity <entity_id>` to preview an action and add --write to send it"
       },
       {
-        "case": "Run `ha-axi state list` with no filters to see every entity",
-        "expected": "Run `ha-axi state list` with no filters to see every entity"
+        "case": "Run `hass-axi service call light.turn_on --target-entity <entity_id>`",
+        "expected": "Run `hass-axi service call light.turn_on --target-entity <entity_id>`"
       },
       {
-        "case": "Run `ha-axi template render --template '{{ now() }}'`",
-        "expected": "Run `ha-axi template render --template '{{ now() }}'`"
+        "case": "Run `hass-axi service get <domain>.<service>` to see one service's fields",
+        "expected": "Run `hass-axi service get <domain>.<service>` to see one service's fields"
       },
       {
-        "case": "Run `ha-axi template render --template '{{ states(\"light.example_lamp\") }}'`",
-        "expected": "Run `ha-axi template render --template '{{ states(\"light.example_lamp\") }}'`"
+        "case": "Run `hass-axi service list --domain <domain>` to see one domain's services",
+        "expected": "Run `hass-axi service list --domain <domain>` to see one domain's services"
       },
       {
-        "case": "Run `ha-axi template render --template-file <path>` to read one from disk",
-        "expected": "Run `ha-axi template render --template-file <path>` to read one from disk"
+        "case": "Run `hass-axi service list` to see every domain",
+        "expected": "Run `hass-axi service list` to see every domain"
       },
       {
-        "case": "Run `ha-axi ws --list` to see each command's parameters",
-        "expected": "Run `ha-axi ws --list` to see each command's parameters"
+        "case": "Run `hass-axi service list` to see the available domains",
+        "expected": "Run `hass-axi service list` to see the available domains"
       },
       {
-        "case": "Run `ha-axi ws --list` to see the commands this CLI declares",
-        "expected": "Run `ha-axi ws --list` to see the commands this CLI declares"
+        "case": "Run `hass-axi setup --help` for the full reference",
+        "expected": "Run `hass-axi setup --help` for the full reference"
       },
       {
-        "case": "Run `ha-axi ws --list` to see the declared commands",
-        "expected": "Run `ha-axi ws --list` to see the declared commands"
+        "case": "Run `hass-axi setup hooks remove` to uninstall them",
+        "expected": "Run `hass-axi setup hooks remove` to uninstall them"
       },
       {
-        "case": "Run `ha-axi ws --raw <api/type>` for a command that is not declared here",
-        "expected": "Run `ha-axi ws --raw <api/type>` for a command that is not declared here"
+        "case": "Run `hass-axi setup hooks status` to check the hooks later",
+        "expected": "Run `hass-axi setup hooks status` to check the hooks later"
       },
       {
-        "case": "Run `ha-axi ws --raw config/floor_registry/list`",
-        "expected": "Run `ha-axi ws --raw config/floor_registry/list`"
+        "case": "Run `hass-axi setup hooks` to install the missing hooks and repair stale ones",
+        "expected": "Run `hass-axi setup hooks` to install the missing hooks and repair stale ones"
       },
       {
-        "case": "Run `ha-axi ws <command> --param key=value` to send one",
-        "expected": "Run `ha-axi ws <command> --param key=value` to send one"
+        "case": "Run `hass-axi setup hooks` to install them again",
+        "expected": "Run `hass-axi setup hooks` to install them again"
+      },
+      {
+        "case": "Run `hass-axi setup hooks` with no --home to use this user's own",
+        "expected": "Run `hass-axi setup hooks` with no --home to use this user's own"
+      },
+      {
+        "case": "Run `hass-axi state get <entity_id>` and compare its supported_features attribute",
+        "expected": "Run `hass-axi state get <entity_id>` and compare its supported_features attribute"
+      },
+      {
+        "case": "Run `hass-axi state get <entity_id>` for one entity's full attributes",
+        "expected": "Run `hass-axi state get <entity_id>` for one entity's full attributes"
+      },
+      {
+        "case": "Run `hass-axi state get <entity_id>` if the entity exists but is not registered",
+        "expected": "Run `hass-axi state get <entity_id>` if the entity exists but is not registered"
+      },
+      {
+        "case": "Run `hass-axi state get <entity_id>` to confirm the entity exists",
+        "expected": "Run `hass-axi state get <entity_id>` to confirm the entity exists"
+      },
+      {
+        "case": "Run `hass-axi state get <entity_id>` to read an entity's supported_features",
+        "expected": "Run `hass-axi state get <entity_id>` to read an entity's supported_features"
+      },
+      {
+        "case": "Run `hass-axi state get <entity_id>` to see an entity's current state",
+        "expected": "Run `hass-axi state get <entity_id>` to see an entity's current state"
+      },
+      {
+        "case": "Run `hass-axi state list --domain <domain>` to browse one domain",
+        "expected": "Run `hass-axi state list --domain <domain>` to browse one domain"
+      },
+      {
+        "case": "Run `hass-axi state list --domain <domain>` to list entity states",
+        "expected": "Run `hass-axi state list --domain <domain>` to list entity states"
+      },
+      {
+        "case": "Run `hass-axi state list --domain light` to narrow by domain",
+        "expected": "Run `hass-axi state list --domain light` to narrow by domain"
+      },
+      {
+        "case": "Run `hass-axi state list --search <text>` to find an entity by name",
+        "expected": "Run `hass-axi state list --search <text>` to find an entity by name"
+      },
+      {
+        "case": "Run `hass-axi state list --stale 24h` (ages: s, m, h, d, w)",
+        "expected": "Run `hass-axi state list --stale 24h` (ages: s, m, h, d, w)"
+      },
+      {
+        "case": "Run `hass-axi state list` with no filters to see every entity",
+        "expected": "Run `hass-axi state list` with no filters to see every entity"
+      },
+      {
+        "case": "Run `hass-axi statistics get <entity_id>` for a total or average over a window",
+        "expected": "Run `hass-axi statistics get <entity_id>` for a total or average over a window"
+      },
+      {
+        "case": "Run `hass-axi statistics get <statistic_id> --start 24h` to summarise one",
+        "expected": "Run `hass-axi statistics get <statistic_id> --start 24h` to summarise one"
+      },
+      {
+        "case": "Run `hass-axi statistics list --kind sum`",
+        "expected": "Run `hass-axi statistics list --kind sum`"
+      },
+      {
+        "case": "Run `hass-axi template render --template '{{ now() }}'`",
+        "expected": "Run `hass-axi template render --template '{{ now() }}'`"
+      },
+      {
+        "case": "Run `hass-axi template render --template '{{ states(\"light.example_lamp\") }}'`",
+        "expected": "Run `hass-axi template render --template '{{ states(\"light.example_lamp\") }}'`"
+      },
+      {
+        "case": "Run `hass-axi template render --template '{{ states(\"light.example_lamp\") }}'` for a form that works",
+        "expected": "Run `hass-axi template render --template '{{ states(\"light.example_lamp\") }}'` for a form that works"
+      },
+      {
+        "case": "Run `hass-axi template render --template-file <path>` to read one from disk",
+        "expected": "Run `hass-axi template render --template-file <path>` to read one from disk"
+      },
+      {
+        "case": "Run `hass-axi ws --list` to see each command's parameters",
+        "expected": "Run `hass-axi ws --list` to see each command's parameters"
+      },
+      {
+        "case": "Run `hass-axi ws --list` to see the commands this CLI declares",
+        "expected": "Run `hass-axi ws --list` to see the commands this CLI declares"
+      },
+      {
+        "case": "Run `hass-axi ws --list` to see the declared commands",
+        "expected": "Run `hass-axi ws --list` to see the declared commands"
+      },
+      {
+        "case": "Run `hass-axi ws --raw <api/type>` for a command that is not declared here",
+        "expected": "Run `hass-axi ws --raw <api/type>` for a command that is not declared here"
+      },
+      {
+        "case": "Run `hass-axi ws --raw config/floor_registry/list`",
+        "expected": "Run `hass-axi ws --raw config/floor_registry/list`"
+      },
+      {
+        "case": "Run `hass-axi ws <command> --param key=value` to send one",
+        "expected": "Run `hass-axi ws <command> --param key=value` to send one"
+      },
+      {
+        "case": "Run `hass-axi ws floor.list` to see each floor's id and name",
+        "expected": "Run `hass-axi ws floor.list` to see each floor's id and name"
+      },
+      {
+        "case": "Run `hass-axi` for this installation at a glance",
+        "expected": "Run `hass-axi` for this installation at a glance"
+      },
+      {
+        "case": "Run `hass-axi` for this installation at a glance: entity counts by domain and what needs attention",
+        "expected": "Run `hass-axi` for this installation at a glance: entity counts by domain and what needs attention"
+      },
+      {
+        "case": "Run the command again with `--icon mdi:sofa`",
+        "expected": "Run the command again with `--icon mdi:sofa`"
       },
       {
         "case": "Run the command again with `--limit 50`",
         "expected": "Run the command again with `--limit 50`"
+      },
+      {
+        "case": "Run the command again with `--period hour`",
+        "expected": "Run the command again with `--period hour`"
+      },
+      {
+        "case": "Run the command again with `--start 24h` and no --end, which means now",
+        "expected": "Run the command again with `--start 24h` and no --end, which means now"
+      },
+      {
+        "case": "Run the command with `--help` to see what it accepts",
+        "expected": "Run the command with `--help` to see what it accepts"
       },
       {
         "case": "Run the same command with --no-check to send it anyway",
@@ -550,12 +734,36 @@
         "expected": "Set HA_URL to your Home Assistant base URL, e.g. export HA_URL=https://homeassistant.example.com"
       },
       {
-        "case": "This is a bug in ha-axi; the command did not complete",
-        "expected": "This is a bug in ha-axi; the command did not complete"
+        "case": "Set HA_URL to your Home Assistant base URL, e.g. https://homeassistant.example.com",
+        "expected": "Set HA_URL to your Home Assistant base URL, e.g. https://homeassistant.example.com"
       },
       {
-        "case": "This is a bug in ha-axi; the connection cannot be reused after it",
-        "expected": "This is a bug in ha-axi; the connection cannot be reused after it"
+        "case": "The id passed names nothing in this installation",
+        "expected": "The id passed names nothing in this installation"
+      },
+      {
+        "case": "The reason is in Home Assistant's own log, under Settings > System > Logs",
+        "expected": "The reason is in Home Assistant's own log, under Settings > System > Logs"
+      },
+      {
+        "case": "The request reached Home Assistant and its arguments were refused; change them rather than retrying",
+        "expected": "The request reached Home Assistant and its arguments were refused; change them rather than retrying"
+      },
+      {
+        "case": "This endpoint answers with binary data, which hass-axi does not print",
+        "expected": "This endpoint answers with binary data, which hass-axi does not print"
+      },
+      {
+        "case": "This installation has no floors; create one in Home Assistant first",
+        "expected": "This installation has no floors; create one in Home Assistant first"
+      },
+      {
+        "case": "This is a bug in hass-axi; the command did not complete",
+        "expected": "This is a bug in hass-axi; the command did not complete"
+      },
+      {
+        "case": "This is a bug in hass-axi; the connection cannot be reused after it",
+        "expected": "This is a bug in hass-axi; the connection cannot be reused after it"
       },
       {
         "case": "This session is read-only; the command was refused before anything changed",
@@ -574,12 +782,16 @@
         "expected": "flags[6]:"
       },
       {
+        "case": "global flags: --human, --json, --timeout <seconds>, --debug, --help, --version",
+        "expected": "global flags: --human, --json, --timeout <seconds>, --debug, --help, --version"
+      },
+      {
         "case": "note:",
         "expected": "note:"
       },
       {
-        "case": "usage: ha-axi [command] [subcommand] [args] [flags]",
-        "expected": "usage: ha-axi [command] [subcommand] [args] [flags]"
+        "case": "usage: hass-axi [command] [subcommand] [args] [flags]",
+        "expected": "usage: hass-axi [command] [subcommand] [args] [flags]"
       }
     ],
     "plexCredentialMessages": [
@@ -664,12 +876,24 @@
     ],
     "plexRecoveryLines": [
       {
+        "case": "--artist on a track search matches the album artist or the track's performer; a name that is neither is not in this library under that spelling",
+        "expected": "--artist on a track search matches the album artist or the track's performer; a name that is neither is not in this library under that spelling"
+      },
+      {
         "case": "A Plex client appears here only while it is running and on the same network as the server",
         "expected": "A Plex client appears here only while it is running and on the same network as the server"
       },
       {
         "case": "A Plex token is a single unbroken string; check for a line break",
         "expected": "A Plex token is a single unbroken string; check for a line break"
+      },
+      {
+        "case": "A comma separates alternatives on the server, so a value that is only commas and spaces would match every item in the library",
+        "expected": "A comma separates alternatives on the server, so a value that is only commas and spaces would match every item in the library"
+      },
+      {
+        "case": "A range is not a filter this command builds; run one search per year",
+        "expected": "A range is not a filter this command builds; run one search per year"
       },
       {
         "case": "A rating is per-account: a token shared into this server may not carry one",
@@ -684,8 +908,8 @@
         "expected": "A rating key from another server, or from before a library rebuild, will not resolve here"
       },
       {
-        "case": "A rating key is local to this server and moves when an item is re-matched",
-        "expected": "A rating key is local to this server and moves when an item is re-matched"
+        "case": "A rating key is a row number on one server, so that number names something else here",
+        "expected": "A rating key is a row number on one server, so that number names something else here"
       },
       {
         "case": "A server that allows unauthenticated access on the local network issues tokens like this; `--user` needs a token minted by signing in to plex.tv",
@@ -698,6 +922,10 @@
       {
         "case": "A typed command exists for search, detail, genres, similar, recent and sessions",
         "expected": "A typed command exists for search, detail, genres, similar, recent and sessions"
+      },
+      {
+        "case": "Artwork, media parts and a few status paths answer with an image, audio or JSON rather than a container; `api` renders containers only",
+        "expected": "Artwork, media parts and a few status paths answer with an image, audio or JSON rather than a container; `api` renders containers only"
       },
       {
         "case": "Check that PLEX_URL is the server's address and port, e.g. http://plex.example.com:32400",
@@ -728,6 +956,10 @@
         "expected": "Narrow the search instead; a list an agent cannot read is not a result"
       },
       {
+        "case": "Nothing close to that text in this library's own free-text search either; check the spelling, or search on fewer words",
+        "expected": "Nothing close to that text in this library's own free-text search either; check the spelling, or search on fewer words"
+      },
+      {
         "case": "Nothing was sent to the server",
         "expected": "Nothing was sent to the server"
       },
@@ -752,6 +984,10 @@
         "expected": "Plex Home users are managed separately and are not in the sharing record; read as one by exporting that user's own PLEX_TOKEN instead"
       },
       {
+        "case": "Plex acts on a GET at this path: ratings, play counts, scans and commands relayed to a client are all requests of that kind",
+        "expected": "Plex acts on a GET at this path: ratings, play counts, scans and commands relayed to a client are all requests of that kind"
+      },
+      {
         "case": "Plex for Sonos needs a Plex Pass subscription and speakers linked to the account; check both in the Plex app",
         "expected": "Plex for Sonos needs a Plex Pass subscription and speakers linked to the account; check both in the Plex app"
       },
@@ -768,8 +1004,16 @@
         "expected": "Report it at https://github.com/dmealing/plex-axi/issues"
       },
       {
+        "case": "Restart your agent session to receive plex-axi ambient context at session start",
+        "expected": "Restart your agent session to receive plex-axi ambient context at session start"
+      },
+      {
         "case": "Run `plex-axi --help` for the full reference",
         "expected": "Run `plex-axi --help` for the full reference"
+      },
+      {
+        "case": "Run `plex-axi --help` for the whole command reference",
+        "expected": "Run `plex-axi --help` for the whole command reference"
       },
       {
         "case": "Run `plex-axi --section 'Example Music' <command>`",
@@ -798,6 +1042,14 @@
       {
         "case": "Run `plex-axi api /library/sections`",
         "expected": "Run `plex-axi api /library/sections`"
+      },
+      {
+        "case": "Run `plex-axi api /library/sections` for a path that answers with one",
+        "expected": "Run `plex-axi api /library/sections` for a path that answers with one"
+      },
+      {
+        "case": "Run `plex-axi api /library/sections` for the paths below a section",
+        "expected": "Run `plex-axi api /library/sections` for the paths below a section"
       },
       {
         "case": "Run `plex-axi api /library/sections` to list the paths below a section",
@@ -832,6 +1084,10 @@
         "expected": "Run `plex-axi clients` to see what the server itself can reach"
       },
       {
+        "case": "Run `plex-axi context` to see exactly what that hook will print",
+        "expected": "Run `plex-axi context` to see exactly what that hook will print"
+      },
+      {
         "case": "Run `plex-axi doctor` to check what the server answers with",
         "expected": "Run `plex-axi doctor` to check what the server answers with"
       },
@@ -844,12 +1100,20 @@
         "expected": "Run `plex-axi doctor` to confirm the library is scanned and analysed"
       },
       {
+        "case": "Run `plex-axi doctor` to re-check the connection",
+        "expected": "Run `plex-axi doctor` to re-check the connection"
+      },
+      {
         "case": "Run `plex-axi doctor` to re-check the environment and the connection",
         "expected": "Run `plex-axi doctor` to re-check the environment and the connection"
       },
       {
         "case": "Run `plex-axi doctor` to see the music libraries this server has",
         "expected": "Run `plex-axi doctor` to see the music libraries this server has"
+      },
+      {
+        "case": "Run `plex-axi doctor` to see whether it has recovered",
+        "expected": "Run `plex-axi doctor` to see whether it has recovered"
       },
       {
         "case": "Run `plex-axi doctor` to see which check fails",
@@ -904,6 +1168,10 @@
         "expected": "Run `plex-axi playlist create '<title>' --key <rating_key> --write` to make one"
       },
       {
+        "case": "Run `plex-axi playlist create '<title>' --key <rating_key>` to preview one",
+        "expected": "Run `plex-axi playlist create '<title>' --key <rating_key>` to preview one"
+      },
+      {
         "case": "Run `plex-axi playlist list` for a playlist's rating key",
         "expected": "Run `plex-axi playlist list` for a playlist's rating key"
       },
@@ -948,12 +1216,36 @@
         "expected": "Run `plex-axi search --track '<title>'` to find rating keys"
       },
       {
+        "case": "Run `plex-axi search --track '<title>'` to find the item on this server",
+        "expected": "Run `plex-axi search --track '<title>'` to find the item on this server"
+      },
+      {
         "case": "Run `plex-axi search --track '<title>'` to find this server's rating key",
         "expected": "Run `plex-axi search --track '<title>'` to find this server's rating key"
       },
       {
         "case": "Run `plex-axi sessions` to see whether the server agrees it is playing",
         "expected": "Run `plex-axi sessions` to see whether the server agrees it is playing"
+      },
+      {
+        "case": "Run `plex-axi setup hooks` to install the missing hooks and repair stale ones",
+        "expected": "Run `plex-axi setup hooks` to install the missing hooks and repair stale ones"
+      },
+      {
+        "case": "Run `plex-axi setup hooks` to install them again",
+        "expected": "Run `plex-axi setup hooks` to install them again"
+      },
+      {
+        "case": "Run `plex-axi setup remove` to uninstall them",
+        "expected": "Run `plex-axi setup remove` to uninstall them"
+      },
+      {
+        "case": "Run `plex-axi setup status` to act on your own home directory",
+        "expected": "Run `plex-axi setup status` to act on your own home directory"
+      },
+      {
+        "case": "Run `plex-axi setup status` to check the hooks later",
+        "expected": "Run `plex-axi setup status` to check the hooks later"
       },
       {
         "case": "Run `plex-axi skill --check` in CI to catch a stale copy",
@@ -988,12 +1280,20 @@
         "expected": "Run the command again with `--debug` for what the server answered"
       },
       {
+        "case": "Run the command again with `--json` for a parser, or `--human` for a person",
+        "expected": "Run the command again with `--json` for a parser, or `--human` for a person"
+      },
+      {
         "case": "Run the command again with `--max-distance 0.25`",
         "expected": "Run the command again with `--max-distance 0.25`"
       },
       {
-        "case": "Run the command again with `--timeout 60` if the server is slow to wake",
-        "expected": "Run the command again with `--timeout 60` if the server is slow to wake"
+        "case": "Run the command again with `--timeout 60`; the server is reachable but slow",
+        "expected": "Run the command again with `--timeout 60`; the server is reachable but slow"
+      },
+      {
+        "case": "Run the command again with `--year 1977`",
+        "expected": "Run the command again with `--year 1977`"
       },
       {
         "case": "Run the command without `--user` to read as PLEX_TOKEN's own account",
@@ -1024,20 +1324,12 @@
         "expected": "Run the same command with a shorter `--not-played-since`, e.g. 7d"
       },
       {
-        "case": "Run the same path with `--depth 5` if a nested element was summarised",
-        "expected": "Run the same path with `--depth 5` if a nested element was summarised"
-      },
-      {
         "case": "Run the same search with `--no-group` to see every pressing of each title",
         "expected": "Run the same search with `--no-group` to see every pressing of each title"
       },
       {
         "case": "Run the same search with `--sort addedAt:desc` for newest first",
         "expected": "Run the same search with `--sort addedAt:desc` for newest first"
-      },
-      {
-        "case": "Run the same search with `--type artist` to check the artist exists at all",
-        "expected": "Run the same search with `--type artist` to check the artist exists at all"
       },
       {
         "case": "Set PLEX_TOKEN to a Plex access token; see https://support.plex.tv/articles/204059436",
@@ -1052,6 +1344,10 @@
         "expected": "Sign in to plex.tv and read the token from the Plex web app; see https://support.plex.tv/articles/204059436"
       },
       {
+        "case": "Something between this machine and the server is answering in its place, or cut the answer short; check PLEX_URL names the server itself",
+        "expected": "Something between this machine and the server is answering in its place, or cut the answer short; check PLEX_URL names the server itself"
+      },
+      {
         "case": "Sonic analysis is a server-side feature; an unanalysed library has no neighbours",
         "expected": "Sonic analysis is a server-side feature; an unanalysed library has no neighbours"
       },
@@ -1060,8 +1356,8 @@
         "expected": "The file is generated; edit the commands, not the skill"
       },
       {
-        "case": "The gate is an environment variable rather than a flag on purpose: it is the operator's decision, and a caller cannot grant itself one it was not given",
-        "expected": "The gate is an environment variable rather than a flag on purpose: it is the operator's decision, and a caller cannot grant itself one it was not given"
+        "case": "The server is the one PLEX_URL names; `api` cannot address another",
+        "expected": "The server is the one PLEX_URL names; `api` cannot address another"
       },
       {
         "case": "The share may have been revoked or never accepted; check it in Plex's own sharing settings",
@@ -1104,6 +1400,14 @@
         "expected": "Values are exact: pass one of these strings, not a synonym for it"
       },
       {
+        "case": "Wait a moment and run the command again; a Plex Media Server answers 503 while it starts and while it runs maintenance",
+        "expected": "Wait a moment and run the command again; a Plex Media Server answers 503 while it starts and while it runs maintenance"
+      },
+      {
+        "case": "With neither, output is TOON: the structured default an agent reads",
+        "expected": "With neither, output is TOON: the structured default an agent reads"
+      },
+      {
         "case": "`--user` is admin-only and needs a plex.tv round-trip; every other flag here works against the local server alone",
         "expected": "`--user` is admin-only and needs a plex.tv round-trip; every other flag here works against the local server alone"
       },
@@ -1118,6 +1422,10 @@
       {
         "case": "`--user` needs a round-trip to plex.tv; every other command works without one",
         "expected": "`--user` needs a round-trip to plex.tv; every other command works without one"
+      },
+      {
+        "case": "`api` takes one path, with the method GET before it or left out",
+        "expected": "`api` takes one path, with the method GET before it or left out"
       },
       {
         "case": "`pick` reads the fields this server advertises before it builds a predicate, so that a filter it cannot honour is reported rather than applied in Python",
@@ -1155,6 +1463,7 @@
       "retry|lead=custom|tail=other",
       "retry|lead=custom|tail=space",
       "retry|lead=default|tail=none",
+      "retry|lead=default|tail=other",
       "retry|lead=default|tail=space",
       "run|lead=custom|tail=none",
       "run|lead=custom|tail=other",
@@ -1186,6 +1495,16 @@
         "subject": "regex:_BEARER"
       }
     ],
+    "redactionRules": [
+      "ha|1|(?i)\\b(bearer\\s+)[A-Za-z0-9._~+/=-]{8,}",
+      "ha|2|(?i)([?&](?:token|access_token|authsig)=)[^&\\s\\\"'<>]+",
+      "ha|3|\\beyJ[A-Za-z0-9_-]{4,}\\.[A-Za-z0-9_-]{4,}\\.[A-Za-z0-9_-]{4,}",
+      "plex|1|(?i)\\b(bearer\\s+)[A-Za-z0-9._~+/=-]{8,}",
+      "plex|2|(?i)(X-Plex-Token=)[A-Za-z0-9._~-]{4,}",
+      "plex|3|(?i)([?&]token=)[A-Za-z0-9._~-]{8,}",
+      "plex|4|(?i)(X-Plex-Token['\\\"]?\\s*[:=]\\s*['\\\"]?)[A-Za-z0-9._~-]{8,}",
+      "plex|5|\\beyJ[A-Za-z0-9_-]{4,}\\.[A-Za-z0-9_-]{4,}\\.[A-Za-z0-9_-]{4,}"
+    ],
     "redactionSamples": [
       {
         "case": "ha|bearer-header",
@@ -1201,11 +1520,31 @@
       },
       {
         "case": "ha|delegation-parameter",
-        "expected": "http://host.example.com:32400/s?token=plex0123456789abcdef"
+        "expected": "http://host.example.com:32400/s?token=<redacted>"
       },
       {
         "case": "ha|token-header",
         "expected": "X-Plex-Token: plex0123456789abcdef"
+      },
+      {
+        "case": "ha|access-token-parameter",
+        "expected": "https://host.example.com/media/example.jpg?width=100&access_token=<redacted>"
+      },
+      {
+        "case": "ha|signature-parameter",
+        "expected": "https://host.example.com/media/example.mp3?authsig=<redacted>&v=2"
+      },
+      {
+        "case": "ha|parameter-value-outside-an-alphabet",
+        "expected": "https://host.example.com/s?token=<redacted>"
+      },
+      {
+        "case": "ha|bearer-inside-a-parameter",
+        "expected": "https://host.example.com/s?token=<redacted> <redacted>"
+      },
+      {
+        "case": "ha|jwt-after-a-parameter-prefix",
+        "expected": "https://host.example.com/s?token=<redacted>"
       },
       {
         "case": "ha|registered-literal",
@@ -1242,6 +1581,26 @@
       {
         "case": "plex|token-header",
         "expected": "X-Plex-Token: <redacted>"
+      },
+      {
+        "case": "plex|access-token-parameter",
+        "expected": "https://host.example.com/media/example.jpg?width=100&access_token=abcdef123456ghijkl"
+      },
+      {
+        "case": "plex|signature-parameter",
+        "expected": "https://host.example.com/media/example.mp3?authsig=abcdef123456ghijkl&v=2"
+      },
+      {
+        "case": "plex|parameter-value-outside-an-alphabet",
+        "expected": "https://host.example.com/s?token=ab%2Fcd+abcdef123456ghijkl/=="
+      },
+      {
+        "case": "plex|bearer-inside-a-parameter",
+        "expected": "https://host.example.com/s?token=bearer <redacted>"
+      },
+      {
+        "case": "plex|jwt-after-a-parameter-prefix",
+        "expected": "https://host.example.com/s?token=<redacted>"
       },
       {
         "case": "plex|registered-literal",

@@ -7,7 +7,7 @@ can serve a command-line tool and a caller that is not one:
 
 **Recovery is structured intent, never a rendered line.** Today's help lines have the
 owning tool's name baked in at the point the error is raised --
-``help_lines=["Run `ha-axi area list` to see the areas that exist"]`` -- so the
+``help_lines=["Run `hass-axi area list` to see the areas that exist"]`` -- so the
 sentence belongs to one tool forever. Here the same fact is
 :func:`run(("area", "list"), purpose="to see the areas that exist")`, and the tool's
 name arrives when somebody renders it: :mod:`axi_toolkit.render.cli` for a shell,

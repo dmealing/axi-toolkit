@@ -4,7 +4,7 @@
 edit -- the module docstring pointed at a file in that repository, which would dangle
 here -- and nothing below it changed. While both copies existed that last claim did not
 have to be trusted: a conformance gate hashed the two files against each other with the
-docstring elided and failed on any other difference. ``ha-axi`` has since deleted its
+docstring elided and failed on any other difference. ``hass-axi`` has since deleted its
 copy and imports this module, so there is one copy, the gate has been retired, and
 **this file is what states the module's behaviour now** -- which is the right instrument
 once the duplication is gone. AGENTS.md, "Retired gates", carries the reasoning.

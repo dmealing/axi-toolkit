@@ -126,10 +126,11 @@ line. That is the defect, not the simplification.
   tool's name is absent. That hole was live in `_plex_subject_recovery` until a mutation
   found it.
 - **`redact.py`** — order is literals → bearer → registered shapes → JWT. For the five
-  shapes the two tools carry the order is **not** observable (each rule leaves a
-  placeholder the next cannot match), which is why neither tool wrote it down. It is
-  written down and pinned here so the first shape where it matters is not the thing that
-  discovers it.
+  shapes the two tools first carried the order was **not** observable (each rule leaves
+  a placeholder the next cannot match), which is why neither tool wrote it down. It was
+  written down and pinned here so the first shape where it matters would not be the
+  thing that discovers it. `hass-axi`'s query-string shape is that shape: under it the
+  order **is** observable, and the order pinned here is the one that tool runs.
 - **`envconfig.py`** — every per-tool difference (variable names, scheme default, port
   default, path-suffix stripping) is on a `CredentialSpec` the tool declares. None of
   them can be decided here; they are properties of the system behind the tool.
@@ -220,14 +221,28 @@ Consequences worth keeping straight:
   claims are all enforced in `reqgen.bind` and tested in `tests/test_reqgen.py`.
 - **`tests/conformance/capture.json` is machine-written and never hand-edited.** It
   holds every expected value in the repository. Re-read it with `reqgen capture`, which
-  needs both source checkouts; nothing else does. **Retiring the drift gates did not
-  change that**, and it is worth saying because it looks as though it should have: with
-  both tools now importing this package, the obvious guess is that the capture has
-  nothing left to read out of a checkout. Measured rather than guessed — **18 of the 24
-  capture halves still refuse to run without one**, because the toolkit-tier facts
-  (`errorExitCodes`, `haRecoveryLines`, `plexNormalizedUrls`, every `DifferentialFacts`
-  row, …) read the tools' *own* modules, which they still have. Only the six TOON facts
-  read the vendored fixtures instead. Both variables stay required.
+  needs both source checkouts; `reqgen drift` does too, and nothing else does.
+  **Retiring the drift gates did not change that**, and it is worth saying because it
+  looks as though it should have: with both tools now importing this package, the
+  obvious guess is that the capture has nothing left to read out of a checkout. Measured
+  rather than guessed — **19 of the 25 capture halves still refuse to run without
+  one**, because the toolkit-tier facts (`errorExitCodes`, `haRecoveryLines`,
+  `plexNormalizedUrls`, `redactionRules`, every `DifferentialFacts` row, …) read the
+  tools' *own* modules, which they still have. Only the six TOON facts read the vendored
+  fixtures instead. Both variables stay required.
+- **The capture is checked against the tools by the gate, not by memory.**
+  `scripts/ci-local.sh --only drift` fetches both tools at `main`, re-reads every fact
+  with `reqgen drift`, and fails when the committed capture is not what they say or the
+  three copies of `toon.py` are not one file. It exists because the capture once sat
+  stale through a package rename, a new redaction shape and an encoder fix in the tools
+  with every check here green: `pytest` judges this package against the capture, and
+  nothing judged the capture. With no network it prints `SKIPPED` and **fails**;
+  `AXI_TOOLKIT_ALLOW_OFFLINE=1` is the explicit override, and the section is then
+  reported as skipped, never as passed. A capture that cannot read a tool raises
+  `SourceError` naming the package, command or module it looked for, and writes
+  nothing. `redactionRules` is the fact that makes a new shape visible: it records the
+  patterns each tool's `redact` applies, in order, so a shape no sample exercises is
+  still a changed row.
 - **A module extracted but not yet adopted is gated against its origin, and the gate is
   deleted the day it is adopted.** Both halves of that rule are load-bearing and both
   have now been exercised to the end: **four gates were raised and all four are
@@ -235,7 +250,7 @@ Consequences worth keeping straight:
   why each existed, why each went, and the two techniques worth reusing. A live gate's
   reach is the reach every capture-backed check has and no more: drift introduced
   **here** goes red on the next `pytest`, drift introduced **there** goes red at the
-  next `reqgen capture`. **There are no live instances today**, which is why
+  next `reqgen drift`, which the gate runs. **There are no live instances today**, which is why
   `anExtractedModuleIsGatedAgainstItsOriginUntilTheToolTakesIt` is the ledger's only
   `planned` entry and names no fact: no module lives in two places, so there is nothing
   to gate. The next extraction — the Plex probing layer — reopens the window and puts it
@@ -262,7 +277,7 @@ the next extraction needs and the individual gates are gone.
 
 | gate | shape | judged | retired when |
 | --- | --- | --- | --- |
-| `haServiceModelDefinitions` | `CapabilityFacts`, equality | the source text of `servicemodel.py`, definition by definition | `dmealing/ha-axi` PR #24 |
+| `haServiceModelDefinitions` | `CapabilityFacts`, equality | the source text of `servicemodel.py`, definition by definition | `dmealing/hass-axi` PR #24 |
 | `plexDomainDefinitions` | `CapabilityFacts`, equality | the moved surface: `ids.<name>` and `filters.<name>` | `dmealing/plex-axi` PR #20 |
 | `plexIdBehaviour` | `WireFacts`, byte equality per case | 31 scenarios against both copies of `ids.py` | `dmealing/plex-axi` PR #20 |
 | `plexFilterBehaviour` | `WireFacts`, byte equality per case | 60 scenarios against both copies of the pure half of `music.py` | `dmealing/plex-axi` PR #20 |
@@ -316,7 +331,7 @@ two dedicated Plex suites:
   hand-authored one. `tests/test_plex_ids.py` and `tests/test_plex_filters.py` carry the
   assertion now, over every refusal each module raises.
 
-**Why they went.** Each tool deleted its copy and now imports this package: `ha-axi` in
+**Why they went.** Each tool deleted its copy and now imports this package: `hass-axi` in
 its PR #24, `plex-axi` in its PR #20, which removed `ids.py` outright and reduced
 `music.py` to the half that needs a live section. There is one copy of each module and
 it lives here, so each gate had nothing left to compare against. A cross-repository gate
@@ -401,6 +416,7 @@ Regenerate and gate:
 scripts/dev-setup.sh --reqgen   # a .venv on 3.11+, with the toolchain in it
 .venv/bin/python scripts/reqgen.py list | check | generate
 AXI_TOOLKIT_SOURCE_HA=<checkout> AXI_TOOLKIT_SOURCE_PLEX=<checkout> .venv/bin/python scripts/reqgen.py capture
+scripts/ci-local.sh --only drift   # is the capture still what both tools' main say
 ```
 
 `scripts/ci-local.sh --only requirements` runs `list` and `check`, on every gate run;
@@ -448,7 +464,7 @@ machine happens to have, run against whatever interpreter it was installed for.)
   **100% statement and branch coverage** of the package, and they already carry, over
   every refusal each module raises, the "no recovery stores a tool name" assertion the
   gates' subject halves made. `tests/test_ha_services.py` is the same instrument for the
-  Home Assistant half. Past both is `plex-axi`'s and `ha-axi`'s own suites, which now run
+  Home Assistant half. Past both is `plex-axi`'s and `hass-axi`'s own suites, which now run
   against this code rather than beside it.
 - `tests/test_commit_message.py` is the only suite that wants a tool outside Python. It
   needs `node`, and where `node` is absent its parity cases skip — see **The commit-message

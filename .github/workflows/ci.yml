@@ -170,10 +170,30 @@ jobs:
       # a reference that no longer resolves, all fail here.
       - run: scripts/ci-local.sh --only requirements
 
+  # The one job that reads something other than this repository: it fetches both
+  # source tools at their main and fails when the committed capture is no longer
+  # what they say. Nightly is the trigger that matters here, because the change
+  # that breaks it lands in another repository and pushes nothing to this one.
+  drift:
+    name: capture is what both tools say
+    runs-on: [self-hosted, linux]
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m venv --clear .venv
+      - run: .venv/bin/python -m pip install --upgrade pip
+      - run: .venv/bin/pip install -e ".[dev,reqgen]"
+      - run: scripts/ci-local.sh --only drift
+
   # Nothing watches a workflow that runs on main and overnight, so a failure has
   # to come and find someone.
   notify:
-    needs: [leakcheck, commits, lint, test, requirements]
+    needs: [leakcheck, commits, lint, test, requirements, drift]
     if: always() && contains(needs.*.result, 'failure')
     runs-on: [self-hosted, linux]
     timeout-minutes: 5

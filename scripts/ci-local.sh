@@ -15,6 +15,8 @@
 #   lint          ruff check . && ruff format --check .
 #   test          pytest, once, on the interpreter that built .venv
 #   requirements  scripts/reqgen.py list, then scripts/reqgen.py check
+#   drift         fetch both source tools at their main, then scripts/reqgen.py
+#                 check and scripts/reqgen.py drift against them (see below)
 #
 # Usage:
 #   scripts/ci-local.sh                        # every section
@@ -37,6 +39,31 @@
 # only the pull-request-body half is skipped, the SKIP line says so, and
 # commitcheck prints its own not-consulted note beside the verdict.
 #
+# DRIFT. Every other section reads only this repository, which is the design:
+# the suite needs no source checkout and no network. The price is that it judges
+# this package against a capture, and the capture is only as current as the last
+# time somebody ran one. `drift` is the section that goes and looks. It makes a
+# shallow clone of each tool's main in a throwaway directory of this run's own,
+# under AXI_TOOLKIT_DRIFT_CACHE (default
+# ${XDG_CACHE_HOME:-~/.cache}/axi-toolkit/drift) and removed when the run ends,
+# then re-reads every fact from them, and fails when the committed capture is
+# not what they say now or the three copies of the encoder are not one file. A
+# renamed package or command, a new redaction shape, a changed recovery line and
+# an encoder edit all land there. Nothing is shared between runs, because runs
+# overlap on one machine: one cached tree, rewritten in place by whichever run
+# fetched last, is a tree another run is importing modules out of, and the race
+# fails them both. Reading a tool imports its modules, so this section runs the
+# tools' own code from main, exactly as `reqgen capture` does.
+#
+# Set AXI_TOOLKIT_SOURCE_HA or AXI_TOOLKIT_SOURCE_PLEX to judge an existing
+# checkout instead of fetching that tool: a branch of the tool, before it lands.
+#
+# With no network the section cannot answer, and it says so rather than passing:
+# it prints a SKIPPED line and FAILS. AXI_TOOLKIT_ALLOW_OFFLINE=1 is the explicit
+# override; the SKIPPED line is still printed, the section is reported as
+# SKIPPED and never as PASS, and the run's last line names it. The override does
+# not skip a fetch that would have worked.
+#
 # NOT COVERED. hygiene.yml's pull request title and body leak scan
 # (`leakcheck.py --pull-request N`) has no local home: the text it scans exists
 # only on GitHub, after the pull request is opened.
@@ -53,7 +80,7 @@ set -uo pipefail
 root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 cd "$root" || exit 1
 
-SECTIONS=(leakcheck commits lint test requirements)
+SECTIONS=(leakcheck commits lint test requirements drift)
 MATRIX_PYTHONS=${MATRIX_PYTHONS:-"3.9 3.10 3.11 3.12"}
 
 usage() { sed -n '2,/^set -uo/p' "$0" | sed '$d; s/^# \{0,1\}//'; }
@@ -130,18 +157,74 @@ sec_requirements() {
   .venv/bin/python scripts/reqgen.py check
 }
 
+# One line per tool: the variable that names its checkout, the variable that
+# overrides where it is fetched from, the default for that, and the cache name.
+DRIFT_TOOLS=(
+  "AXI_TOOLKIT_SOURCE_HA AXI_TOOLKIT_DRIFT_HA_URL https://github.com/dmealing/hass-axi.git hass-axi"
+  "AXI_TOOLKIT_SOURCE_PLEX AXI_TOOLKIT_DRIFT_PLEX_URL https://github.com/dmealing/plex-axi.git plex-axi"
+)
+# A section returns this to say it could not run and was allowed not to.
+SKIPPED_RC=77
+
+# A shallow clone of one tool's main at $1, from $2. The destination belongs to
+# this run alone, so the clone is the whole fetch: no shared tree is updated in
+# place, and no run can rewrite a tree another run is reading.
+fetch_main() {
+  git clone --quiet --depth 1 --branch main "$2" "$1"
+}
+
+sec_drift() {
+  local cache=${AXI_TOOLKIT_DRIFT_CACHE:-${XDG_CACHE_HOME:-$HOME/.cache}/axi-toolkit/drift}
+  local line source_var url_var default_url name url
+  mkdir -p "$cache"
+  # Not local, for the reason the comment under sec_test gives: the EXIT trap
+  # fires after this function has returned, when the section's subshell ends
+  # and nothing is reading the checkouts any more.
+  work=$(mktemp -d "$cache/run.XXXXXX")
+  trap 'rm -rf "$work"' EXIT
+  for line in "${DRIFT_TOOLS[@]}"; do
+    read -r source_var url_var default_url name <<<"$line"
+    if [ -n "${!source_var:-}" ]; then
+      echo "drift: $name is the checkout $source_var names; not fetched"
+      continue
+    fi
+    url=${!url_var:-$default_url}
+    if fetch_main "$work/$name" "$url"; then
+      echo "drift: $name main is $(git -C "$work/$name" rev-parse --short HEAD)"
+      export "$source_var=$work/$name"
+      continue
+    fi
+    echo "SKIPPED: drift: $name could not be fetched, so nothing compared this package to the tools" >&2
+    if [ "${AXI_TOOLKIT_ALLOW_OFFLINE:-}" = 1 ]; then
+      echo "SKIPPED: drift: allowed by AXI_TOOLKIT_ALLOW_OFFLINE=1; run it again with a network before relying on this run" >&2
+      return "$SKIPPED_RC"
+    fi
+    echo "drift: an unanswered drift check fails; AXI_TOOLKIT_ALLOW_OFFLINE=1 allows the skip" >&2
+    return 1
+  done
+  ensure_venv metaobjects
+  .venv/bin/python scripts/reqgen.py check
+  PYTHONDONTWRITEBYTECODE=1 .venv/bin/python scripts/reqgen.py drift
+}
+
 # Each section runs in its own subshell under `set -e`, so its first failing
 # command ends that section and not the run. The subshell must not sit in an
 # `if` condition: bash ignores `set -e` there, and a section would run on past
 # its own failure and report the last command's status. The same holds for the
 # left side of `||`, which is why the status is read on the next line.
 failed=()
+passed=()
+skipped=()
 for s in "${only[@]}"; do
   printf '\n========== %s ==========\n' "$s"
   (set -e; "sec_$s")
   rc=$?
   if [ "$rc" -eq 0 ]; then
     echo "PASS: $s"
+    passed+=("$s")
+  elif [ "$rc" -eq "$SKIPPED_RC" ]; then
+    echo "SKIPPED: $s"
+    skipped+=("$s")
   else
     echo "FAIL: $s" >&2
     failed+=("$s")
@@ -153,4 +236,8 @@ if [ ${#failed[@]} -gt 0 ]; then
   echo "ci-local: FAILED: ${failed[*]}" >&2
   exit 1
 fi
-echo "ci-local: passed: ${only[*]}"
+if [ ${#skipped[@]} -gt 0 ]; then
+  echo "ci-local: passed: ${passed[*]:-nothing}; SKIPPED, not passed: ${skipped[*]}"
+else
+  echo "ci-local: passed: ${passed[*]}"
+fi

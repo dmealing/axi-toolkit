@@ -18,7 +18,7 @@ classifiers = [
   "Programming Language :: Python :: 3",
   "Topic :: Software Development :: Libraries",
 ]
-# Deliberately empty, and asserted by tests/test_purity.py. `ha-axi` installs with
+# Deliberately empty, and asserted by tests/test_purity.py. `hass-axi` installs with
 # exactly one runtime dependency and must keep doing so after it takes this package;
 # a transport pulled in here would land in both CLIs without either asking for it.
 dependencies = []

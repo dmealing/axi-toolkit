@@ -102,7 +102,7 @@ def differential(subject: Callable[[str], Any], captured: Any) -> str | None:
         if ha != plex:
             return (
                 f"the two source copies disagree about {name!r}\n"
-                f"  ha-axi  : {ha!r}\n  plex-axi: {plex!r}\n"
+                f"  hass-axi: {ha!r}\n  plex-axi: {plex!r}\n"
                 "  neither is adopted until somebody says which is right and why"
             )
         try:
