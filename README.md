@@ -46,7 +46,7 @@ from annotations — so there is no adapter worth writing.
 This is the first part of the extraction that was not mechanical, and it is the reason a
 single module can serve a CLI and a caller that will never run one.
 
-Today a tool raises `help_lines=["Run \`ha-axi area list\` to see the areas that exist"]`.
+Today a tool raises `help_lines=["Run \`hass-axi area list\` to see the areas that exist"]`.
 The tool's own name is baked in at the point the error is raised, so the sentence belongs
 to that tool forever. Here the same fact is structured intent, and the name arrives when
 somebody renders it:
@@ -61,8 +61,8 @@ error = NotFound(
     recovery=[run(("area", "list"), purpose="to see the areas that exist")],
 )
 
-cli.lines(error.recovery, "ha-axi")
-# ['Run `ha-axi area list` to see the areas that exist']
+cli.lines(error.recovery, "hass-axi")
+# ['Run `hass-axi area list` to see the areas that exist']
 
 prose.sentences(error.recovery, "some-other-tool")
 # ["To see the areas that exist, use some-other-tool's `area list` command."]

@@ -6,12 +6,14 @@ public and its leak scanner reads test files too -- and because a scanner that h
 be taught to ignore its own tests would be one exemption away from ignoring a real
 leak.
 
-The ordering tests need their own note. For the five shapes the two tools carry between
-them the order the rules run in is *not* observable -- each rule leaves a placeholder
-the next one cannot match, so every ordering converges on the same bytes. That is why
-neither tool ever wrote its order down. The two tests below are built to make the order
-visible anyway, because the first shape somebody adds where it matters should not be
-the thing that discovers what the order was.
+The ordering tests need their own note. For the five shapes the two tools first carried
+between them the order the rules run in was *not* observable -- each rule leaves a
+placeholder the next one cannot match, so every ordering converged on the same bytes.
+That is why neither tool ever wrote its order down. The first two ordering tests below
+are built to make the order visible anyway, because the first shape somebody added
+where it matters should not have been the thing that discovered what the order was.
+The two after them are that shape: a query-string rule one tool has since added, under
+which both neighbours' positions show without any help.
 """
 
 from __future__ import annotations
@@ -42,6 +44,11 @@ def synthetic_jwt() -> str:
 BEARER_VALUE = "abcdef" + "123456" + "ghijkl"
 PLEX_VALUE = "plex" + "0123456789abcdef"
 PLEX_PARAM = r"(?i)(X-Plex-Token=)[A-Za-z0-9._~-]{4,}"
+#: A credential signed into a URL's query string, as the tool that carries it declares
+#: it. Its value class is "up to the next separator, quote or angle bracket" rather
+#: than an alphabet, which is what makes the order of the rules around it visible.
+QUERY_PARAM = r"(?i)([?&](?:token|access_token|authsig)=)[^&\s\"'<>]+"
+SIGNED_VALUE = "0123456789abcdef" * 4
 
 
 @pytest.fixture
@@ -130,6 +137,50 @@ def test_registering_the_same_shape_twice_is_a_no_op(boundary):
     assert boundary.registered_patterns() == (PLEX_PARAM,)
 
 
+def test_a_credential_signed_into_a_query_string_keeps_the_url_and_loses_the_value(boundary):
+    """A URL a system hands out already signed never passed through configuration.
+
+    So no registered literal catches it, and the shape is the only thing that can.
+    The path and the parameter's name survive: the reader still needs to know which
+    resource it was and that a credential was suppressed.
+    """
+    boundary.register_pattern(QUERY_PARAM)
+    cleaned = boundary.redact(f"picture: /media/example.jpg?token={SIGNED_VALUE}")
+    assert SIGNED_VALUE not in cleaned
+    assert cleaned == f"picture: /media/example.jpg?token={REDACTED}"
+
+
+@pytest.mark.parametrize("name", ["token", "access_token", "authsig", "Access_Token"])
+def test_every_parameter_the_query_string_shape_names_is_redacted(boundary, name):
+    boundary.register_pattern(QUERY_PARAM)
+    first = boundary.redact(f"https://host.example.com/s?{name}={SIGNED_VALUE}")
+    later = boundary.redact(f"https://host.example.com/s?width=100&{name}={SIGNED_VALUE}")
+    assert first == f"https://host.example.com/s?{name}={REDACTED}"
+    assert later == f"https://host.example.com/s?width=100&{name}={REDACTED}"
+
+
+@pytest.mark.parametrize("terminator", ["&v=2", " trailing", '"', "'", ">"])
+def test_the_query_string_shape_stops_where_the_value_does(boundary, terminator):
+    """What follows the value is not a credential and has to survive."""
+    boundary.register_pattern(QUERY_PARAM)
+    cleaned = boundary.redact(f"/s?token={SIGNED_VALUE}{terminator}")
+    assert cleaned == f"/s?token={REDACTED}{terminator}"
+
+
+def test_the_query_string_shape_does_not_assume_an_alphabet(boundary):
+    """A signature is not promised to stay inside one, and a half-redacted one leaks."""
+    boundary.register_pattern(QUERY_PARAM)
+    value = f"ab%2Fcd+{SIGNED_VALUE}/=="
+    assert boundary.redact(f"/s?authsig={value}") == f"/s?authsig={REDACTED}"
+
+
+def test_the_query_string_shape_needs_a_query_separator(boundary):
+    """Anchored on ``?`` or ``&`` so prose that merely says ``token=`` is left alone."""
+    boundary.register_pattern(QUERY_PARAM)
+    ordinary = f"set token={SIGNED_VALUE} in the form, or pass a token"
+    assert boundary.redact(ordinary) == ordinary
+
+
 def test_registered_shapes_are_reported_in_the_order_they_run(boundary):
     first, second = PLEX_PARAM, r"(?i)([?&]token=)[A-Za-z0-9._~-]{8,}"
     boundary.register_pattern(first)
@@ -157,6 +208,30 @@ def test_the_jwt_rule_runs_last_so_a_registered_shape_gets_its_chance(boundary):
     """The mirror image: a shape spanning a JWT still matches, because JWT goes last."""
     boundary.register_pattern(r"(?i)token [A-Za-z0-9_.-]+")
     assert boundary.redact(f"token {synthetic_jwt()}") == REDACTED
+
+
+def test_the_query_string_shape_shows_that_the_bearer_rule_ran_first(boundary):
+    """Not built for the purpose: this is a shape a tool carries, and the order shows.
+
+    Its value class takes the word ``bearer`` as a value and stops at the space. Run
+    first, it would remove the word the bearer rule is anchored on and leave the
+    credential after it in the output. Run second, both go.
+    """
+    boundary.register_pattern(QUERY_PARAM)
+    cleaned = boundary.redact(f"/s?token=bearer {BEARER_VALUE}")
+    assert BEARER_VALUE not in cleaned
+    assert cleaned == f"/s?token={REDACTED} {REDACTED}"
+
+
+def test_the_query_string_shape_shows_that_the_jwt_rule_ran_last(boundary):
+    """The mirror image, and again a real shape rather than a constructed one.
+
+    The value class excludes ``<``, so a placeholder the JWT rule had already left
+    would end the match early and a second placeholder would follow the first. One
+    placeholder means the whole value was still there when this shape looked.
+    """
+    boundary.register_pattern(QUERY_PARAM)
+    assert boundary.redact(f"/s?token=ab.{synthetic_jwt()}") == f"/s?token={REDACTED}"
 
 
 def test_a_literal_is_removed_before_any_shape_looks_at_the_text(boundary):

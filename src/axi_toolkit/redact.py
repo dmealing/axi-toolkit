@@ -5,11 +5,12 @@ single write path. The document-rendering half of that module stays with each to
 what is shared, and what has to hold identically in both, is this: a set of literal
 secrets, a list of credential *shapes*, and one function that removes both.
 
-The two copies differed in exactly one way, and the difference is the design here. One
-tool carries two built-in shapes (a bearer header and a JWT); the other carries those
-plus three of its own, for a credential that travels as a URL parameter. So the shapes
-are not a fixed list: :func:`register_pattern` is how a tool adds its own, and the
-order they run in is fixed and documented, because that order is observable.
+The two copies differed in exactly one way, and the difference is the design here.
+Both tools carry the same two built-in shapes (a bearer header and a JWT). Past those,
+one adds a shape for a credential signed into a URL's query string, and the other adds
+three of its own, for a credential that travels as a URL parameter and as a header. So
+the shapes are not a fixed list: :func:`register_pattern` is how a tool adds its own,
+and the order they run in is fixed and documented, because that order is observable.
 
 **The order is: literals, then the bearer header, then registered patterns, then the
 JWT.** Literals go first and longest-first, so an overlapping pair (``user:password``)
@@ -17,12 +18,16 @@ is replaced whole rather than leaving a half-redacted fragment behind. The JWT r
 goes last because it replaces its whole match rather than keeping a prefix, and a rule
 that keeps a prefix should have had its chance first.
 
-For the five shapes the two tools carry between them the order turns out not to be
-observable -- every path converges, because the placeholder a rule leaves behind is
+For the five shapes the two tools first carried between them the order was not
+observable -- every path converged, because the placeholder a rule leaves behind is
 inert to the next one. That is why neither tool wrote the order down, and it is exactly
-why it is written down here: the first shape somebody adds where it *does* matter would
-otherwise be the thing that discovered it. ``tests/test_redact.py`` pins the two places
-the order is visible, with shapes built to make it so.
+why it was written down here: the first shape somebody added where it *does* matter
+would otherwise have been the thing that discovered it. The sixth is that shape. A
+query-string rule whose value runs to the next separator, rather than over an alphabet,
+reads the word ``bearer`` as a value and stops at the placeholder a JWT leaves behind,
+so the position of both its neighbours shows in the output. ``tests/test_redact.py``
+pins the two places the order is visible twice over: with shapes built to make it so,
+and with that shape as its tool declares it.
 """
 
 from __future__ import annotations

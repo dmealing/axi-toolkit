@@ -49,8 +49,8 @@ TOOLS = ("ha", "plex")
 #: Where each tool's checkout is, at capture time only. Never read by a subject
 #: projection, never recorded in the capture, never needed in CI.
 _SOURCE_ENV = {"ha": "AXI_TOOLKIT_SOURCE_HA", "plex": "AXI_TOOLKIT_SOURCE_PLEX"}
-_PACKAGE = {"ha": "ha_axi", "plex": "plex_axi"}
-_TOOL_NAME = {"ha": "ha-axi", "plex": "plex-axi"}
+_PACKAGE = {"ha": "hass_axi", "plex": "plex_axi"}
+_TOOL_NAME = {"ha": "hass-axi", "plex": "plex-axi"}
 
 
 # ============================================================ reading the sources
@@ -335,7 +335,7 @@ def subject_env_config_error_codes() -> list[str]:
 # DELETED, in the same change, rather than left to describe a file that is gone.
 #
 # ALL FOUR OF THEM HAVE NOW REACHED THAT DAY, and this is the worked example of the
-# rule. `axi_toolkit.ha.services` moved out of `ha-axi` verbatim, so while both copies
+# rule. `axi_toolkit.ha.services` moved out of `hass-axi` verbatim, so while both copies
 # existed the comparison could be a digest of the source text: `haServiceModelDefinitions`
 # hashed the tool's file and this one, definition by definition. The Plex half could not
 # be gated that way -- the move deliberately rewrote every recovery line into intent, so
@@ -614,7 +614,7 @@ def _round_trip(tool_name: str, text: str) -> str:
 
 
 def subject_ha_recovery_lines(case: str) -> str:
-    return _round_trip("ha-axi", case)
+    return _round_trip(_TOOL_NAME["ha"], case)
 
 
 def subject_plex_recovery_lines(case: str) -> str:
@@ -809,6 +809,20 @@ def _sample_text(name: str) -> str:
         "token-parameter": f"http://host.example.com:32400/art?X-Plex-Token={_SYNTHETIC_PLEX}",
         "delegation-parameter": f"http://host.example.com:32400/s?token={_SYNTHETIC_PLEX}",
         "token-header": f"X-Plex-Token: {_SYNTHETIC_PLEX}",
+        "access-token-parameter": (
+            f"https://host.example.com/media/example.jpg?width=100&access_token={_SYNTHETIC_BEARER}"
+        ),
+        "signature-parameter": (
+            f"https://host.example.com/media/example.mp3?authsig={_SYNTHETIC_BEARER}&v=2"
+        ),
+        "parameter-value-outside-an-alphabet": (
+            f"https://host.example.com/s?token=ab%2Fcd+{_SYNTHETIC_BEARER}/=="
+        ),
+        # The two cases where the order the rules run in shows in the output. They are
+        # here so the order judged is the one each tool's own redactor runs, rather
+        # than the one this package says it does.
+        "bearer-inside-a-parameter": f"https://host.example.com/s?token=bearer {_SYNTHETIC_BEARER}",
+        "jwt-after-a-parameter-prefix": f"https://host.example.com/s?token=ab.{_synthetic_jwt()}",
         "registered-literal": f"note {_REGISTERED_LITERAL} trailing",
         "userinfo-pair": "pair is someone:example-secret",
         "too-short-to-register": "abc def",
@@ -822,6 +836,11 @@ _SAMPLE_NAMES = (
     "token-parameter",
     "delegation-parameter",
     "token-header",
+    "access-token-parameter",
+    "signature-parameter",
+    "parameter-value-outside-an-alphabet",
+    "bearer-inside-a-parameter",
+    "jwt-after-a-parameter-prefix",
     "registered-literal",
     "userinfo-pair",
     "too-short-to-register",

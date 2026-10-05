@@ -19,7 +19,7 @@ import pytest
 from axi_toolkit.errors import choose, note, retry, run, set_env
 from axi_toolkit.render import cli
 
-TOOL = "ha-axi"
+TOOL = "hass-axi"
 
 
 # ------------------------------------------------------------------ rendering
@@ -28,18 +28,18 @@ TOOL = "ha-axi"
 @pytest.mark.parametrize(
     ("recovery", "expected"),
     [
-        (run(("doctor",)), "Run `ha-axi doctor`"),
+        (run(("doctor",)), "Run `hass-axi doctor`"),
         (
             run(("area", "list"), purpose="to see each area's id"),
-            "Run `ha-axi area list` to see each area's id",
+            "Run `hass-axi area list` to see each area's id",
         ),
         (
             run(("--help",), purpose="for the full reference"),
-            "Run `ha-axi --help` for the full reference",
+            "Run `hass-axi --help` for the full reference",
         ),
         (
             run(("--timeout", "60", "<command>"), lead="Raise the limit with"),
-            "Raise the limit with `ha-axi --timeout 60 <command>`",
+            "Raise the limit with `hass-axi --timeout 60 <command>`",
         ),
         (
             run(
@@ -47,7 +47,7 @@ TOOL = "ha-axi"
                 purpose="a library that has not finished scanning has no metadata",
                 separator=": ",
             ),
-            "Run `ha-axi doctor`: a library that has not finished scanning has no metadata",
+            "Run `hass-axi doctor`: a library that has not finished scanning has no metadata",
         ),
         (retry("--limit 50"), "Run the command again with `--limit 50`"),
         (
@@ -82,11 +82,11 @@ TOOL = "ha-axi"
         ),
         (
             note("This is a bug in {tool}; the command did not complete"),
-            "This is a bug in ha-axi; the command did not complete",
+            "This is a bug in hass-axi; the command did not complete",
         ),
         (
             note("usage: {tool} [command] [subcommand] [args] [flags]"),
-            "usage: ha-axi [command] [subcommand] [args] [flags]",
+            "usage: hass-axi [command] [subcommand] [args] [flags]",
         ),
     ],
 )
@@ -96,12 +96,12 @@ def test_each_rule_renders_the_line_the_tools_print(recovery, expected):
 
 def test_lines_renders_a_whole_recovery_block_in_order():
     block = (run(("doctor",)), note("and then look at the log"))
-    assert cli.lines(block, TOOL) == ["Run `ha-axi doctor`", "and then look at the log"]
+    assert cli.lines(block, TOOL) == ["Run `hass-axi doctor`", "and then look at the log"]
 
 
 def test_a_non_default_separator_survives_an_empty_purpose():
     """A line ending in bare punctuation round-trips; the separator carries it."""
-    assert cli.line(run(("doctor",), separator="."), TOOL) == "Run `ha-axi doctor`."
+    assert cli.line(run(("doctor",), separator="."), TOOL) == "Run `hass-axi doctor`."
 
 
 # --------------------------------------------------------------------- parsing
@@ -110,14 +110,14 @@ def test_a_non_default_separator_survives_an_empty_purpose():
 @pytest.mark.parametrize(
     ("text", "kind"),
     [
-        ("Run `ha-axi area list` to see each area's id", "run"),
-        ("Raise the limit with `ha-axi --timeout 60 <command>`", "run"),
-        ("Every local client still works without it: run `ha-axi clients`", "run"),
+        ("Run `hass-axi area list` to see each area's id", "run"),
+        ("Raise the limit with `hass-axi --timeout 60 <command>`", "run"),
+        ("Every local client still works without it: run `hass-axi clients`", "run"),
         ("Run the command again with `--limit 50`", "retry"),
         ("Pass a writable repository root with `--path <dir>`", "retry"),
         ("Set HA_URL to your base URL, e.g. export HA_URL=https://host.example.com", "set_env"),
         ("Retry the command; a dropped connection is often a one-off", "note"),
-        ("usage: ha-axi [command] [subcommand] [args] [flags]", "note"),
+        ("usage: hass-axi [command] [subcommand] [args] [flags]", "note"),
     ],
 )
 def test_a_line_parses_to_the_kind_that_describes_it(text, kind):
@@ -126,9 +126,9 @@ def test_a_line_parses_to_the_kind_that_describes_it(text, kind):
 
 def test_parsing_and_rendering_are_inverses():
     lines = [
-        "Run `ha-axi area list` to see each area's id",
-        "Run `ha-axi doctor`",
-        "Raise the limit with `ha-axi --timeout 60 <command>`",
+        "Run `hass-axi area list` to see each area's id",
+        "Run `hass-axi doctor`",
+        "Raise the limit with `hass-axi --timeout 60 <command>`",
         "Run the command again with `--limit 50`",
         "Set HA_TOKEN to a long-lived access token",
         "Retry the command; a dropped connection is often a one-off",
@@ -138,19 +138,19 @@ def test_parsing_and_rendering_are_inverses():
 
 def test_a_line_naming_the_tool_outside_its_command_becomes_a_note_with_a_slot():
     """Two invocations in one line cannot be one `run`, and must not bake in a name."""
-    text = "Run `ha-axi rate --help` or `ha-axi playlist --help` for the writes on offer"
+    text = "Run `hass-axi rate --help` or `hass-axi playlist --help` for the writes on offer"
     parsed = cli.parse(text, TOOL)
     assert parsed.kind == "note"
-    assert "ha-axi" not in parsed.text
+    assert "hass-axi" not in parsed.text
     assert parsed.text.count("{tool}") == 2
     assert cli.line(parsed, TOOL) == text
 
 
 def test_a_backticked_fragment_that_embeds_the_tool_name_becomes_a_note():
-    text = "Install it with `pip install 'ha-axi'` or `pip install websockets`"
+    text = "Install it with `pip install 'hass-axi'` or `pip install websockets`"
     parsed = cli.parse(text, TOOL)
     assert parsed.kind == "note"
-    assert "ha-axi" not in parsed.text
+    assert "hass-axi" not in parsed.text
     assert cli.line(parsed, TOOL) == text
 
 
@@ -166,7 +166,7 @@ def test_an_empty_line_is_refused_rather_than_becoming_an_empty_note():
 
 
 def test_parse_all_keeps_order():
-    texts = ["Run `ha-axi doctor`", "and then look at the log"]
+    texts = ["Run `hass-axi doctor`", "and then look at the log"]
     assert [item.kind for item in cli.parse_all(texts, TOOL)] == ["run", "note"]
 
 
@@ -183,7 +183,7 @@ def test_parse_all_keeps_order():
     ],
 )
 def test_a_recovery_that_names_no_tool_renders_the_same_for_any_tool(recovery):
-    assert cli.line(recovery, "ha-axi") == cli.line(recovery, "some-other-axi")
+    assert cli.line(recovery, "hass-axi") == cli.line(recovery, "some-other-axi")
 
 
 @pytest.mark.parametrize(
@@ -192,8 +192,8 @@ def test_a_recovery_that_names_no_tool_renders_the_same_for_any_tool(recovery):
 )
 def test_a_recovery_that_names_a_tool_names_the_one_it_is_handed(recovery):
     """The whole point: the same intent belongs to whichever tool renders it."""
-    mine = cli.line(recovery, "ha-axi")
+    mine = cli.line(recovery, "hass-axi")
     theirs = cli.line(recovery, "plex-axi")
     assert mine != theirs
     assert "plex-axi" not in mine
-    assert "ha-axi" not in theirs
+    assert "hass-axi" not in theirs
