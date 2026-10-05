@@ -390,6 +390,36 @@ def test_a_committed_capture_that_cannot_be_read_is_a_message_not_a_traceback(
         reqgen.do_drift(facts)
 
 
+def test_a_drift_with_no_encoder_digest_fact_is_a_message_not_a_traceback(monkeypatch, tmp_path):
+    """A declaration edit that renames the fact must not turn into a KeyError.
+
+    The traceback that ``fresh["encoderDigest"]`` would raise is the failure shape
+    every other guard here exists to avoid: frames of local paths, read in a
+    public pull request body as often as in a terminal.
+    """
+    target = tmp_path / "capture.json"
+    target.write_text(json.dumps({"facts": {}}))
+    monkeypatch.setattr(reqgen, "CAPTURE_PATH", target)
+    monkeypatch.setattr(reqgen, "_rel", lambda path: path.name)
+    facts = {"toonEncodeCaseCount": fact("toonEncodeCaseCount", sub_type="int", is_array=False)}
+    with pytest.raises(reqgen.CaptureError, match="no encoderDigest rows were captured"):
+        reqgen.do_drift(facts)
+
+
+def test_a_drift_with_an_empty_encoder_digest_fact_is_the_same_message(monkeypatch, tmp_path):
+    """A projection that returns nothing is not a digest to compare either."""
+    from conformance import projections
+
+    target = tmp_path / "capture.json"
+    target.write_text(json.dumps({"facts": {}}))
+    monkeypatch.setattr(reqgen, "CAPTURE_PATH", target)
+    monkeypatch.setattr(reqgen, "_rel", lambda path: path.name)
+    monkeypatch.setattr(projections, "capture_encoder_digest", lambda: [])
+    facts = {"encoderDigest": fact("encoderDigest", "DifferentialFacts")}
+    with pytest.raises(reqgen.CaptureError, match="no encoderDigest rows were captured"):
+        reqgen.do_drift(facts)
+
+
 def test_an_unexpected_failure_is_reported_without_the_path_it_carried(monkeypatch, tmp_path):
     """A bare ``FileNotFoundError`` prints where the checkout is. This one does not."""
     from conformance import projections

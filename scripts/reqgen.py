@@ -444,7 +444,13 @@ def do_drift(facts: dict[str, Fact]) -> int:
         ) from None
     lines = drift_report(committed, fresh)
     projections = _projections()
-    row = fresh["encoderDigest"][0]
+    rows = fresh.get("encoderDigest")
+    if not rows:
+        raise CaptureError(
+            "no encoderDigest rows were captured, so the three copies of the "
+            "encoder cannot be compared."
+        )
+    row = rows[0]
     identical, encoder_line = encoder_report(
         {projections._TOOL_NAME[tool]: row[tool] for tool in projections.TOOLS},
         projections.subject_encoder_digest(row["subject"]),

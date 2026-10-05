@@ -43,13 +43,17 @@
 # the suite needs no source checkout and no network. The price is that it judges
 # this package against a capture, and the capture is only as current as the last
 # time somebody ran one. `drift` is the section that goes and looks. It makes a
-# shallow clone of each tool's main under a cache directory
-# (AXI_TOOLKIT_DRIFT_CACHE, default ${XDG_CACHE_HOME:-~/.cache}/axi-toolkit/drift),
-# re-reads every fact from them, and fails when the committed capture is not
-# what they say now or the three copies of the encoder are not one file. A
+# shallow clone of each tool's main in a throwaway directory of this run's own,
+# under AXI_TOOLKIT_DRIFT_CACHE (default
+# ${XDG_CACHE_HOME:-~/.cache}/axi-toolkit/drift) and removed when the run ends,
+# then re-reads every fact from them, and fails when the committed capture is
+# not what they say now or the three copies of the encoder are not one file. A
 # renamed package or command, a new redaction shape, a changed recovery line and
-# an encoder edit all land there. Reading a tool imports its modules, so this
-# section runs the tools' own code from main, exactly as `reqgen capture` does.
+# an encoder edit all land there. Nothing is shared between runs, because runs
+# overlap on one machine: one cached tree, rewritten in place by whichever run
+# fetched last, is a tree another run is importing modules out of, and the race
+# fails them both. Reading a tool imports its modules, so this section runs the
+# tools' own code from main, exactly as `reqgen capture` does.
 #
 # Set AXI_TOOLKIT_SOURCE_HA or AXI_TOOLKIT_SOURCE_PLEX to judge an existing
 # checkout instead of fetching that tool: a branch of the tool, before it lands.
@@ -162,23 +166,22 @@ DRIFT_TOOLS=(
 # A section returns this to say it could not run and was allowed not to.
 SKIPPED_RC=77
 
-# A shallow copy of one tool's main at $1, from $2. Re-fetched every run: the
-# cache saves the clone, never the question.
+# A shallow clone of one tool's main at $1, from $2. The destination belongs to
+# this run alone, so the clone is the whole fetch: no shared tree is updated in
+# place, and no run can rewrite a tree another run is reading.
 fetch_main() {
-  if [ -d "$1/.git" ]; then
-    git -C "$1" fetch --quiet --depth 1 "$2" main &&
-      git -C "$1" checkout --quiet --force --detach FETCH_HEAD &&
-      git -C "$1" clean --quiet -fdx
-  else
-    rm -rf "$1"
-    mkdir -p "$(dirname "$1")"
-    git clone --quiet --depth 1 --branch main "$2" "$1"
-  fi
+  git clone --quiet --depth 1 --branch main "$2" "$1"
 }
 
 sec_drift() {
   local cache=${AXI_TOOLKIT_DRIFT_CACHE:-${XDG_CACHE_HOME:-$HOME/.cache}/axi-toolkit/drift}
   local line source_var url_var default_url name url
+  mkdir -p "$cache"
+  # Not local, for the reason the comment under sec_test gives: the EXIT trap
+  # fires after this function has returned, when the section's subshell ends
+  # and nothing is reading the checkouts any more.
+  work=$(mktemp -d "$cache/run.XXXXXX")
+  trap 'rm -rf "$work"' EXIT
   for line in "${DRIFT_TOOLS[@]}"; do
     read -r source_var url_var default_url name <<<"$line"
     if [ -n "${!source_var:-}" ]; then
@@ -186,9 +189,9 @@ sec_drift() {
       continue
     fi
     url=${!url_var:-$default_url}
-    if fetch_main "$cache/$name" "$url"; then
-      echo "drift: $name main is $(git -C "$cache/$name" rev-parse --short HEAD)"
-      export "$source_var=$cache/$name"
+    if fetch_main "$work/$name" "$url"; then
+      echo "drift: $name main is $(git -C "$work/$name" rev-parse --short HEAD)"
+      export "$source_var=$work/$name"
       continue
     fi
     echo "SKIPPED: drift: $name could not be fetched, so nothing compared this package to the tools" >&2
