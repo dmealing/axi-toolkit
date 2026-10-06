@@ -47,9 +47,11 @@
 # under AXI_TOOLKIT_DRIFT_CACHE (default
 # ${XDG_CACHE_HOME:-~/.cache}/axi-toolkit/drift) and removed when the run ends,
 # then re-reads every fact from them, and fails when the committed capture is
-# not what they say now or the three copies of the encoder are not one file. A
-# renamed package or command, a new redaction shape, a changed recovery line and
-# an encoder edit all land there. Nothing is shared between runs, because runs
+# not what they say now or a tool is not running on this package's encoder alone:
+# it carries a toon.py of its own, does not import axi_toolkit.toon, or accepts
+# an axi-toolkit older than the release that fixed the encoder. A renamed
+# package or command, a new redaction shape and a changed recovery line all land
+# there. Nothing is shared between runs, because runs
 # overlap on one machine: one cached tree, rewritten in place by whichever run
 # fetched last, is a tree another run is importing modules out of, and the race
 # fails them both. Reading a tool imports its modules, so this section runs the

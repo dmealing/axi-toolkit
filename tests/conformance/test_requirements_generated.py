@@ -168,12 +168,6 @@ CHECKS = {
             "theTwoToolsCopiesAgreeOrTheDisagreementIsReported",
         ),
     ),
-    "encoderDigest": (
-        "differential",
-        (
-            "theTwoToolsCopiesAgreeOrTheDisagreementIsReported",
-        ),
-    ),
     "errorContract": (
         "differential",
         (
@@ -213,7 +207,6 @@ SUBJECTS = {
     "redactionSamples": lambda captured: projections.subject_redaction_samples,
     "toonEncodeCases": lambda captured: projections.subject_toon_encode_cases,
     "credentialContract": lambda captured: projections.subject_credential_contract,
-    "encoderDigest": lambda captured: projections.subject_encoder_digest,
     "errorContract": lambda captured: projections.subject_error_contract,
     "redactionContract": lambda captured: projections.subject_redaction_contract,
 }
@@ -426,15 +419,6 @@ def test_credential_contract():
     Breaking it looks like: A fix landing in one tool's copy and not the other's, invisible until someone runs both against the same fixtures.
     """
     _judge("credentialContract")
-
-
-def test_encoder_digest():
-    """For every contract this package takes over, the two tools' copies are compared against each other, and this package matches the copy they agree on.
-
-    Requirement: theTwoToolsCopiesAgreeOrTheDisagreementIsReported (architectural, live).
-    Breaking it looks like: A fix landing in one tool's copy and not the other's, invisible until someone runs both against the same fixtures.
-    """
-    _judge("encoderDigest")
 
 
 def test_error_contract():

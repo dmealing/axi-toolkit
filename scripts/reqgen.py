@@ -419,19 +419,26 @@ def drift_report(committed: dict, fresh: dict) -> list[str]:
     return lines
 
 
-def encoder_report(tools: dict[str, str], here: str) -> tuple[bool, str]:
-    """Whether the three copies of the encoder are one file, and a line saying so.
+def encoder_report(problems: dict[str, list[str]], floor: str) -> tuple[bool, list[str]]:
+    """Whether every tool runs on this package's encoder alone, and lines saying so.
 
-    ``tools`` is each tool's name and the digest of its copy, ``here`` this package's.
-    Also in the capture, as ``encoderDigest``. Stated on its own because it is the one
-    fact where "the tools agree with the capture" is not the claim: the claim is that
-    three files are byte-identical, and this compares the three directly.
+    ``problems`` is each tool's name and what ``projections.encoder_adoption`` found
+    wrong with its checkout. Stated on its own because it is the one drift claim the
+    capture cannot carry: the tools deleted their copies of ``toon.py``, so there is
+    nothing to record and compare, and what is left to get wrong -- a copy growing
+    back, the import going, a floor below the release that fixed the encoder -- is a
+    property of the tool's tree as it is now.
     """
-    digests = {**tools, "this package": here}
-    identical = len(set(digests.values())) == 1
-    shown = ", ".join(f"{name} {digest[:12]}" for name, digest in digests.items())
-    verdict = "byte-identical" if identical else "NOT byte-identical"
-    return identical, f"toon.py is {verdict} in all three copies (sha256: {shown})"
+    lines = []
+    for name, found in problems.items():
+        if found:
+            lines.extend(f"encoder: {problem}" for problem in found)
+        else:
+            lines.append(
+                f"encoder: {name} imports axi_toolkit.toon, carries no copy of its own "
+                f"and requires axi-toolkit {floor} or later"
+            )
+    return not any(problems.values()), lines
 
 
 def do_drift(facts: dict[str, Fact]) -> int:
@@ -444,30 +451,34 @@ def do_drift(facts: dict[str, Fact]) -> int:
         ) from None
     lines = drift_report(committed, fresh)
     projections = _projections()
-    rows = fresh.get("encoderDigest")
-    if not rows:
-        raise CaptureError(
-            "no encoderDigest rows were captured, so the three copies of the "
-            "encoder cannot be compared."
-        )
-    row = rows[0]
-    identical, encoder_line = encoder_report(
-        {projections._TOOL_NAME[tool]: row[tool] for tool in projections.TOOLS},
-        projections.subject_encoder_digest(row["subject"]),
-    )
-    print(f"reqgen drift: {encoder_line}")
-    if not lines and identical:
+    try:
+        problems = {
+            projections._TOOL_NAME[tool]: projections.encoder_adoption(tool)
+            for tool in projections.TOOLS
+        }
+    except projections.SourceError as exc:
+        raise CaptureError(f"a source tool could not be read.\nencoder: {exc}") from None
+    one_copy, encoder_lines = encoder_report(problems, projections.ENCODER_FLOOR)
+    for line in encoder_lines:
+        print(f"reqgen drift: {line}")
+    if not lines and one_copy:
         print(f"reqgen drift: {len(fresh)} facts, and {_rel(CAPTURE_PATH)} is what the tools say")
         return 0
+    if not one_copy:
+        print(
+            "There is one copy of the encoder and it is this package's. A tool that "
+            "carries another, does not import this one, or accepts a release older "
+            "than the floor is fixed in that tool, not here."
+        )
     if lines:
         print(f"reqgen drift: {_rel(CAPTURE_PATH)} is not what the two source tools say now.")
         print("\n".join(lines))
-    print(
-        "A source tool has changed since the capture was written, so the checks are "
-        "judging this package against a tool that no longer exists.\n"
-        "Run `reqgen capture` against both checkouts, read the diff row by row, and "
-        "bring this package back in step before committing it."
-    )
+        print(
+            "A source tool has changed since the capture was written, so the checks are "
+            "judging this package against a tool that no longer exists.\n"
+            "Run `reqgen capture` against both checkouts, read the diff row by row, and "
+            "bring this package back in step before committing it."
+        )
     return 1
 
 

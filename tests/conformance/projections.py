@@ -32,7 +32,6 @@ from __future__ import annotations
 import ast
 import base64
 import functools
-import hashlib
 import importlib
 import json
 import os
@@ -150,6 +149,98 @@ def source_file(tool: str, name: str) -> Path:
             "capture half that reads it has to follow."
         )
     return path
+
+
+#: The first ``axi-toolkit`` release whose encoder quotes a key ending in a newline.
+#: A tool that accepts anything older can be installed beside an encoder without the
+#: fix, so this is the lowest floor a tool may declare. A property of the releases,
+#: not of either tool, which is why it is written here and not captured from them.
+ENCODER_FLOOR = "0.4.2"
+
+_REQUIREMENT = re.compile(r"^\s*([A-Za-z0-9][A-Za-z0-9._-]*)\s*(?:\[[^\]]*\])?\s*([^;]*)")
+_LOWER_BOUND = re.compile(r"^(>=|==|~=)\s*(\d+(?:\.\d+)*)$")
+
+
+def _version(text: str) -> tuple[int, ...]:
+    return tuple(int(part) for part in text.split("."))
+
+
+def toolkit_floor(dependencies: list[str]) -> str | None:
+    """The lowest ``axi-toolkit`` version a dependency list admits, or ``None``.
+
+    ``None`` is both "not a dependency" and "a dependency with no lower bound": either
+    way nothing stops an install from resolving to a release older than any fix. Only
+    ``>=``, ``==`` and ``~=`` clauses bound a requirement from below.
+    """
+    for dependency in dependencies:
+        match = _REQUIREMENT.match(dependency)
+        if not match or re.sub(r"[-_.]+", "-", match.group(1)).lower() != "axi-toolkit":
+            continue
+        bounds = [
+            bound.group(2)
+            for clause in match.group(2).split(",")
+            if (bound := _LOWER_BOUND.match(clause.strip()))
+        ]
+        return max(bounds, key=_version) if bounds else None
+    return None
+
+
+def _imports_the_encoder(tree: ast.Module) -> bool:
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            if any(alias.name == "axi_toolkit.toon" for alias in node.names):
+                return True
+        elif isinstance(node, ast.ImportFrom) and node.level == 0:
+            if node.module == "axi_toolkit.toon":
+                return True
+            if node.module == "axi_toolkit" and any(alias.name == "toon" for alias in node.names):
+                return True
+    return False
+
+
+def encoder_adoption(tool: str) -> list[str]:
+    """What stops one tool's checkout from running on this package's encoder alone.
+
+    Empty when nothing does. There is one copy of the encoder and it is
+    ``axi_toolkit.toon``, so there is no second file to compare it with; what a tool
+    can still get wrong is to grow a copy back, to stop importing this one, or to
+    accept a release older than :data:`ENCODER_FLOOR`. All three are read from the
+    checkout every time and none is recorded in the capture: a committed "the tool
+    has no copy" would keep passing offline after the tool had grown one.
+    """
+    root, package, name = source_root(tool), _PACKAGE[tool], _TOOL_NAME[tool]
+    import tomllib  # 3.11+, like the rest of the capture toolchain; never needed by a check
+
+    problems = []
+    modules = sorted(root.rglob("*.py"))
+    copies = sorted(
+        path.relative_to(root.parent).as_posix()
+        for path in modules
+        if path.name == "toon.py" or (path.name == "__init__.py" and path.parent.name == "toon")
+    )
+    if copies:
+        problems.append(
+            f"{name} carries a TOON encoder of its own ({', '.join(copies)}); "
+            "`axi_toolkit.toon` is the only copy"
+        )
+    if not any(
+        _imports_the_encoder(ast.parse(path.read_text(encoding="utf-8"), filename=path.name))
+        for path in modules
+    ):
+        problems.append(f"no module of `{package}` imports `axi_toolkit.toon`")
+    document = tomllib.loads((root.parent.parent / "pyproject.toml").read_text(encoding="utf-8"))
+    floor = toolkit_floor(document.get("project", {}).get("dependencies", []))
+    if floor is None:
+        problems.append(
+            f"{name} declares no lower bound on `axi-toolkit`; the floor is {ENCODER_FLOOR}, "
+            "the first release whose encoder quotes a key ending in a newline"
+        )
+    elif _version(floor) < _version(ENCODER_FLOOR):
+        problems.append(
+            f"{name} accepts `axi-toolkit` {floor}; the floor is {ENCODER_FLOOR}, "
+            "the first release whose encoder quotes a key ending in a newline"
+        )
+    return problems
 
 
 def _tree(tool: str, name: str) -> ast.Module:
@@ -1048,17 +1139,6 @@ def subject_redaction_samples(case: str) -> str:
 
 def _pair(subject: str, values: dict[str, str]) -> dict:
     return {"subject": subject, "ha": values["ha"], "plex": values["plex"]}
-
-
-def capture_encoder_digest() -> list[dict]:
-    digests = {
-        tool: hashlib.sha256(source_file(tool, "toon").read_bytes()).hexdigest() for tool in TOOLS
-    }
-    return [_pair("toon.py", digests)]
-
-
-def subject_encoder_digest(name: str) -> str:
-    return hashlib.sha256(Path(toon.__file__).read_bytes()).hexdigest()
 
 
 def capture_error_contract() -> list[dict]:
