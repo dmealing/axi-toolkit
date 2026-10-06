@@ -131,8 +131,11 @@ cannot drift apart**; and **the vacuity self-test comes free**, because each rel
 knows what breaking it looks like. That last one runs in the suite: every check is
 broken in turn and required to fail.
 
-`metaobjects` is a build-time extra (`.[reqgen]`), pure Python, and needs 3.11. The
-checks it generates are committed and run under plain pytest on 3.9 upwards.
+`metaobjects` is used by two development extras. `.[reqgen]` is build-time — it generates
+the conformance checks from the requirements declaration — and needs 3.11. `.[metagen]`
+provides shared generators for tools to name in their own MetaObjects configs, and also
+needs 3.11 (run via `uvx`, never in `.venv`). Both extras are pure Python. The generated
+artifacts are committed and run under plain pytest on 3.9 upwards.
 
 ## Development
 
