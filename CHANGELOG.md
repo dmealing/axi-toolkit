@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.3](https://github.com/dmealing/axi-toolkit/compare/v0.4.2...v0.4.3) (2026-10-06)
+
+
+### Bug Fixes
+
+* **commitcheck:** fault release bodies that silently replace a commit message ([#20](https://github.com/dmealing/axi-toolkit/issues/20)) ([36738bb](https://github.com/dmealing/axi-toolkit/commit/36738bb92cab554e584c9bf0ae9c357057633ec1))
+
 ## [0.4.2](https://github.com/dmealing/axi-toolkit/compare/v0.4.1...v0.4.2) (2026-10-05)
 
 
