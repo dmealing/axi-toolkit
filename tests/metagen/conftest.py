@@ -1,3 +1,3 @@
-"""``project/`` is a consumer's checkout, not a test directory: its generated tests run there."""
+"""Each project is a consumer's checkout, not a test directory: its generated tests run there."""
 
-collect_ignore = ["project"]
+collect_ignore = ["project", "json_project"]

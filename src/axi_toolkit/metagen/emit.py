@@ -1,5 +1,9 @@
 """The three generators. Each is a ``name`` and a ``generate(ctx)`` returning files.
 
+What a model does not say is emitted exactly as it was before a model could say it: a
+template below is kept whole and a choice adds to it or swaps one piece of it, so that a
+consumer who chooses nothing regenerates the files it has, to the byte.
+
 Everything emitted is laid out the way ``ruff format`` leaves it -- one item to a line
 behind a trailing comma -- so the committed output passes the project's own formatter
 whatever line length it is set to, and a regeneration is a diff of the lines that moved.
@@ -49,11 +53,45 @@ def _assign(name: str, value) -> str:
     return f"{name} = {_literal(value)}\n"
 
 
+def _qualified(owner: str, name: str) -> str:
+    """A name of another object, spelled as the model spells a reference to one."""
+    return f"{owner}.{name}"
+
+
+def _column_reads(row, column: str) -> tuple:
+    """What one column reads: its own object's names bare, any other object's qualified."""
+    others = row.also.get(column, {})
+    return row.reads[column] + tuple(
+        _qualified(owner, name) for owner, names in others.items() for name in names
+    )
+
+
 class Rows:
     name = "metagen-rows"
 
     def generate(self, ctx):
-        rows = model.rows(ctx.loaded_root)
+        rows = model.read(ctx.loaded_root).rows
+        reads = {
+            row.key: {column: _column_reads(row, column) for column in row.reads} for row in rows
+        }
+        key_of = {
+            row.key: {column: _qualified(*under) for column, under in row.key_of.items()}
+            for row in rows
+            if row.key_of
+        }
+        more = ""
+        if any(row.also for row in rows):
+            more += (
+                "\n"
+                "A name in ``READS`` written ``package::Object.name`` is read from that other\n"
+                "object, and not from the one the row is made of.\n"
+            )
+        if key_of:
+            more += (
+                "\n"
+                "``KEY_OF`` is each column that is the key its object sits under in a map, and\n"
+                "the map: that key is in no answer as a name, so ``READS`` cannot carry it.\n"
+            )
         content = (
             _header("rows")
             + '"""The rows this tool prints: the columns each offers, and what each one reads.\n'
@@ -62,7 +100,9 @@ class Rows:
             "printed. ``DEFAULT`` is the set shown when no columns are asked for. ``READS`` is\n"
             "the attributes of the upstream object that each column is read from: nothing at\n"
             "run time reads it, and it is here so that what a column is made of ships with\n"
-            'the column, for the test suite and for whatever builds on this package.\n"""\n'
+            "the column, for the test suite and for whatever builds on this package.\n"
+            + more
+            + '"""\n'
             "\n"
             "from __future__ import annotations\n"
             "\n"
@@ -70,41 +110,90 @@ class Rows:
             + "\n"
             + _assign("DEFAULT", {row.key: row.default for row in rows})
             + "\n"
-            + _assign("READS", {row.key: row.reads for row in rows})
+            + _assign("READS", reads)
+            + ("\n" + _assign("KEY_OF", key_of) if key_of else "")
         )
         return [EmittedFile(path="rows.py", content=content)]
 
 
-_ELEMENT = """
+#: The helper every builder of one wire format goes through. It is one template so that
+#: the two refusals cannot come to differ in anything but their words.
+_BUILDER = """
 
-def _element(kind: str, attributes: dict) -> dict:
-    unknown = sorted(set(attributes) - set(ATTRIBUTES[kind]))
+def @helper@(kind: str, @members@: dict) -> dict:
+    unknown = sorted(set(@members@) - set(ATTRIBUTES[kind]))
     if unknown:
         raise KeyError(
-            f"{kind}: {unknown} is not an attribute the model declares, and a double may "
+            f"{kind}: {unknown} is not @a member@ the model declares, and a double may "
             "not invent one; declare it, and the capture check will say whether a real "
             "server sends it"
         )
-    absent = [name for name in REQUIRED[kind] if attributes.get(name) in (None, "")]
+    absent = [name for name in REQUIRED[kind] if @members@.get(name) in (None, "")]
     if absent:
-        raise KeyError(f"{kind}: a real {ELEMENT[kind]} element always carries {absent}")
-    return attributes
+        raise KeyError(f"{kind}: a real {ELEMENT[kind]} @whole@ always carries {absent}")
+    return @members@
 """
+
+#: By wire format: what its helper is called, what a builder calls its argument, and what
+#: one answer and a member of it are called. The emitted tables keep one name each
+#: whatever the format, so nothing that imports them has to know which it is.
+_WORDS = {
+    "xml-attributes": {
+        "helper": "_element",
+        "members": "attributes",
+        "a member": "an attribute",
+        "whole": "element",
+    },
+    "json": {
+        "helper": "_object",
+        "members": "keys",
+        "a member": "a key",
+        "whole": "object",
+    },
+}
+
+
+def _builder(form: str) -> str:
+    text = _BUILDER
+    for token, word in _WORDS[form].items():
+        text = text.replace(f"@{token}@", word)
+    return text
+
+
+_ELEMENTS_TAKES = {
+    ("xml-attributes",): (
+        "One function per declared object. Each takes the attributes of one element by\n"
+        "the server's own names and hands them back in the order given, having refused\n"
+        "a name the model does not declare and the absence of one a real element always\n"
+        "carries. A double that builds every answer through these cannot invent a name.\n"
+    ),
+    ("json",): (
+        "One function per declared object. Each takes the keys of one object by the\n"
+        "server's own names and hands them back in the order given, having refused a\n"
+        "name the model does not declare and the absence of one a real object always\n"
+        "carries. A double that builds every answer through these cannot invent a name.\n"
+    ),
+    ("xml-attributes", "json"): (
+        "One function per declared object. Each takes the attributes of one element, or\n"
+        "the keys of one object, by the server's own names and hands them back in the\n"
+        "order given, having refused a name the model does not declare and the absence\n"
+        "of one a real answer always carries. A double that builds every answer through\n"
+        "these cannot invent a name.\n"
+    ),
+}
 
 
 class Elements:
     name = "metagen-elements"
 
     def generate(self, ctx):
-        objects = model.upstream(ctx.loaded_root)
+        objects = model.read(ctx.loaded_root).objects
+        used = {entry.format for entry in objects}
+        formats = tuple(form for form in model.FORMATS if form in used) or (model.FORMATS[0],)
         content = (
             _header("elements")
             + '"""Builders for the answers a test double gives in place of the real server.\n'
-            "\n"
-            "One function per declared object. Each takes the attributes of one element by\n"
-            "the server's own names and hands them back in the order given, having refused\n"
-            "a name the model does not declare and the absence of one a real element always\n"
-            'carries. A double that builds every answer through these cannot invent a name.\n"""\n'
+            "\n" + _ELEMENTS_TAKES[formats] + '"""\n'
             "\n"
             "from __future__ import annotations\n"
             "\n"
@@ -113,18 +202,20 @@ class Elements:
             + _assign("ATTRIBUTES", {entry.key: entry.fields for entry in objects})
             + "\n"
             + _assign("REQUIRED", {entry.key: entry.required for entry in objects})
-            + _ELEMENT
+            + "".join(_builder(form) for form in formats)
         )
         for entry in objects:
+            words = _WORDS[entry.format]
+            helper, members, whole = words["helper"], words["members"], words["whole"]
             content += (
-                f"\n\ndef {entry.key}(**attributes) -> dict:\n"
-                f'    """The attributes of one {entry.element} element, as {entry.fqn} declares them."""\n'
-                f'    return _element("{entry.key}", attributes)\n'
+                f"\n\ndef {entry.key}(**{members}) -> dict:\n"
+                f'    """The {members} of one {entry.element} {whole}, as {entry.fqn} declares them."""\n'
+                f'    return {helper}("{entry.key}", {members})\n'
             )
         return [EmittedFile(path="elements.py", content=content)]
 
 
-_CONTRACT = '''
+_CONTRACT_HEAD = '''
 
 def _capture() -> Path:
     """The capture, found from here: this file may be generated into any directory."""
@@ -139,11 +230,9 @@ UNOBSERVED = {
     entry["key"]: entry["unobserved"] for entry in DECLARED.values() if entry["unobserved"]
 }
 
+'''
 
-def answers(path=None) -> dict:
-    """The captured answers: the attribute names each one carried."""
-    return json.loads(Path(path or _capture()).read_text(encoding="utf-8"))["elements"]
-
+_CONTRACT_FAILS = '''
 
 def never_sent(elements: dict, declared: dict = DECLARED) -> dict:
     """Declared attributes that no captured answer carries and no reason excuses."""
@@ -165,7 +254,19 @@ def never_read(elements: dict, rows: dict = ROWS, declared: dict = DECLARED) -> 
             missing = sorted(set(row["reads"]) - set(elements.get(name, ())) - excused)
             if missing:
                 found[f"{key} row, from {name}"] = missing
-    return found
+'''
+
+#: For a model in which some row reads another object: what it reads of that object
+#: has to be in each of that object's own answers, by the same rule and the same excuse.
+_NEVER_READ_ALSO = """        for fqn, reads in row["also"].items():
+            excused = set(declared[fqn]["unobserved"])
+            for name in declared[fqn]["capture"]:
+                missing = sorted(set(reads) - set(elements.get(name, ())) - excused)
+                if missing:
+                    found[f"{key} row, {fqn} from {name}"] = missing
+"""
+
+_CONTRACT_TAIL = '''    return found
 
 
 def undeclared(elements: dict, declared: dict = DECLARED) -> dict:
@@ -241,12 +342,52 @@ def test_every_attribute_a_row_reads_is_in_each_answer_it_is_built_from(key):
 """
 
 
+def _answers(capture) -> str:
+    """``answers()``, reading the section the model names and dropping what is not a name."""
+    section = _string(capture.section)
+    read = f'json.loads(Path(path or _capture()).read_text(encoding="utf-8"))[{section}]'
+    head = (
+        "\ndef answers(path=None) -> dict:\n"
+        '    """The captured answers: the attribute names each one carried."""\n'
+    )
+    if not capture.list_suffix:
+        return head + f"    return {read}\n"
+    suffix = _string(capture.list_suffix)
+    return head + (
+        f"    captured = {read}\n"
+        f"    # A name ending {suffix} records what a list held, beside the name of the list\n"
+        "    # itself. It is not a name the server sent, so no check is shown it.\n"
+        "    found = {}\n"
+        "    for answer, names in captured.items():\n"
+        f"        found[answer] = [name for name in names if not name.endswith({suffix})]\n"
+        "    return found\n"
+    )
+
+
+def _reads_of(row) -> dict:
+    """What a row needs each answer it is built from to carry, by object.
+
+    Its own object, which appears always, carries every name a column reads and any
+    map member keyed there; another object appears only when a column names it, and
+    carries just the names read of it and the member keyed there.
+    """
+    owners: dict = {row.of: {name for names in row.reads.values() for name in names}}
+    for others in row.also.values():
+        for owner, names in others.items():
+            owners.setdefault(owner, set()).update(names)
+    for owner, member in row.key_of.values():
+        owners.setdefault(owner, set()).add(member)
+    return {owner: tuple(sorted(names)) for owner, names in owners.items()}
+
+
 class CaptureContract:
     name = "metagen-capture-contract"
 
     def generate(self, ctx):
-        root = ctx.loaded_root
-        objects, rows = model.upstream(root), model.rows(root)
+        loaded = model.read(ctx.loaded_root)
+        objects, rows = loaded.objects, loaded.rows
+        # Only this generator needs a capture, so only here is a model without one refused.
+        capture = loaded.capture or model.capture(ctx.loaded_root)
         declared = {
             entry.fqn: {
                 "key": entry.key,
@@ -256,14 +397,30 @@ class CaptureContract:
             }
             for entry in objects
         }
+        held = {row.key: _reads_of(row) for row in rows}
         reads = {
             row.key: {
                 "of": row.of,
                 "capture": row.capture,
-                "reads": tuple(sorted({name for names in row.reads.values() for name in names})),
+                "reads": held[row.key][row.of],
             }
             for row in rows
         }
+        others = {row.key: sorted(set(held[row.key]) - {row.of}) for row in rows}
+        another = any(others.values())
+        rows_are = (
+            "#: Each row: the object it is read from, the answers it is built from, and the\n"
+            "#: attributes it reads.\n"
+        )
+        if another:
+            # Every row then says so, with nothing where it reads no other object: the
+            # check that reads this is emitted once and asks each row the same thing.
+            for row in rows:
+                reads[row.key]["also"] = {owner: held[row.key][owner] for owner in others[row.key]}
+            rows_are = (
+                "#: Each row: the object it is read from, the answers it is built from, the\n"
+                "#: attributes it reads of that object, and those it reads of any other.\n"
+            )
         contract = (
             _header("capture_contract")
             + '"""What the model declares, held to a committed capture of a real server.\n'
@@ -284,14 +441,19 @@ class CaptureContract:
             "from pathlib import Path\n"
             "\n"
             "#: The committed capture, as a path from the project root.\n"
-            f"CAPTURE_FILE = {_string(model.capture_file(root))}\n"
+            f"CAPTURE_FILE = {_string(capture.file)}\n"
             "\n"
             "#: Each declared object: the captured answers that show it, its attributes, and\n"
             "#: the reason for any that no capture could have seen.\n"
             + _assign("DECLARED", declared)
             + "\n"
-            "#: Each row: the object it is read from, the answers it is built from, and the\n"
-            "#: attributes it reads.\n" + _assign("ROWS", reads) + _CONTRACT
+            + rows_are
+            + _assign("ROWS", reads)
+            + _CONTRACT_HEAD
+            + _answers(capture)
+            + _CONTRACT_FAILS
+            + (_NEVER_READ_ALSO if another else "")
+            + _CONTRACT_TAIL
         )
         test = (
             _header("capture_contract")
