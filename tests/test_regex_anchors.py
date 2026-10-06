@@ -145,7 +145,10 @@ def compiled_patterns() -> list[tuple[str, re.Pattern]]:
     """Every compiled pattern a module of the package holds once it is imported."""
     found = []
     modules = pkgutil.walk_packages(axi_toolkit.__path__, axi_toolkit.__name__ + ".")
-    for name in ["axi_toolkit", *(info.name for info in modules)]:
+    # The generators import the MetaObjects toolchain, which the 3.9 floor does not have;
+    # their source is still read by `written_patterns`, which does not import anything.
+    names = [info.name for info in modules if not info.name.startswith("axi_toolkit.metagen")]
+    for name in ["axi_toolkit", *names]:
         module = importlib.import_module(name)
         for attribute, value in vars(module).items():
             if isinstance(value, re.Pattern) and getattr(module, "__name__", "") == name:

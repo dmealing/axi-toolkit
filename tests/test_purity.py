@@ -12,6 +12,7 @@ other tests have already imported.
 
 from __future__ import annotations
 
+import ast
 import json
 import os
 import subprocess
@@ -63,6 +64,16 @@ MODULES = (
     "axi_toolkit.plex",
     "axi_toolkit.plex.ids",
     "axi_toolkit.plex.filters",
+)
+
+#: The development subpackage: generators that run inside the MetaObjects toolchain, which
+#: needs Python 3.11 and a third-party loader. None of the modules above may import it, and
+#: importing any of them must not load it. Named separately so that the check below still
+#: says "every module in the package is one of these" while saying where these two sit.
+METAGEN_MODULES = (
+    "axi_toolkit.metagen",
+    "axi_toolkit.metagen.emit",
+    "axi_toolkit.metagen.model",
 )
 
 
@@ -146,9 +157,10 @@ def test_every_module_in_the_package_is_one_of_the_modules_checked():
             continue
         parts = path.relative_to(package.parent).with_suffix("").parts
         found.add(".".join(parts[:-1] if parts[-1] == "__init__" else parts))
-    assert found == set(MODULES), (
+    expected = set(MODULES) | set(METAGEN_MODULES)
+    assert found == expected, (
         "modules not checked for purity: "
-        f"{sorted(found - set(MODULES))}; named but absent: {sorted(set(MODULES) - found)}"
+        f"{sorted(found - expected)}; named but absent: {sorted(expected - found)}"
     )
 
 
@@ -177,3 +189,59 @@ def test_the_optional_extras_are_the_ones_the_layout_specifies():
     assert {"ha", "plex", "cli"} <= declared
     assert "ha = []" in section, "the Home Assistant transport is stdlib and must stay empty"
     assert "cli = []" in section, "argspec and help live in each tool, not here"
+
+
+@pytest.mark.parametrize("module", MODULES)
+def test_importing_a_library_module_never_loads_the_generators(module):
+    loaded = _imported_after(module)
+    assert sorted(name for name in loaded if name.startswith("axi_toolkit.metagen")) == []
+
+
+def test_no_library_source_names_the_generators():
+    """Importing is the behaviour; this is the line that would start it."""
+    package = ROOT / "src" / "axi_toolkit"
+    offenders = []
+    for path in package.rglob("*.py"):
+        if "metagen" in path.relative_to(package).parts[:1] or "__pycache__" in path.parts:
+            continue
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        for node in ast.walk(tree):
+            if isinstance(node, ast.ImportFrom):
+                names = [node.module or "", *(alias.name for alias in node.names)]
+            elif isinstance(node, ast.Import):
+                names = [alias.name for alias in node.names]
+            else:
+                continue
+            if any("metagen" in name.split(".") for name in names):
+                offenders.append(str(path.relative_to(package)))
+    assert offenders == []
+
+
+def test_the_generators_import_only_the_standard_library_and_the_toolchain():
+    """Their one third-party import is the loader's generator interface."""
+    package = ROOT / "src" / "axi_toolkit" / "metagen"
+    found = set()
+    for path in package.glob("*.py"):
+        for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
+            if isinstance(node, ast.Import):
+                found.update(alias.name.split(".")[0] for alias in node.names)
+            elif isinstance(node, ast.ImportFrom) and node.level == 0:
+                found.add((node.module or "").split(".")[0])
+    assert found - {"__future__", "json", "dataclasses"} == {"metaobjects"}
+
+
+def test_the_generators_ride_in_a_development_extra_that_declares_the_toolchain():
+    """The pin is what makes an install on Python 3.9 fail instead of installing nothing."""
+    text = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
+    section = text.split("[project.optional-dependencies]", 1)[1].split("\n[", 1)[0]
+    extra = section.split("\nmetagen = [", 1)[1].split("]", 1)[0]
+    assert [line.strip() for line in extra.splitlines() if line.strip()] == [
+        '"metaobjects==1.0.13",'
+    ]
+    comment = section.split("\nmetagen = [", 1)[0].rsplit("\n\n", 1)[-1]
+    assert "3.11" in comment, "the extra must say what Python it needs"
+
+
+def test_the_package_floor_is_unmoved_by_the_extra():
+    text = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
+    assert 'requires-python = ">=3.9"' in text

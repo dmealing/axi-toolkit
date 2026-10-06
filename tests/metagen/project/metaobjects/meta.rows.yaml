@@ -1,0 +1,21 @@
+# The rows a synthetic tool prints, and which attribute each column is read from.
+metadata:
+  package: example::rows
+  children:
+    - object.value:
+        name: LampRow
+        description: One lamp, as a listing prints it.
+        children:
+          - attr.properties: { name: row, value: { key: lamp, of: "example::service::Lamp", capture: [lamp.row] } }
+          - field.string: { name: id, extends: "example::service::Lamp.id" }
+          - field.string: { name: name, extends: "example::service::Lamp.name" }
+          - field.int: { name: brightness, extends: "example::service::Lamp.brightness" }
+          - field.string:
+              name: summary
+              children: [ { attr.properties: { name: derived, value: { reads: [name, colour] } } } ]
+    - object.projection:
+        name: LampDefault
+        description: The columns shown when none are asked for.
+        children:
+          - field.string: { name: id, extends: "example::rows::LampRow.id" }
+          - field.string: { name: name, extends: "example::rows::LampRow.name" }

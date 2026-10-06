@@ -1,0 +1,11 @@
+# The consuming project's own config: where its model is, and which generators run.
+# A generator is named `module:symbol`; these three live in axi_toolkit.metagen and
+# take everything project-specific from the model, never from this package.
+metadata: metaobjects
+targets:
+  package:
+    outDir: generated/package
+    generators: ["axi_toolkit.metagen:rows"]
+  tests:
+    outDir: generated/tests
+    generators: ["axi_toolkit.metagen:elements", "axi_toolkit.metagen:capture_contract"]

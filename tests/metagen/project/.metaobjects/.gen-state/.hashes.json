@@ -1,0 +1,8 @@
+{
+  "generated/package/__init__.py": "daa04cec586768866d0996c779f62073e6773fe63750ff668327991fac2fd0f5",
+  "generated/package/rows.py": "51ea9fcc6cdecbb32a7db72ada06adc10fbfafdf4078aedae7ac49fb0ecba795",
+  "generated/tests/__init__.py": "daa04cec586768866d0996c779f62073e6773fe63750ff668327991fac2fd0f5",
+  "generated/tests/capture_contract.py": "b8184e007b84c93b0fc5419bd60f29c35fe195b366521e4c9676f35187dcb62c",
+  "generated/tests/elements.py": "2f10c07e7e06cb265fc4635b421eee789a67cd311ded89a1ce67f3d1566386ec",
+  "generated/tests/test_capture_contract.py": "f568ae42c5aab2390c2f0e165d357bd43f59fa03b14b83de1da6a459d719becc"
+}
