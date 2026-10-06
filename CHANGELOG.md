@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/dmealing/axi-toolkit/compare/v0.5.0...v0.6.0) (2026-10-06)
+
+
+### Features
+
+* **metagen:** let a model name its capture section, read other objects, and be JSON ([#25](https://github.com/dmealing/axi-toolkit/issues/25)) ([dda7bbb](https://github.com/dmealing/axi-toolkit/commit/dda7bbba3b73d7fdb4ce7b8a5838dd3d095404d4))
+
 ## [0.5.0](https://github.com/dmealing/axi-toolkit/compare/v0.4.3...v0.5.0) (2026-10-06)
 
 
