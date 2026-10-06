@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.0](https://github.com/dmealing/axi-toolkit/compare/v0.6.0...v0.7.0) (2026-10-06)
+
+
+### Features
+
+* **metagen:** generate a reader for each object the server answers ([#27](https://github.com/dmealing/axi-toolkit/issues/27)) ([dd812a3](https://github.com/dmealing/axi-toolkit/commit/dd812a3a5b2b50d0bed72f6cb26dff8772b3ac60))
+
 ## [0.6.0](https://github.com/dmealing/axi-toolkit/compare/v0.5.0...v0.6.0) (2026-10-06)
 
 
