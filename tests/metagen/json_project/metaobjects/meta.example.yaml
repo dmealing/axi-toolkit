@@ -2,6 +2,12 @@
 # devices in them. Every name is made up; this model exists to exercise what the sibling
 # project cannot: a capture whose answers sit under a section of another name and which
 # records what a list held, a column read from another object, and a column that is a map key.
+#
+# It is also everything a reader can be asked to read: one object nested in another, a list
+# of them, a map of them and a map of plain values, an open bag, a list of plain values, a
+# name Python keeps for itself and one it cannot spell, two long enough that the line
+# reading them has to be broken, and one object that answers in XML attributes among the
+# ones that answer in JSON.
 metadata:
   package: example::hub
   children:
@@ -30,6 +36,21 @@ metadata:
           - field.string: { name: name }
           - field.string: { name: room_id }
           - field.string: { name: labels, isArray: true }
+          - field.string: { name: class }
+          - field.boolean: { name: online }
+          - field.string: { name: settings, dbColumnType: jsonb, description: Whatever the device keeps there. }
+          - field.object: { name: reading, objectRef: "example::hub::Reading" }
+          - field.object: { name: history, objectRef: "example::hub::Reading", isArray: true }
+    - object.value:
+        name: Reading
+        description: One measurement a device took, as it sits inside the device that took it.
+        children:
+          - attr.properties:
+              name: wire
+              value: { key: reading, element: Reading, format: json, capture: [device.reading] }
+          - field.double: { name: value, required: true }
+          - field.string: { name: unit }
+          - field.long: { name: at, required: true, description: Epoch seconds. }
     - object.entity:
         name: Hub
         description: The hub's own answer, with every device under the slot it is plugged into.
@@ -39,3 +60,20 @@ metadata:
               value: { key: hub, element: Hub, format: json, capture: [hub.status] }
           - field.string: { name: name, required: true }
           - field.map: { name: devices, objectRef: "example::hub::Device" }
+          - field.map: { name: counts, valueType: int }
+          - field.string: { name: "time-zone" }
+          - field.string: { name: address_the_hub_was_last_reached_at }
+          - field.object: { name: device_most_recently_heard_from, objectRef: "example::hub::Device" }
+    - object.value:
+        name: Beacon
+        description: One Beacon element of the hub's radio scan, which answers in XML.
+        children:
+          - attr.properties:
+              name: wire
+              value: { key: beacon, element: Beacon, format: xml-attributes, capture: [beacon.scan] }
+          - field.string: { name: id, required: true }
+          - field.int: { name: strength, required: true }
+          - field.double: { name: ratio }
+          - field.boolean: { name: secure }
+          - field.long: { name: seen }
+          - field.string: { name: vendor }

@@ -46,6 +46,8 @@
 # where the toolchain is absent, and a skip is not a pass, so this section is the one
 # that runs it: under `uvx --python 3.12` with the pinned toolchain, never touching
 # .venv. Like `--matrix` it fails without `uv` on PATH rather than passing unrun.
+# `ruff` rides along because the generated readers are held to the lint and the
+# formatter a consuming project runs over them, and that check may not skip either.
 #
 # DRIFT. Every other section reads only this repository, which is the design:
 # the suite needs no source checkout and no network. The price is that it judges
@@ -171,7 +173,7 @@ sec_requirements() {
 sec_metagen() {
   command -v uvx >/dev/null 2>&1 || { echo "ci-local: metagen needs uv on PATH" >&2; return 1; }
   # -rs prints why anything skipped, and the count line is checked: nothing may skip here.
-  PYTHONPATH=src uvx --quiet --python 3.12 --from "$METAOBJECTS" --with pytest \
+  PYTHONPATH=src uvx --quiet --python 3.12 --from "$METAOBJECTS" --with pytest --with ruff \
     pytest -p no:cacheprovider -rs tests/metagen | tee /dev/stderr | { ! grep -q 'skipped'; }
 }
 

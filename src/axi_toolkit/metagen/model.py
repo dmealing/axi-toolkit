@@ -8,6 +8,7 @@ here and a model that fails raises :class:`ModelError` before anything is writte
 
 from __future__ import annotations
 
+import keyword
 from dataclasses import dataclass
 
 
@@ -18,6 +19,23 @@ class ModelError(ValueError):
 #: The wire formats the generators know. An object that names none is read as the first,
 #: which is the only one there was before a model could say.
 FORMATS = ("xml-attributes", "json")
+
+
+#: The Python type a plain field is read as, by the kind the model declares. A kind that
+#: is not here has no one Python type, and a reader hands its value over as it was sent.
+SCALARS = {
+    "string": "str",
+    "int": "int",
+    "long": "int",
+    "double": "float",
+    "float": "float",
+    "boolean": "bool",
+}
+
+#: The names a generated reader module already uses for something else. A class or an
+#: attribute the model would spell the same way is spelled with an underscore after it.
+READER_MODULE_NAMES = ("Mapping", "dataclass", "field")
+READER_CLASS_NAMES = ("raw", "read", "sent", "missing", "field", "classmethod")
 
 
 @dataclass(frozen=True)
@@ -61,6 +79,35 @@ class Row:
     also: dict
     key_of: dict
     default: tuple
+
+
+@dataclass(frozen=True)
+class Member:
+    """One declared name of an object, as a reader reads it.
+
+    ``shape`` is ``one`` value, ``many`` in a list or ``keyed`` in a map. ``reader`` is
+    the class of the declared object it holds and ``scalar`` the Python type of a plain
+    value; with neither, what the server sent is handed over untouched. ``attribute`` is
+    the name itself wherever Python can carry it.
+    """
+
+    name: str
+    attribute: str
+    shape: str
+    scalar: str | None
+    reader: str | None
+    required: bool
+
+
+@dataclass(frozen=True)
+class Reader:
+    """One object the server answers, as the class that reads it."""
+
+    fqn: str
+    name: str
+    element: str
+    format: str
+    members: tuple
 
 
 @dataclass(frozen=True)
@@ -300,6 +347,93 @@ def rows(root, objects) -> list:
     keys = [entry.key for entry in found]
     if len(set(keys)) != len(keys):
         raise ModelError(f"two rows share a `row.key`: {sorted(keys)}")
+    return found
+
+
+def _spelled(name: str, taken: tuple) -> str:
+    """A name as Python can carry it: the model's own, unless Python cannot have it.
+
+    A character no identifier may hold becomes an underscore, and a name Python keeps for
+    itself, or that ``taken`` says is in use, has one added to its end.
+    """
+    spelled = "".join(char if char.isalnum() or char == "_" else "_" for char in name)
+    if not spelled or spelled[0].isdigit():
+        spelled = "_" + spelled
+    while keyword.iskeyword(spelled) or spelled in taken:
+        spelled += "_"
+    return spelled
+
+
+def _member(owner: str, field, classes: dict, sources: dict) -> Member:
+    """One field as a reader reads it, refusing a reference to an object nothing reads."""
+    kind, attrs = getattr(field, "sub_type", ""), field.attrs()
+    shape = "many" if field.resolved_is_array() else "one"
+    scalar, reader = SCALARS.get(kind), None
+    if kind == "string" and attrs.get("dbColumnType") == "jsonb":
+        # An open bag: no reader pins a key in it, so it is one value handed over whole.
+        shape, scalar = "one", None
+    elif kind == "map" and shape == "many":
+        # A list of maps has no one shape a reader could give it, so it stays as sent.
+        shape = "one"
+    elif kind in ("object", "map"):
+        shape = "keyed" if kind == "map" else shape
+        ref = attrs.get("objectRef")
+        if ref is None:
+            scalar = SCALARS.get(str(attrs.get("valueType")))
+        else:
+            where = f"{owner}.{field.name}: `objectRef`"
+            reader = classes[_wire_or_refuse(sources, str(ref), where).fqn]
+    return Member(
+        name=field.name,
+        attribute=_spelled(field.name, READER_CLASS_NAMES),
+        shape=shape,
+        scalar=scalar,
+        reader=reader,
+        required=bool(attrs.get("required")),
+    )
+
+
+def readers(root, objects) -> list:
+    """Each object the server answers, as the class that reads it.
+
+    Only the reader generator needs a model to be one a class can be written for, so only
+    it calls this, and only there is a model refused for these reasons: two objects that
+    would be one class, two names of an object that would be one attribute, and a nested
+    object that declares no ``wire`` and so has no reader to be read through.
+    """
+    sources = {entry.fqn: entry for entry in objects}
+    nodes = {fqn(obj): obj for obj in _objects(root)}
+    classes: dict = {}
+    named: dict = {}
+    for entry in objects:
+        name = _spelled(nodes[entry.fqn].name, READER_MODULE_NAMES)
+        other = named.setdefault(name, entry.fqn)
+        if other != entry.fqn:
+            first, second = sorted((other, entry.fqn))
+            raise ModelError(f"{first} and {second} would both be read by a class named {name}")
+        classes[entry.fqn] = name
+    found = []
+    for entry in objects:
+        members = tuple(
+            _member(entry.fqn, field, classes, sources) for field in nodes[entry.fqn].fields()
+        )
+        spelled: dict = {}
+        for member in members:
+            other = spelled.setdefault(member.attribute, member.name)
+            if other != member.name:
+                raise ModelError(
+                    f"{entry.fqn}: {other!r} and {member.name!r} would both be read into "
+                    f"an attribute named {member.attribute}"
+                )
+        found.append(
+            Reader(
+                fqn=entry.fqn,
+                name=classes[entry.fqn],
+                element=entry.element,
+                format=entry.format,
+                members=members,
+            )
+        )
     return found
 
 

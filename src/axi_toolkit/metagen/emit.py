@@ -1,4 +1,4 @@
-"""The three generators. Each is a ``name`` and a ``generate(ctx)`` returning files.
+"""The four generators. Each is a ``name`` and a ``generate(ctx)`` returning files.
 
 What a model does not say is emitted exactly as it was before a model could say it: a
 template below is kept whole and a choice adds to it or swaps one piece of it, so that a
@@ -141,12 +141,14 @@ _WORDS = {
     "xml-attributes": {
         "helper": "_element",
         "members": "attributes",
+        "member": "attribute",
         "a member": "an attribute",
         "whole": "element",
     },
     "json": {
         "helper": "_object",
         "members": "keys",
+        "member": "key",
         "a member": "a key",
         "whole": "object",
     },
@@ -466,4 +468,227 @@ class CaptureContract:
         ]
 
 
-rows, elements, capture_contract = Rows(), Elements(), CaptureContract()
+#: The widest a line of a reader module's code is left before it is broken. A formatter
+#: set to this or to anything wider leaves both what fits and what was broken as it finds
+#: them, since everything broken here ends in the comma that tells it to. So nothing in
+#: `_READER_HELPERS` is wider, or is anything a formatter would join or break.
+_WIDTH = 79
+
+#: What a reader module is built from besides its classes, in the order emitted. Each
+#: is written only into a module that has a class calling it.
+_READER_HELPERS = {
+    "_answer": '''
+
+def _answer(reader: str, raw) -> Mapping:
+    """One answer, refused when it is not the mapping one is parsed into."""
+    if not isinstance(raw, Mapping):
+        got = type(raw).__name__
+        raise TypeError(f"{reader}.read takes a mapping, not {got}")
+    return raw
+''',
+    "_coerce": '''
+
+def _coerce(kind, value):
+    """Text as the number the model declares, or ``None`` when it is none."""
+    if value is None or value == "":
+        return None
+    try:
+        return kind(value)
+    except (TypeError, ValueError):
+        return None
+''',
+    "_flag": '''
+
+_FLAGS = {"1": True, "true": True, "0": False, "false": False}
+
+
+def _flag(value):
+    """Text as the yes or no the model declares, or ``None`` for neither."""
+    return _FLAGS.get(str(value).lower())
+''',
+    "_items": '''
+
+def _items(value):
+    """What a list held, as a tuple, or ``None`` for what is not a list."""
+    return tuple(value) if isinstance(value, (list, tuple)) else None
+''',
+    "_one": '''
+
+def _one(reader, value):
+    """A nested object through its own reader, or ``None`` for no object."""
+    return reader.read(value) if isinstance(value, Mapping) else None
+''',
+    "_many": '''
+
+def _many(reader, value):
+    """A list of nested objects, each through its reader, or ``None``."""
+    if not isinstance(value, (list, tuple)):
+        return None
+    objects = (item for item in value if isinstance(item, Mapping))
+    return tuple(reader.read(item) for item in objects)
+''',
+    "_keyed": '''
+
+def _keyed(reader, value):
+    """A map of nested objects, each through its reader, or ``None``."""
+    if not isinstance(value, Mapping):
+        return None
+    found = {}
+    for key, item in value.items():
+        if isinstance(item, Mapping):
+            found[key] = reader.read(item)
+    return found
+''',
+}
+
+_READERS_NEST = (
+    "\n"
+    "A name that holds another declared object is read through that object's reader:\n"
+    "one as that reader, a list of them as a tuple and a map of them as a dict. What\n"
+    "is there and is not an object is left out, and is still in ``raw``.\n"
+)
+
+_READERS_COERCE = (
+    "\n"
+    "An attribute arrives as text. One the model declares as a number, or as a yes\n"
+    "or a no, is read as that, and as ``None`` when the text is not one.\n"
+)
+
+_READERS_SPELL = (
+    "\n"
+    "An attribute is spelled as the name is, except where Python cannot have it:\n"
+    "such a name carries an underscore for what it cannot hold, or after it.\n"
+    "``sent`` and ``missing`` speak the server's own names always.\n"
+)
+
+_NESTED = {"one": "_one", "many": "_many", "keyed": "_keyed"}
+
+
+def _annotation(member) -> str:
+    """What the model declares a name holds. Nothing the server sent is held to it."""
+    inner = member.reader or member.scalar
+    if inner is None:
+        return "object"
+    if member.shape == "many":
+        return f"tuple[{inner}, ...] | None"
+    if member.shape == "keyed":
+        return f"dict[str, {inner}] | None"
+    return f"{inner} | None"
+
+
+def _reading(member, form: str) -> tuple:
+    """How one name is read out of ``raw``: the function called, and what it is given."""
+    get = f"raw.get({_string(member.name)})"
+    if member.reader:
+        return _NESTED[member.shape], (member.reader, get)
+    if member.scalar and member.shape == "many":
+        return "_items", (get,)
+    if form == "xml-attributes" and member.shape == "one":
+        if member.scalar == "bool":
+            return "_flag", (get,)
+        if member.scalar in ("int", "float"):
+            return "_coerce", (member.scalar, get)
+    return "raw.get", (_string(member.name),)
+
+
+def _argument(name: str, function: str, given: tuple) -> str:
+    """One keyword argument of a call broken one to a line, itself broken when too wide."""
+    pad = " " * 12
+    line = f"{pad}{name}={function}({', '.join(given)}),\n"
+    if len(line) - 1 <= _WIDTH:
+        return line
+    broken = "".join(f"{pad}    {one},\n" for one in given)
+    return f"{pad}{name}={function}(\n{broken}{pad}),\n"
+
+
+def _reader(entry, used: set) -> str:
+    """One class, and into ``used`` the name of every helper it calls."""
+    words = _WORDS[entry.format]
+    member, whole = words["member"], words["whole"]
+    used.add("_answer")
+    fields = arguments = ""
+    for one in entry.members:
+        function, given = _reading(one, entry.format)
+        if function in _READER_HELPERS:
+            used.add(function)
+        fields += f"    {one.attribute}: {_annotation(one)} = None\n"
+        arguments += _argument(one.attribute, function, given)
+    required = [one for one in entry.members if one.required]
+    missing = "        return ()\n"
+    if required:
+        carried = "".join(
+            f"            {_string(one.name)}: self.{one.attribute},\n" for one in required
+        )
+        missing = (
+            "        carried = {\n" + carried + "        }\n"
+            "        return tuple(name for name, value in carried.items() if value is None)\n"
+        )
+    return (
+        "\n\n@dataclass(frozen=True)\n"
+        f"class {entry.name}:\n"
+        f'    """One {entry.element} {whole}, as {entry.fqn} declares it."""\n'
+        "\n"
+        + fields
+        + "    raw: Mapping = field(default_factory=dict, repr=False, compare=False)\n"
+        "\n"
+        "    @classmethod\n"
+        f"    def read(cls, raw) -> {entry.name}:\n"
+        f'        """Read one answer. {words["a member"].capitalize()} it did not carry is ``None``."""\n'
+        f"        raw = _answer({_string(entry.name)}, raw)\n"
+        "        return cls(\n" + arguments + "            raw=raw,\n"
+        "        )\n"
+        "\n"
+        "    def sent(self, name: str) -> bool:\n"
+        f'        """Whether the answer carried this {member} at all, as null or not."""\n'
+        "        return name in self.raw\n"
+        "\n"
+        "    def missing(self) -> tuple:\n"
+        f'        """The {words["members"]} a real {entry.element} {whole} always carries and this lacks."""\n'
+        + missing
+    )
+
+
+class Readers:
+    name = "metagen-readers"
+
+    def generate(self, ctx):
+        loaded = model.read(ctx.loaded_root)
+        # Only this generator needs each object to be one a class can be written for.
+        readers = model.readers(ctx.loaded_root, loaded.objects)
+        used: set = set()
+        classes = "".join(_reader(entry, used) for entry in readers)
+        members = [one for entry in readers for one in entry.members]
+        more = ""
+        if any(one.reader for one in members):
+            more += _READERS_NEST
+        if used & {"_coerce", "_flag"}:
+            more += _READERS_COERCE
+        if any(one.attribute != one.name for one in members):
+            more += _READERS_SPELL
+        content = (
+            _header("readers")
+            + '"""Readers for what the server answers: one frozen class per declared object.\n'
+            "\n"
+            "``read(raw)`` takes one answer as it was parsed and gives each name the model\n"
+            "declares of it as an attribute. A name the answer did not carry reads as\n"
+            "``None``, and so does one it carried as null: ``sent(name)`` tells the two\n"
+            "apart. Nothing is invented and nothing is lost: the answer itself is kept as\n"
+            "``raw``, untouched, with every name the model does not declare still in it.\n"
+            "``missing()`` is the names a real answer always carries that this one did not.\n"
+            + more
+            + '"""\n'
+            "\n"
+            "from __future__ import annotations\n"
+        )
+        if readers:
+            content += (
+                "\n"
+                "from collections.abc import Mapping\n"
+                "from dataclasses import dataclass, field\n"
+                + "".join(text for name, text in _READER_HELPERS.items() if name in used)
+                + classes
+            )
+        return [EmittedFile(path="readers.py", content=content)]
+
+
+rows, elements, capture_contract, readers = Rows(), Elements(), CaptureContract(), Readers()
