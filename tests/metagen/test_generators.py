@@ -20,6 +20,7 @@ runs it under an interpreter that has the toolchain and fails when it cannot.
 
 from __future__ import annotations
 
+import importlib.util
 import json
 import os
 import runpy
@@ -331,3 +332,159 @@ def test_a_model_that_does_not_hold_together_is_refused_before_anything_is_writt
     if message:
         assert message in result.stdout + result.stderr
     assert not (tmp_path / "generated").exists()
+
+
+_CONFIG = "metaobjects.config.yaml"
+_READERS = ', "axi_toolkit.metagen:readers"'
+
+
+def _readers(base: Path):
+    """The readers a regeneration wrote, imported as the package that ships them would."""
+    name = f"regenerated_readers_{base.name}"
+    spec = importlib.util.spec_from_file_location(
+        name, base / "generated" / "package" / "readers.py"
+    )
+    module = importlib.util.module_from_spec(spec)
+    # A dataclass looks its own module up by name while it is being made.
+    sys.modules[name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+@both
+def test_a_consumer_that_names_no_reader_generator_is_generated_as_it_always_was(tmp_path, project):
+    """Not one byte of any other file knows whether the readers were asked for."""
+    _copy(tmp_path, project, *SOURCES)
+    _edit(tmp_path / _CONFIG, _READERS, "")
+    result = _run(tmp_path, "gen")
+    assert result.returncode == 0, result.stdout + result.stderr
+    committed = _tree(HERE / project / "generated")
+    assert committed.pop("package/readers.py")
+    assert _tree(tmp_path / "generated") == committed
+
+
+def test_a_nested_object_named_by_its_short_name_is_the_same_reader(tmp_path):
+    _copy(tmp_path, "json_project", *SOURCES)
+    _edit(
+        tmp_path / "metaobjects" / _MODEL,
+        '{ name: reading, objectRef: "example::hub::Reading" }',
+        "{ name: reading, objectRef: Reading }",
+    )
+    result = _run(tmp_path, "gen")
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert _tree(tmp_path / "generated") == _tree(HERE / "json_project" / "generated")
+
+
+def test_an_object_that_holds_its_own_kind_is_read_through_its_own_reader(tmp_path):
+    _copy(tmp_path, "json_project", *SOURCES)
+    _edit(
+        tmp_path / "metaobjects" / _MODEL,
+        "          - field.string: { name: labels, isArray: true }\n",
+        "          - field.string: { name: labels, isArray: true }\n"
+        '          - field.map: { name: parts, objectRef: "example::hub::Device" }\n',
+    )
+    result = _run(tmp_path, "gen")
+    assert result.returncode == 0, result.stdout + result.stderr
+    device = _readers(tmp_path).Device.read(
+        {"device_id": "d1", "parts": {"left": {"device_id": "d2", "parts": {}}}}
+    )
+    assert type(device.parts["left"]) is type(device)
+    assert (device.parts["left"].device_id, device.parts["left"].parts) == ("d2", {})
+
+
+def test_names_the_generated_module_uses_itself_are_spelled_out_of_its_way(tmp_path):
+    """An object or a key may be called what the module calls something of its own. Each
+    is run here, because the collision is one only running it finds: a key named ``field``
+    left as it is makes the class that holds it impossible to define."""
+    _copy(tmp_path, "json_project", *SOURCES)
+    names = ("field", "raw", "read", "sent", "missing", "classmethod", "dataclass", "1st")
+    fields = "".join(f'          - field.string: {{ name: "{name}" }}\n' for name in names)
+    (tmp_path / "metaobjects" / "meta.more.yaml").write_text(
+        "metadata:\n"
+        "  package: example::more\n"
+        "  children:\n"
+        "    - object.value:\n"
+        "        name: Mapping\n"
+        "        children:\n"
+        "          - attr.properties:\n"
+        "              name: wire\n"
+        "              value: { key: mapping, element: Mapping, format: json, capture: [room.list] }\n"
+        + fields,
+        encoding="utf-8",
+    )
+    result = _run(tmp_path, "gen")
+    assert result.returncode == 0, result.stdout + result.stderr
+    readers = _readers(tmp_path)
+    answer = {name: name.upper() for name in names}
+    read = readers.Mapping_.read(answer)
+    assert read.raw is answer and read.missing() == ()
+    assert (read.field_, read.raw_, read.read_, read.sent_) == ("FIELD", "RAW", "READ", "SENT")
+    assert (read.missing_, read.classmethod_) == ("MISSING", "CLASSMETHOD")
+    assert (read.dataclass, read._1st) == ("DATACLASS", "1ST")
+    assert read.sent("raw") and not read.sent("raw_")
+    # The other classes of the module still have what the names stood for.
+    assert readers.Room.read({"room_id": "r1"}).missing() == ("name",)
+
+
+_ANOTHER_ROOM = (
+    "metadata:\n"
+    "  package: example::annexe\n"
+    "  children:\n"
+    "    - object.value:\n"
+    "        name: Room\n"
+    "        children:\n"
+    "          - attr.properties:\n"
+    "              name: wire\n"
+    "              value: { key: annexe_room, element: Room, format: json, capture: [room.list] }\n"
+    "          - field.string: { name: name }\n"
+)
+
+
+@pytest.mark.parametrize(
+    ("edit", "added", "message"),
+    [
+        (
+            (
+                "          - attr.properties:\n"
+                "              name: wire\n"
+                "              value: { key: reading, element: Reading, format: json, capture: [device.reading] }\n",
+                "",
+            ),
+            None,
+            "example::hub::Device.reading: `objectRef` names 'example::hub::Reading', "
+            "which declares no `wire`",
+        ),
+        (
+            None,
+            _ANOTHER_ROOM,
+            "example::annexe::Room and example::hub::Room would both be read by a class named Room",
+        ),
+        (
+            (
+                '          - field.string: { name: "time-zone" }\n',
+                '          - field.string: { name: "time-zone" }\n'
+                "          - field.string: { name: time_zone }\n",
+            ),
+            None,
+            "example::hub::Hub: 'time-zone' and 'time_zone' would both be read into an "
+            "attribute named time_zone",
+        ),
+    ],
+)
+def test_a_model_no_class_can_be_written_for_is_refused_by_the_reader_generator_alone(
+    tmp_path, edit, added, message
+):
+    """The other generators write no class, so a consumer that names no reader generator
+    is not refused for a reason only a reader has."""
+    _copy(tmp_path, "json_project", *SOURCES)
+    if edit:
+        _edit(tmp_path / "metaobjects" / _MODEL, *edit)
+    if added:
+        (tmp_path / "metaobjects" / "meta.annexe.yaml").write_text(added, encoding="utf-8")
+    result = _run(tmp_path, "gen")
+    assert result.returncode != 0
+    assert message in result.stdout + result.stderr
+    assert not (tmp_path / "generated" / "package" / "readers.py").exists()
+    _edit(tmp_path / _CONFIG, _READERS, "")
+    result = _run(tmp_path, "gen")
+    assert result.returncode == 0, result.stdout + result.stderr

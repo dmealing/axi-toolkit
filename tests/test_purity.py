@@ -227,7 +227,7 @@ def test_the_generators_import_only_the_standard_library_and_the_toolchain():
                 found.update(alias.name.split(".")[0] for alias in node.names)
             elif isinstance(node, ast.ImportFrom) and node.level == 0:
                 found.add((node.module or "").split(".")[0])
-    assert found - {"__future__", "json", "dataclasses"} == {"metaobjects"}
+    assert found - {"__future__", "json", "dataclasses", "keyword"} == {"metaobjects"}
 
 
 def test_the_generators_ride_in_a_development_extra_that_declares_the_toolchain():

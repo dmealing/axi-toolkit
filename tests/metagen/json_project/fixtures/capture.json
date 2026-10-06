@@ -2,8 +2,10 @@
   "captured": "synthetic",
   "objects": {
     "room.list": ["room_id", "name", "icon"],
-    "device.list": ["device_id", "name", "room_id", "labels", "labels[]"],
-    "device.detail": ["device_id", "name", "room_id", "labels", "labels[]", "firmware"],
-    "hub.status": ["name", "devices", "uptime"]
+    "device.list": ["device_id", "name", "room_id", "labels", "labels[]", "class", "online", "settings", "reading", "history", "history[]"],
+    "device.detail": ["device_id", "name", "room_id", "labels", "labels[]", "class", "online", "settings", "reading", "history", "history[]", "firmware"],
+    "device.reading": ["value", "unit", "at", "quality"],
+    "hub.status": ["name", "devices", "counts", "time-zone", "address_the_hub_was_last_reached_at", "device_most_recently_heard_from", "uptime"],
+    "beacon.scan": ["id", "strength", "ratio", "secure", "seen", "vendor", "channel"]
   }
 }

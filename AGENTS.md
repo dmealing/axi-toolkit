@@ -181,7 +181,7 @@ line. That is the defect, not the simplification.
 
 `axi_toolkit.metagen` holds the shared generators that a tool's own MetaObjects config
 names at `axi_toolkit.metagen:<generator>` — the row vocabularies, test double builders,
-and capture checks. The generators are development infrastructure only: they run inside
+capture checks and readers. The generators are development infrastructure only: they run inside
 the MetaObjects toolchain, which needs Python 3.11+; the toolkit's own floor stays 3.9.
 
 The generators live in a subpackage the library never imports (`tests/test_purity.py`

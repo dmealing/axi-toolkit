@@ -3,10 +3,11 @@
 # `metaobjects verify --codegen`.
 """Builders for the answers a test double gives in place of the real server.
 
-One function per declared object. Each takes the keys of one object by the
-server's own names and hands them back in the order given, having refused a
-name the model does not declare and the absence of one a real object always
-carries. A double that builds every answer through these cannot invent a name.
+One function per declared object. Each takes the attributes of one element, or
+the keys of one object, by the server's own names and hands them back in the
+order given, having refused a name the model does not declare and the absence
+of one a real answer always carries. A double that builds every answer through
+these cannot invent a name.
 """
 
 from __future__ import annotations
@@ -14,7 +15,9 @@ from __future__ import annotations
 ELEMENT = {
     "room": "Room",
     "device": "Device",
+    "reading": "Reading",
     "hub": "Hub",
+    "beacon": "Beacon",
 }
 
 ATTRIBUTES = {
@@ -28,10 +31,32 @@ ATTRIBUTES = {
         "name",
         "room_id",
         "labels",
+        "class",
+        "online",
+        "settings",
+        "reading",
+        "history",
+    ),
+    "reading": (
+        "value",
+        "unit",
+        "at",
     ),
     "hub": (
         "name",
         "devices",
+        "counts",
+        "time-zone",
+        "address_the_hub_was_last_reached_at",
+        "device_most_recently_heard_from",
+    ),
+    "beacon": (
+        "id",
+        "strength",
+        "ratio",
+        "secure",
+        "seen",
+        "vendor",
     ),
 }
 
@@ -41,8 +66,30 @@ REQUIRED = {
         "name",
     ),
     "device": ("device_id",),
+    "reading": (
+        "value",
+        "at",
+    ),
     "hub": ("name",),
+    "beacon": (
+        "id",
+        "strength",
+    ),
 }
+
+
+def _element(kind: str, attributes: dict) -> dict:
+    unknown = sorted(set(attributes) - set(ATTRIBUTES[kind]))
+    if unknown:
+        raise KeyError(
+            f"{kind}: {unknown} is not an attribute the model declares, and a double may "
+            "not invent one; declare it, and the capture check will say whether a real "
+            "server sends it"
+        )
+    absent = [name for name in REQUIRED[kind] if attributes.get(name) in (None, "")]
+    if absent:
+        raise KeyError(f"{kind}: a real {ELEMENT[kind]} element always carries {absent}")
+    return attributes
 
 
 def _object(kind: str, keys: dict) -> dict:
@@ -69,6 +116,16 @@ def device(**keys) -> dict:
     return _object("device", keys)
 
 
+def reading(**keys) -> dict:
+    """The keys of one Reading object, as example::hub::Reading declares them."""
+    return _object("reading", keys)
+
+
 def hub(**keys) -> dict:
     """The keys of one Hub object, as example::hub::Hub declares them."""
     return _object("hub", keys)
+
+
+def beacon(**attributes) -> dict:
+    """The attributes of one Beacon element, as example::hub::Beacon declares them."""
+    return _element("beacon", attributes)
