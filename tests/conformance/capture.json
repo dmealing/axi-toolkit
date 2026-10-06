@@ -17,13 +17,6 @@
       "scheme=https|port=none|strip=/api|aliases=1",
       "scheme=http|port=32400|strip=none|aliases=2"
     ],
-    "encoderDigest": [
-      {
-        "ha": "2022d9b3f4db208e856f92e98e830b5a3818590ca058b8814151014cd8f9d26f",
-        "plex": "2022d9b3f4db208e856f92e98e830b5a3818590ca058b8814151014cd8f9d26f",
-        "subject": "toon.py"
-      }
-    ],
     "envConfigErrorCodes": [
       "BAD_TOKEN",
       "BAD_URL",

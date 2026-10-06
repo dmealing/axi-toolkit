@@ -356,7 +356,7 @@ def test_the_committed_generated_module_matches_the_committed_capture():
 def test_snake_case_matches_the_projection_naming_convention():
     assert reqgen.snake("toonEncodeCaseCount") == "toon_encode_case_count"
     assert reqgen.snake("haRecoveryLines") == "ha_recovery_lines"
-    assert reqgen.snake("encoderDigest") == "encoder_digest"
+    assert reqgen.snake("errorContract") == "error_contract"
 
 
 # ------------------------------------------- the capture is all or nothing
@@ -370,9 +370,9 @@ def test_a_capture_that_cannot_read_a_tool_writes_nothing(monkeypatch, tmp_path)
     monkeypatch.setattr(reqgen, "CAPTURE_PATH", target)
     facts = {
         "toonEncodeCaseCount": fact("toonEncodeCaseCount", sub_type="int", is_array=False),
-        "encoderDigest": fact("encoderDigest", "DifferentialFacts"),
+        "errorContract": fact("errorContract", "DifferentialFacts"),
     }
-    with pytest.raises(reqgen.CaptureError, match="encoderDigest: AXI_TOOLKIT_SOURCE_HA is not"):
+    with pytest.raises(reqgen.CaptureError, match="errorContract: AXI_TOOLKIT_SOURCE_HA is not"):
         reqgen.do_capture(facts)
     assert not target.exists()
 
@@ -390,36 +390,6 @@ def test_a_committed_capture_that_cannot_be_read_is_a_message_not_a_traceback(
         reqgen.do_drift(facts)
 
 
-def test_a_drift_with_no_encoder_digest_fact_is_a_message_not_a_traceback(monkeypatch, tmp_path):
-    """A declaration edit that renames the fact must not turn into a KeyError.
-
-    The traceback that ``fresh["encoderDigest"]`` would raise is the failure shape
-    every other guard here exists to avoid: frames of local paths, read in a
-    public pull request body as often as in a terminal.
-    """
-    target = tmp_path / "capture.json"
-    target.write_text(json.dumps({"facts": {}}))
-    monkeypatch.setattr(reqgen, "CAPTURE_PATH", target)
-    monkeypatch.setattr(reqgen, "_rel", lambda path: path.name)
-    facts = {"toonEncodeCaseCount": fact("toonEncodeCaseCount", sub_type="int", is_array=False)}
-    with pytest.raises(reqgen.CaptureError, match="no encoderDigest rows were captured"):
-        reqgen.do_drift(facts)
-
-
-def test_a_drift_with_an_empty_encoder_digest_fact_is_the_same_message(monkeypatch, tmp_path):
-    """A projection that returns nothing is not a digest to compare either."""
-    from conformance import projections
-
-    target = tmp_path / "capture.json"
-    target.write_text(json.dumps({"facts": {}}))
-    monkeypatch.setattr(reqgen, "CAPTURE_PATH", target)
-    monkeypatch.setattr(reqgen, "_rel", lambda path: path.name)
-    monkeypatch.setattr(projections, "capture_encoder_digest", lambda: [])
-    facts = {"encoderDigest": fact("encoderDigest", "DifferentialFacts")}
-    with pytest.raises(reqgen.CaptureError, match="no encoderDigest rows were captured"):
-        reqgen.do_drift(facts)
-
-
 def test_an_unexpected_failure_is_reported_without_the_path_it_carried(monkeypatch, tmp_path):
     """A bare ``FileNotFoundError`` prints where the checkout is. This one does not."""
     from conformance import projections
@@ -429,12 +399,12 @@ def test_an_unexpected_failure_is_reported_without_the_path_it_carried(monkeypat
     def explode():
         raise FileNotFoundError(f"[Errno 2] No such file or directory: '{tmp_path}/src/gone.py'")
 
-    monkeypatch.setattr(projections, "capture_encoder_digest", explode)
+    monkeypatch.setattr(projections, "capture_error_contract", explode)
     with pytest.raises(reqgen.CaptureError) as caught:
-        reqgen.build_capture({"encoderDigest": fact("encoderDigest", "DifferentialFacts")})
+        reqgen.build_capture({"errorContract": fact("errorContract", "DifferentialFacts")})
     message = str(caught.value)
     assert "in the tool it reads or in the projection itself" in message
-    assert "encoderDigest: `capture_encoder_digest` raised FileNotFoundError" in message
+    assert "errorContract: `capture_error_contract` raised FileNotFoundError" in message
     assert "<AXI_TOOLKIT_SOURCE_HA>/src/gone.py" in message
     assert str(tmp_path) not in message
 
@@ -485,30 +455,59 @@ def test_a_long_drift_is_counted_rather_than_printed_whole():
     assert len(report) == reqgen._DRIFT_ROWS_SHOWN + 2
 
 
-_TOOL_DIGESTS = ("first-axi", "second-axi")
-
-
-def _encoders(first: str, second: str, here: str):
-    return reqgen.encoder_report(dict(zip(_TOOL_DIGESTS, (first, second))), here)
-
-
-def test_three_copies_of_the_encoder_with_one_digest_are_identical():
-    identical, line = _encoders("a" * 64, "a" * 64, "a" * 64)
-    assert identical
-    assert "is byte-identical in all three copies" in line
+def test_tools_running_on_this_encoder_alone_are_each_given_a_line():
+    one_copy, lines = reqgen.encoder_report({"first-axi": [], "second-axi": []}, "1.2.3")
+    assert one_copy
+    assert lines == [
+        "encoder: first-axi imports axi_toolkit.toon, carries no copy of its own "
+        "and requires axi-toolkit 1.2.3 or later",
+        "encoder: second-axi imports axi_toolkit.toon, carries no copy of its own "
+        "and requires axi-toolkit 1.2.3 or later",
+    ]
 
 
 @pytest.mark.parametrize(
-    "digests",
+    "problems",
     [
-        ("b" * 64, "a" * 64, "a" * 64),
-        ("a" * 64, "b" * 64, "a" * 64),
-        ("a" * 64, "a" * 64, "b" * 64),
+        {"first-axi": ["first-axi grew a copy"], "second-axi": []},
+        {"first-axi": [], "second-axi": ["second-axi grew a copy"]},
     ],
 )
-def test_any_one_copy_of_the_encoder_differing_is_reported(digests):
-    """Including this package's: the tools agreeing with each other is not enough."""
-    identical, line = _encoders(*digests)
-    assert not identical
-    assert "is NOT byte-identical" in line
-    assert "first-axi" in line and "second-axi" in line and "this package" in line
+def test_either_tool_failing_to_run_on_this_encoder_alone_is_reported(problems):
+    """One tool being right is not enough, and its line is still printed."""
+    one_copy, lines = reqgen.encoder_report(problems, "1.2.3")
+    assert not one_copy
+    assert sum("grew a copy" in line for line in lines) == 1
+    assert sum("carries no copy of its own" in line for line in lines) == 1
+
+
+def test_a_tool_that_grew_its_copy_back_fails_the_drift(monkeypatch, tmp_path, capsys):
+    """Even when the capture is exactly what the tools say."""
+    from conformance import projections
+
+    target = tmp_path / "capture.json"
+    target.write_text(json.dumps({"facts": {}}))
+    monkeypatch.setattr(reqgen, "CAPTURE_PATH", target)
+    monkeypatch.setattr(reqgen, "_rel", lambda path: path.name)
+    monkeypatch.setattr(reqgen, "build_capture", lambda facts: {})
+    monkeypatch.setattr(
+        projections, "encoder_adoption", lambda tool: ["a copy"] if tool == "ha" else []
+    )
+    assert reqgen.do_drift({}) == 1
+    out = capsys.readouterr().out
+    assert "encoder: a copy" in out
+    assert "is fixed in that tool, not here" in out
+    assert "is not what the two source tools say now" not in out
+
+    monkeypatch.setattr(projections, "encoder_adoption", lambda tool: [])
+    assert reqgen.do_drift({}) == 0
+
+
+def test_a_tool_the_encoder_check_cannot_read_is_a_message_not_a_traceback(monkeypatch, tmp_path):
+    target = tmp_path / "capture.json"
+    target.write_text(json.dumps({"facts": {}}))
+    monkeypatch.setattr(reqgen, "CAPTURE_PATH", target)
+    monkeypatch.setattr(reqgen, "build_capture", lambda facts: {})
+    monkeypatch.delenv("AXI_TOOLKIT_SOURCE_HA", raising=False)
+    with pytest.raises(reqgen.CaptureError, match="encoder: AXI_TOOLKIT_SOURCE_HA is not set"):
+        reqgen.do_drift({})

@@ -183,11 +183,6 @@ metadata:
         name: DifferentialFacts
         children:
           - field.object:
-              name: encoderDigest
-              objectRef: SourcePair
-              isArray: true
-              required: true
-          - field.object:
               name: errorContract
               objectRef: SourcePair
               isArray: true
@@ -442,7 +437,6 @@ metadata:
           A fix landing in one tool's copy and not the other's, invisible until someone
           runs both against the same fixtures.
         implementedBy:
-          - axi_toolkit::conformance::DifferentialFacts.encoderDigest
           - axi_toolkit::conformance::DifferentialFacts.errorContract
           - axi_toolkit::conformance::DifferentialFacts.redactionContract
           - axi_toolkit::conformance::DifferentialFacts.credentialContract

@@ -208,3 +208,125 @@ def test_a_rule_the_capture_cannot_read_is_a_refusal_not_a_shorter_list(checkout
 def test_a_module_with_no_redact_function_is_a_refusal(checkout):
     checkout(modules={"output": "import re\n"})
     assert "defines no `redact` function" in refusal(projections._redaction_rules, "ha")
+
+
+# ------------------------------------------- one copy of the encoder, and it is here
+
+
+def adopted(checkout, *, dependencies=('"axi-toolkit>=0.4.2"',), modules=None):
+    """A stand-in checkout that runs on this package's encoder, unless told otherwise."""
+    if modules is None:
+        modules = {"output": "from axi_toolkit.toon import encode\n"}
+    root = checkout(modules=modules)
+    (root / "pyproject.toml").write_text(
+        '[project]\nname = "example"\n'
+        f"dependencies = [{', '.join(dependencies)}]\n\n"
+        '[project.scripts]\nhass-axi = "example:main"\n'
+    )
+    return root
+
+
+@needs_toml
+def test_a_tool_that_imports_the_encoder_and_carries_none_has_nothing_to_report(checkout):
+    adopted(checkout)
+    assert projections.encoder_adoption("ha") == []
+
+
+@needs_toml
+@pytest.mark.parametrize(
+    "statement",
+    [
+        "from axi_toolkit.toon import encode",
+        "from axi_toolkit import errors, toon",
+        "import axi_toolkit.toon",
+        "def late():\n    from axi_toolkit.toon import encode",
+    ],
+)
+def test_every_spelling_of_the_import_counts(checkout, statement):
+    adopted(checkout, modules={"output": statement + "\n"})
+    assert projections.encoder_adoption("ha") == []
+
+
+@needs_toml
+def test_a_tool_that_grew_its_copy_back_is_named_with_the_file(checkout):
+    root = adopted(
+        checkout,
+        modules={"output": "from axi_toolkit.toon import encode\n", "toon": "def encode(): ...\n"},
+    )
+    (message,) = projections.encoder_adoption("ha")
+    assert "hass-axi carries a TOON encoder of its own (hass_axi/toon.py)" in message
+    assert str(root) not in message
+
+
+@needs_toml
+def test_a_copy_below_the_top_of_the_package_is_still_a_copy(checkout):
+    root = adopted(checkout)
+    nested = root / "src" / "hass_axi" / "vendored"
+    (nested / "toon").mkdir(parents=True)
+    (nested / "toon" / "__init__.py").write_text("")
+    (nested / "toon.py").write_text("")
+    (message,) = projections.encoder_adoption("ha")
+    assert "hass_axi/vendored/toon.py, hass_axi/vendored/toon/__init__.py" in message
+
+
+@needs_toml
+@pytest.mark.parametrize(
+    "module",
+    [
+        "from .toon import encode\n",
+        "from axi_toolkit import errors\n",
+        "from other_toolkit.toon import encode\n",
+        "# from axi_toolkit.toon import encode\n",
+    ],
+)
+def test_a_tool_that_does_not_import_the_encoder_is_reported(checkout, module):
+    """A relative import is the tool's own module, and a comment imports nothing."""
+    adopted(checkout, modules={"output": module})
+    assert projections.encoder_adoption("ha") == [
+        "no module of `hass_axi` imports `axi_toolkit.toon`"
+    ]
+
+
+@needs_toml
+def test_a_floor_below_the_release_that_fixed_the_encoder_is_reported(checkout):
+    adopted(checkout, dependencies=('"axi-toolkit>=0.4.1"',))
+    (message,) = projections.encoder_adoption("ha")
+    assert "hass-axi accepts `axi-toolkit` 0.4.1; the floor is 0.4.2" in message
+
+
+@needs_toml
+@pytest.mark.parametrize("dependencies", [(), ('"axi-toolkit"',), ('"axi-toolkit<1"',)])
+def test_a_dependency_with_no_lower_bound_is_reported(checkout, dependencies):
+    adopted(checkout, dependencies=dependencies)
+    (message,) = projections.encoder_adoption("ha")
+    assert "hass-axi declares no lower bound on `axi-toolkit`" in message
+
+
+@needs_toml
+def test_every_problem_is_reported_and_not_only_the_first(checkout):
+    adopted(checkout, dependencies=(), modules={"toon": "def encode(): ...\n"})
+    assert len(projections.encoder_adoption("ha")) == 3
+
+
+@pytest.mark.parametrize(
+    ("dependencies", "floor"),
+    [
+        (["axi-toolkit>=0.4.2"], "0.4.2"),
+        (["websockets>=13.0", "axi_toolkit >= 0.10.0, <1"], "0.10.0"),
+        (["Axi.Toolkit==0.5.0"], "0.5.0"),
+        (["axi-toolkit~=0.4.2"], "0.4.2"),
+        (["axi-toolkit[ha]>=0.4.3; python_version >= '3.9'"], "0.4.3"),
+        (["axi-toolkit>=0.4.0,>=0.4.2"], "0.4.2"),
+        (["axi-toolkit"], None),
+        (["axi-toolkit<1"], None),
+        (["axi-toolkit-extras>=9"], None),
+        ([], None),
+    ],
+)
+def test_the_floor_is_read_from_the_requirement(dependencies, floor):
+    assert projections.toolkit_floor(dependencies) == floor
+
+
+def test_versions_compare_as_numbers_not_as_text():
+    """``0.10.0`` is above ``0.4.2``, which a string comparison gets backwards."""
+    assert projections._version("0.10.0") > projections._version(projections.ENCODER_FLOOR)

@@ -225,15 +225,16 @@ Consequences worth keeping straight:
   **Retiring the drift gates did not change that**, and it is worth saying because it
   looks as though it should have: with both tools now importing this package, the
   obvious guess is that the capture has nothing left to read out of a checkout. Measured
-  rather than guessed — **19 of the 25 capture halves still refuse to run without
+  rather than guessed — **18 of the 24 capture halves still refuse to run without
   one**, because the toolkit-tier facts (`errorExitCodes`, `haRecoveryLines`,
   `plexNormalizedUrls`, `redactionRules`, every `DifferentialFacts` row, …) read the
   tools' *own* modules, which they still have. Only the six TOON facts read the vendored
   fixtures instead. Both variables stay required.
 - **The capture is checked against the tools by the gate, not by memory.**
   `scripts/ci-local.sh --only drift` fetches both tools at `main`, re-reads every fact
-  with `reqgen drift`, and fails when the committed capture is not what they say or the
-  three copies of `toon.py` are not one file. It exists because the capture once sat
+  with `reqgen drift`, and fails when the committed capture is not what they say or a
+  tool carries a `toon.py` of its own, does not import `axi_toolkit.toon`, or accepts an
+  `axi-toolkit` below 0.4.2. It exists because the capture once sat
   stale through a package rename, a new redaction shape and an encoder fix in the tools
   with every check here green: `pytest` judges this package against the capture, and
   nothing judged the capture. With no network it prints `SKIPPED` and **fails**;
