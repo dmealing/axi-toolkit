@@ -501,10 +501,18 @@ machine happens to have, run against whatever interpreter it was installed for.)
 ## Release
 
 release-please on `main`, same shape as the sibling projects. The PyPI publish job is
-written and gated behind `release_created`, and it has now fired: **`axi-toolkit` 0.2.0
-is on PyPI**, wheel and sdist with attestations, and the trusted publisher and the `pypi`
-environment are configured. The one-time account actions are done; a release cut from
-`main` publishes without further setup.
+written and gated behind `release_created`, and it has fired: **`axi-toolkit` 0.2.0
+through 0.4.1 went to PyPI from it**, wheel and sdist with attestations, through the
+trusted publisher and the `pypi` environment, with no long-lived token anywhere.
+
+**That is not how a release is published today.** GitHub Actions is disabled on this
+repository, so `release.yml` runs nowhere: release-please and the upload are both run
+locally, and the upload authenticates with a long-lived PyPI token rather than the
+trusted publisher. An upload made that way carries **no attestations** -- they are minted
+from the workflow's own identity, which a local run does not have -- and 0.4.2, 0.4.3 and
+0.5.0 are on PyPI without them. The job is left in place as the path publishing returns
+to if Actions is re-enabled; until then, do not describe a release as token-less or as
+attested.
 
 ### The commit-message guard, and what verifies its vendored parser
 

@@ -1,0 +1,30 @@
+# The rows a synthetic tool prints. `room` and `floor` are read from another object, `label`
+# from its own and another, and `slot` is the key its device sits under in the hub's map.
+metadata:
+  package: example::rows
+  children:
+    - object.value:
+        name: DeviceRow
+        description: One device, as a listing prints it.
+        children:
+          - attr.properties: { name: row, value: { key: device, of: "example::hub::Device", capture: [device.list] } }
+          - field.string: { name: id, extends: "example::hub::Device.device_id" }
+          - field.string:
+              name: label
+              extends: "example::hub::Device.name"
+              children: [ { attr.properties: { name: derived, value: { also: { "example::hub::Hub": [name] } } } } ]
+          - field.string:
+              name: room
+              children: [ { attr.properties: { name: derived, value: { reads: [room_id], also: { "example::hub::Room": [room_id, name] } } } } ]
+          - field.string:
+              name: floor
+              children: [ { attr.properties: { name: derived, value: { also: { "example::hub::Room": [floor] } } } } ]
+          - field.string:
+              name: slot
+              children: [ { attr.properties: { name: derived, value: { key_of: "example::hub::Hub.devices" } } } ]
+    - object.projection:
+        name: DeviceDefault
+        description: The columns shown when none are asked for.
+        children:
+          - field.string: { name: id, extends: "example::rows::DeviceRow.id" }
+          - field.string: { name: label, extends: "example::rows::DeviceRow.label" }

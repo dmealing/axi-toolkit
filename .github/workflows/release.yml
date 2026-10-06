@@ -116,8 +116,14 @@ jobs:
   # this job be committed before the PyPI project existed: it could not fire
   # until the one-time account actions only the maintainer could perform --
   # claiming the name, the `pypi` environment, the trusted publisher -- were
-  # done. They are done and the job has fired; the Release section of
-  # AGENTS.md owns the current state of publishing, not this comment.
+  # done. They are done and the job has fired.
+  #
+  # It does not fire today. GitHub Actions is disabled on this repository, so
+  # nothing in this file runs: release-please and the upload are run locally,
+  # with a long-lived PyPI token, and an upload made that way carries no
+  # attestations. What follows describes this job when it runs, not how the
+  # current releases were published; the Release section of AGENTS.md owns the
+  # current state of publishing, not this comment.
   publish:
     name: publish to PyPI
     needs: release-please
@@ -127,8 +133,10 @@ jobs:
       name: pypi
       url: https://pypi.org/p/axi-toolkit
     permissions:
-      # The only credential involved: a short-lived OIDC token minted for this
-      # run. No long-lived PyPI token exists in this repository or anywhere else.
+      # The only credential this job involves: a short-lived OIDC token minted
+      # for the run, which is also what the attestations are signed with. No
+      # long-lived PyPI token is in this repository. One exists outside it, for
+      # the local upload that stands in while Actions is disabled.
       id-token: write
     steps:
       - uses: actions/checkout@v4

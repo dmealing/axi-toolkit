@@ -10,7 +10,7 @@ metadata:
         children:
           - attr.properties:
               name: wire
-              value: { key: lamp, element: Lamp, format: json-object, capture: [lamp.row, lamp.detail] }
+              value: { key: lamp, element: Lamp, format: xml-attributes, capture: [lamp.row, lamp.detail] }
           - field.string: { name: id, required: true }
           - field.string: { name: name, required: true }
           - field.int: { name: brightness }

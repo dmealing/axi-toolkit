@@ -1,0 +1,41 @@
+# A synthetic upstream that answers in JSON: an invented hub, the rooms it knows and the
+# devices in them. Every name is made up; this model exists to exercise what the sibling
+# project cannot: a capture whose answers sit under a section of another name and which
+# records what a list held, a column read from another object, and a column that is a map key.
+metadata:
+  package: example::hub
+  children:
+    - attr.properties: { name: capture, value: { file: fixtures/capture.json, section: objects, list_suffix: "[]" } }
+    - object.entity:
+        name: Room
+        description: One room, as the room list answers it.
+        children:
+          - attr.properties:
+              name: wire
+              value: { key: room, element: Room, format: json, capture: [room.list] }
+          - field.string: { name: room_id, required: true }
+          - field.string: { name: name, required: true }
+          - field.string:
+              name: floor
+              children:
+                - attr.properties: { name: unobserved, value: { reason: "Only a hub with floors set up sends it." } }
+    - object.entity:
+        name: Device
+        description: One device, as the device list and a single lookup answer it.
+        children:
+          - attr.properties:
+              name: wire
+              value: { key: device, element: Device, format: json, capture: [device.list, device.detail] }
+          - field.string: { name: device_id, required: true }
+          - field.string: { name: name }
+          - field.string: { name: room_id }
+          - field.string: { name: labels, isArray: true }
+    - object.entity:
+        name: Hub
+        description: The hub's own answer, with every device under the slot it is plugged into.
+        children:
+          - attr.properties:
+              name: wire
+              value: { key: hub, element: Hub, format: json, capture: [hub.status] }
+          - field.string: { name: name, required: true }
+          - field.map: { name: devices, objectRef: "example::hub::Device" }

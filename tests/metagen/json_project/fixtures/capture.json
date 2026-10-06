@@ -1,0 +1,9 @@
+{
+  "captured": "synthetic",
+  "objects": {
+    "room.list": ["room_id", "name", "icon"],
+    "device.list": ["device_id", "name", "room_id", "labels", "labels[]"],
+    "device.detail": ["device_id", "name", "room_id", "labels", "labels[]", "firmware"],
+    "hub.status": ["name", "devices", "uptime"]
+  }
+}

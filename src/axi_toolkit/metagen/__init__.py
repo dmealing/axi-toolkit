@@ -23,6 +23,28 @@ Three generators, and what each one reads:
     Emits the check that every declared attribute is in a committed capture of a real
     server's answers, or carries the reason it could not be observed.
 
+What a model may say beyond that, and what is assumed of one that does not:
+
+``wire.format``
+    ``xml-attributes`` or ``json``; an object that names neither is the first. It
+    decides the words a builder refuses in -- an attribute of an element, or a key of
+    an object -- and nothing else: the tables keep one name each whatever it is.
+``capture.section``
+    The key of the capture file that holds the answers. ``elements`` when not named.
+``capture.list_suffix``
+    For a capture that records what a list held as a second name beside the list's
+    own, that name's ending. Such a name is not one the server sent, and no check is
+    shown it. A capture that names no ending is read as it is written.
+``derived.also``
+    On a column: the names it reads of objects other than its row's own, by object.
+    Each is checked against that object, ``READS`` carries it as ``package::Object.name``,
+    and the capture check requires it in every answer of that object, less whatever
+    that object itself says could not be observed.
+``derived.key_of``
+    On a column: the map it is a key of, as ``package::Object.field``. Emitted as
+    ``KEY_OF``, and the capture check holds the map to the answers of the object that
+    declares it. A column that says this, or ``also``, need name no ``reads``.
+
 This directory holds no name from any one project, so that it can move into a shared
 library as it stands.
 """
