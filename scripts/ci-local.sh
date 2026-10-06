@@ -15,6 +15,7 @@
 #   lint          ruff check . && ruff format --check .
 #   test          pytest, once, on the interpreter that built .venv
 #   requirements  scripts/reqgen.py list, then scripts/reqgen.py check
+#   metagen       tests/metagen under the MetaObjects toolchain (see below)
 #   drift         fetch both source tools at their main, then scripts/reqgen.py
 #                 check and scripts/reqgen.py drift against them (see below)
 #
@@ -38,6 +39,13 @@
 # audit still runs, over every git-side message, under --pull-requests auto:
 # only the pull-request-body half is skipped, the SKIP line says so, and
 # commitcheck prints its own not-consulted note beside the verdict.
+#
+# METAGEN. `axi_toolkit.metagen` holds the generators a tool's own MetaObjects config
+# names, and they need the toolchain, which needs Python 3.11 -- more than this
+# package's floor, and more than a bare `pytest` run can count on. tests/metagen skips
+# where the toolchain is absent, and a skip is not a pass, so this section is the one
+# that runs it: under `uvx --python 3.12` with the pinned toolchain, never touching
+# .venv. Like `--matrix` it fails without `uv` on PATH rather than passing unrun.
 #
 # DRIFT. Every other section reads only this repository, which is the design:
 # the suite needs no source checkout and no network. The price is that it judges
@@ -82,7 +90,8 @@ set -uo pipefail
 root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 cd "$root" || exit 1
 
-SECTIONS=(leakcheck commits lint test requirements drift)
+SECTIONS=(leakcheck commits lint test requirements metagen drift)
+METAOBJECTS=${METAOBJECTS:-"metaobjects==1.0.13"}
 MATRIX_PYTHONS=${MATRIX_PYTHONS:-"3.9 3.10 3.11 3.12"}
 
 usage() { sed -n '2,/^set -uo/p' "$0" | sed '$d; s/^# \{0,1\}//'; }
@@ -157,6 +166,13 @@ sec_requirements() {
   ensure_venv metaobjects
   .venv/bin/python scripts/reqgen.py list
   .venv/bin/python scripts/reqgen.py check
+}
+
+sec_metagen() {
+  command -v uvx >/dev/null 2>&1 || { echo "ci-local: metagen needs uv on PATH" >&2; return 1; }
+  # -rs prints why anything skipped, and the count line is checked: nothing may skip here.
+  PYTHONPATH=src uvx --quiet --python 3.12 --from "$METAOBJECTS" --with pytest \
+    pytest -p no:cacheprovider -rs tests/metagen | tee /dev/stderr | { ! grep -q 'skipped'; }
 }
 
 # One line per tool: the variable that names its checkout, the variable that

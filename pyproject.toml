@@ -43,6 +43,17 @@ reqgen = [
   "metaobjects==1.0.10",
 ]
 
+# The shared MetaObjects generators in `axi_toolkit.metagen`: what a tool's own
+# `metaobjects.config.yaml` names as `axi_toolkit.metagen:<generator>`. Development time
+# only -- nothing in the library imports that subpackage (tests/test_purity.py holds it
+# there), so installing the wheel without this extra gives exactly the library. The
+# toolchain requires Python 3.11 or newer, and the pin makes an install on an older
+# interpreter fail where it is asked for rather than quietly install nothing. The package
+# floor above does not move. 1.0.13 is the version the first consumer generated with.
+metagen = [
+  "metaobjects==1.0.13",
+]
+
 [project.urls]
 Homepage = "https://github.com/dmealing/axi-toolkit"
 Source = "https://github.com/dmealing/axi-toolkit"
@@ -54,6 +65,10 @@ packages = ["src/axi_toolkit"]
 line-length = 100
 target-version = "py39"
 src = ["src", "tests", "scripts"]
+
+# A synthetic consumer's committed generator output: owned by `axi_toolkit.metagen`, and a
+# formatter or fixer reflowing it would fail the byte-for-byte comparison its test makes.
+extend-exclude = ["tests/metagen/project/generated"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B", "C4", "SIM", "RUF"]

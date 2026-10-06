@@ -1,0 +1,6 @@
+{
+  "elements": {
+    "lamp.row": ["id", "name", "brightness", "colour"],
+    "lamp.detail": ["id", "name", "brightness", "colour", "room"]
+  }
+}

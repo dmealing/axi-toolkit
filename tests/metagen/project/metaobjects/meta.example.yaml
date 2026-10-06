@@ -1,0 +1,22 @@
+# A synthetic upstream: what an invented service sends for a lamp. Every name is made up;
+# this model exists to exercise the generators, not to describe a real system.
+metadata:
+  package: example::service
+  children:
+    - attr.properties: { name: capture, value: { file: fixtures/capture.json } }
+    - object.entity:
+        name: Lamp
+        description: One Lamp element.
+        children:
+          - attr.properties:
+              name: wire
+              value: { key: lamp, element: Lamp, format: json-object, capture: [lamp.row, lamp.detail] }
+          - field.string: { name: id, required: true }
+          - field.string: { name: name, required: true }
+          - field.int: { name: brightness }
+          - field.string: { name: colour }
+          - field.string: { name: room }
+          - field.string:
+              name: firmware
+              children:
+                - attr.properties: { name: unobserved, value: { reason: "Only a lamp with an update pending sends it." } }
