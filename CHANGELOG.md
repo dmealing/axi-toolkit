@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/dmealing/axi-toolkit/compare/v0.4.3...v0.5.0) (2026-10-06)
+
+
+### Features
+
+* **metagen:** ship the MetaObjects generators as a development extra ([#23](https://github.com/dmealing/axi-toolkit/issues/23)) ([47cd100](https://github.com/dmealing/axi-toolkit/commit/47cd1004c392c3d662b9a6f963d48e7c5913c61c))
+
 ## [0.4.3](https://github.com/dmealing/axi-toolkit/compare/v0.4.2...v0.4.3) (2026-10-06)
 
 
