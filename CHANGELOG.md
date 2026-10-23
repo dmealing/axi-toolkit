@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.1](https://github.com/dmealing/axi-toolkit/compare/v0.7.0...v0.7.1) (2026-10-23)
+
+
+### Documentation
+
+* **readme:** state the metaobjects pin the development extras carry ([#30](https://github.com/dmealing/axi-toolkit/issues/30)) ([e0bb971](https://github.com/dmealing/axi-toolkit/commit/e0bb971d07f381d67d5e1b80cfee085728af457d))
+
 ## [0.7.0](https://github.com/dmealing/axi-toolkit/compare/v0.6.0...v0.7.0) (2026-10-06)
 
 
