@@ -148,7 +148,12 @@ line. That is the defect, not the simplification.
   than asserting it until the tool deleted its copy and imported this module instead —
   see **Retired gates** below, and do not re-add that gate. It now reads the model through
   the generated readers in `ha/model/` rather than by key (see **The MetaObjects
-  generators**), and its finders hand those readers back. Still pure and stdlib-only: the
+  generators**), and its finders hand those readers back. Reading a domain reads all of
+  it, so a listing walks the model once: `read_domains` (or one `find_domain`), then
+  each domain reader's `services`, which keep a null-definition service as `None`, with
+  the per-service helpers given those service readers. `service_names` and
+  `find_service` are for one lookup; called per row they make a listing quadratic, and
+  the fix is that walk, never a by-key skip in `find_domain`. Still pure and stdlib-only: the
   caller fetches the model and decides whether the read is worth paying for, which is why
   the `ha` extra is still empty and the distribution still declares no runtime dependency.
 - **`plex/ids.py` + `plex/filters.py`** — the second domain module and the first move

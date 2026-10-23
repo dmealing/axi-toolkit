@@ -32,9 +32,6 @@ directly, against a model in the shape ``GET /api/services`` returns.
 
 from __future__ import annotations
 
-import ast
-from pathlib import Path
-
 import pytest
 
 from axi_toolkit.ha import services
@@ -521,24 +518,34 @@ def test_an_entity_filter_reads_one_domain_sent_alone_as_a_list_of_one():
     assert services.feature_masks(one, "light") == services.feature_masks(listed, "light") == [4]
 
 
-#: What the module still reads by key, and why each may be: an option written as a label
-#: and a value, which no capture has shown, and a state, which is not the service model.
-STILL_BY_KEY = {"value", "attributes", "supported_features"}
-
-
-def test_the_module_reads_the_service_model_through_its_readers_and_never_by_key():
-    source = Path(services.__file__).read_text(encoding="utf-8")
-    read = set()
-    # A name is a string: an index into a tuple of readers is not a read by key.
-    for node in ast.walk(ast.parse(source)):
-        if isinstance(node, ast.Subscript) and isinstance(node.slice, ast.Constant):
-            read.add(node.slice.value)
-        elif (
-            isinstance(node, ast.Call)
-            and isinstance(node.func, ast.Attribute)
-            and node.func.attr == "get"
-            and node.args
-            and isinstance(node.args[0], ast.Constant)
-        ):
-            read.add(node.args[0].value)
-    assert {name for name in read if isinstance(name, str)} == STILL_BY_KEY
+def test_a_listing_of_every_service_reads_each_domain_once(monkeypatch):
+    """Reading a domain reads all of it, so a listing that looked each row up by name
+    would read every earlier domain again per row. The walk reads each one once, and a
+    service published with null still gets its row."""
+    model = [*MODEL, {"domain": "script", "services": {"reload": None}}]
+    reads = []
+    read = ServiceDomain.read.__func__
+    monkeypatch.setattr(
+        ServiceDomain, "read", classmethod(lambda cls, raw: reads.append(raw) or read(cls, raw))
+    )
+    rows = [
+        (entry.domain, name, services.field_names(spec))
+        for entry in services.read_domains(model)
+        for name, spec in sorted(entry.services.items())
+    ]
+    assert sorted(raw["domain"] for raw in reads) == [
+        "calendar",
+        "climate",
+        "light",
+        "script",
+        "switch",
+    ]
+    assert rows == [
+        ("calendar", "get_events", []),
+        ("calendar", "list_events", []),
+        ("climate", "set_temperature", ["temperature", "hvac_mode"]),
+        ("light", "turn_off", []),
+        ("light", "turn_on", ["brightness", "profile"]),
+        ("script", "reload", []),
+        ("switch", "toggle", ["delay"]),
+    ]

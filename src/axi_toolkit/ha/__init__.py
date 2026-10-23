@@ -8,5 +8,8 @@ install a transport.
 
 :mod:`axi_toolkit.ha.model.readers` is what it reads that model through: one reader per
 object of it, generated from the declaration under ``models/`` and standard-library
-Python like everything else here.
+Python like everything else here. A listing walks the model once, from
+:func:`~axi_toolkit.ha.services.read_domains` or one
+:func:`~axi_toolkit.ha.services.find_domain`, through each domain reader's
+``services``; the per-service helpers take the service readers it yields.
 """

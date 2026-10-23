@@ -24,6 +24,13 @@ a real server. A domain, a service and a field are handed back as their readers.
 A function that takes one service or one field takes its reader, the mapping it
 was parsed into, which is read through that reader, or ``None`` for one that
 declares nothing.
+
+Reading a domain reads all of it, so a listing walks the model once. Take every
+domain from :func:`read_domains`, or one from :func:`find_domain`, and then each
+service from that reader's ``services``. Those keep a service published with null as
+``None``, so it still prints a row. Pass each service reader to the per-service
+helpers. :func:`service_names` and :func:`find_service` look up one name from the
+whole model, and called once per row they read every earlier domain again for each.
 """
 
 from __future__ import annotations
@@ -44,11 +51,22 @@ RESPONSE_REQUIRED = "required"
 
 def domains(model) -> list:
     """Every service domain the installation has registered, sorted."""
-    return sorted(entry.domain for entry in _entries(model) if entry.domain)
+    return [entry.domain for entry in read_domains(model)]
+
+
+def read_domains(model) -> list:
+    """Every registered domain's published entry, as its reader, sorted by domain.
+
+    Each is read once, so this is where a listing of every service starts.
+    """
+    return sorted((entry for entry in _entries(model) if entry.domain), key=lambda e: e.domain)
 
 
 def find_domain(model, domain: str):
-    """One domain's published entry, as its reader, or None."""
+    """One domain's published entry, as its reader, or None.
+
+    Read it once and list its services from the reader, not by a lookup per service.
+    """
     for entry in _entries(model):
         if entry.domain == domain:
             return entry
@@ -60,6 +78,7 @@ def service_names(model, domain: str) -> list:
 
     One published with null in place of its description is registered all the same,
     and is named here: a listing that dropped it would hide a service that exists.
+    This is for one lookup; a listing reads the domain's reader once instead.
     """
     entry = find_domain(model, domain)
     services = entry.services if entry is not None else None
@@ -70,6 +89,7 @@ def find_service(model, domain: str, service: str):
     """The published description of one service, as its reader.
 
     None if it is not registered, and None if it is registered with no description.
+    This is for one lookup and reads the model to find it, so it is not called per row.
     """
     entry = find_domain(model, domain)
     services = entry.services if entry is not None else None
