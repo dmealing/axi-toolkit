@@ -49,7 +49,7 @@ reqgen = [
 # there), so installing the wheel without this extra gives exactly the library. The
 # toolchain requires Python 3.11 or newer, and the pin makes an install on an older
 # interpreter fail where it is asked for rather than quietly install nothing. The package
-# floor above does not move. 1.1.0 is the version the first consumer generated with.
+# floor above does not move. 1.1.0 is the version this package is checked against.
 metagen = [
   "metaobjects==1.1.0",
 ]
