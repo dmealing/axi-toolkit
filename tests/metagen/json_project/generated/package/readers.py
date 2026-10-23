@@ -14,6 +14,12 @@ A name that holds another declared object is read through that object's reader:
 one as that reader, a list of them as a tuple and a map of them as a dict. What
 is there and is not an object is left out, and is still in ``raw``.
 
+A list the model says may be sent as one value alone reads that value as a
+list of one, so whoever reads it never asks which of the two it was sent as.
+
+A map the model says keeps every key has an entry for each key it was sent
+with: what is under one and is not an object reads as ``None``.
+
 An attribute arrives as text. One the model declares as a number, or as a yes
 or a no, is read as that, and as ``None`` when the text is not one.
 
@@ -59,6 +65,13 @@ def _items(value):
     return tuple(value) if isinstance(value, (list, tuple)) else None
 
 
+def _listed(value):
+    """What a list held, as a tuple, and one value sent alone as a list of one."""
+    if value is None:
+        return None
+    return tuple(value) if isinstance(value, (list, tuple)) else (value,)
+
+
 def _one(reader, value):
     """A nested object through its own reader, or ``None`` for no object."""
     return reader.read(value) if isinstance(value, Mapping) else None
@@ -80,6 +93,16 @@ def _keyed(reader, value):
     for key, item in value.items():
         if isinstance(item, Mapping):
             found[key] = reader.read(item)
+    return found
+
+
+def _every_key(reader, value):
+    """A map of nested objects, every key kept and ``None`` where no object is."""
+    if not isinstance(value, Mapping):
+        return None
+    found = {}
+    for key, item in value.items():
+        found[key] = reader.read(item) if isinstance(item, Mapping) else None
     return found
 
 
@@ -124,6 +147,7 @@ class Device:
     name: str | None = None
     room_id: str | None = None
     labels: tuple[str, ...] | None = None
+    aliases: tuple[str, ...] | None = None
     class_: str | None = None
     online: bool | None = None
     settings: object = None
@@ -140,6 +164,7 @@ class Device:
             name=raw.get("name"),
             room_id=raw.get("room_id"),
             labels=_items(raw.get("labels")),
+            aliases=_listed(raw.get("aliases")),
             class_=raw.get("class"),
             online=raw.get("online"),
             settings=raw.get("settings"),
@@ -199,6 +224,7 @@ class Hub:
 
     name: str | None = None
     devices: dict[str, Device] | None = None
+    rooms: dict[str, Room | None] | None = None
     counts: dict[str, int] | None = None
     time_zone: str | None = None
     address_the_hub_was_last_reached_at: str | None = None
@@ -212,6 +238,7 @@ class Hub:
         return cls(
             name=raw.get("name"),
             devices=_keyed(Device, raw.get("devices")),
+            rooms=_every_key(Room, raw.get("rooms")),
             counts=raw.get("counts"),
             time_zone=raw.get("time-zone"),
             address_the_hub_was_last_reached_at=raw.get(

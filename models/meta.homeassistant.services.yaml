@@ -1,0 +1,159 @@
+# What Home Assistant publishes at GET /api/services, as axi_toolkit.ha.services reads it.
+#
+# The readers that module reads the model through are generated from this file into
+# src/axi_toolkit/ha/model/, and the check that every name declared here is one a real
+# server sent into tests/hamodel/ (see metaobjects.config.yaml at the repository root).
+#
+# Every name is Home Assistant's own, held to tests/fixtures/homeassistant/capture.json:
+# the service sections, byte for byte, of the names-only capture hass-axi records with
+# its scripts/shapecapture.py against a pinned Home Assistant container. Nothing is taken
+# from memory or from a client library, and no value from an installation is recorded.
+# The objects are declared as hass-axi declares them, so that a reader of either reads
+# the same names, plus what hass-axi's declaration could not say: how three of them are
+# read when the server sends what the capture never showed.
+#
+# A key holding JSON passed through unread is a string with `dbColumnType: jsonb`,
+# MetaObjects' spelling for an open bag.
+#
+# Not declared: a select option written as a label and a value. Every select the capture
+# saw lists its options as plain strings, so there is no captured object to hold its
+# names to, and services.selector_options reads one by its `value` where it finds one.
+metadata:
+  package: homeassistant::services
+  children:
+    # The capture files its answers under `objects`, and records what a list held as a
+    # second name ending `[]`, which is a type and not a key the server sent.
+    - attr.properties:
+        name: capture
+        value: { file: tests/fixtures/homeassistant/capture.json, section: objects, list_suffix: "[]" }
+
+    - object.value:
+        name: ServiceDomain
+        description: One element of GET /api/services - a domain and the services it registers.
+        children:
+          - attr.properties:
+              name: wire
+              value: { key: service_domain, element: service domain, format: json, capture: [service.domain] }
+          - field.string: { name: domain, required: true }
+          - field.map:
+              name: services
+              objectRef: Service
+              required: true
+              description: >-
+                Keyed by service name. A service registered with no description is
+                published with null under its name, and is still registered.
+              children:
+                - attr.properties: { name: wire, value: { every_key: true } }
+
+    - object.value:
+        name: Service
+        description: One service, as async_get_all_descriptions publishes it.
+        children:
+          - attr.properties:
+              name: wire
+              value: { key: service, element: service, format: json, capture: [service] }
+          - field.string: { name: name, description: "Empty where the prose lives in translation files, which this API does not serve." }
+          - field.string: { name: description }
+          - field.map:
+              name: fields
+              objectRef: ServiceField
+              description: >-
+                Keyed by field name. A section is a key too, holding its own `fields`. A
+                field published with nothing declared is still one the service accepts.
+              children:
+                - attr.properties: { name: wire, value: { every_key: true } }
+          - field.object: { name: target, objectRef: ServiceTarget, storage: jsonb }
+          - field.object: { name: response, objectRef: ServiceResponse, storage: jsonb }
+
+    - object.value:
+        name: ServiceField
+        description: One field of a service, or one section holding fields of its own.
+        children:
+          - attr.properties:
+              name: wire
+              value: { key: service_field, element: service field, format: json, capture: [service.field] }
+          - field.string: { name: description }
+          - field.boolean: { name: required }
+          - field.string: { name: example, dbColumnType: jsonb, description: Any JSON value. }
+          - field.object: { name: selector, objectRef: Selector, storage: jsonb }
+          - field.object: { name: filter, objectRef: ServiceFieldFilter, storage: jsonb }
+          - field.map:
+              name: fields
+              objectRef: ServiceField
+              description: On a section only.
+              children:
+                - attr.properties: { name: wire, value: { every_key: true } }
+          - field.boolean: { name: collapsed, description: On a section only. }
+
+    - object.value:
+        name: ServiceFieldFilter
+        description: The capability a field is offered under.
+        children:
+          - attr.properties:
+              name: wire
+              value: { key: service_field_filter, element: field filter, format: json, capture: [service.field.filter] }
+          - field.int[]: { name: supported_features }
+
+    - object.value:
+        name: Selector
+        description: >-
+          A field's selector: one key naming its kind, holding that kind's configuration.
+          These are the kinds a reader of the model reads, or a test double sends.
+        children:
+          - attr.properties:
+              name: wire
+              value: { key: selector, element: selector, format: json, capture: [service.field.selector] }
+          - field.object: { name: select, objectRef: SelectSelector, storage: jsonb }
+          - field.string: { name: datetime, dbColumnType: jsonb }
+          - field.string: { name: number, dbColumnType: jsonb }
+          - field.string: { name: text, dbColumnType: jsonb }
+
+    - object.value:
+        name: SelectSelector
+        description: The configuration of a select selector.
+        children:
+          - attr.properties:
+              name: wire
+              value: { key: select_selector, element: select selector, format: json, capture: [service.field.selector.select] }
+          - field.string[]: { name: options }
+
+    - object.value:
+        name: ServiceResponse
+        description: Whether a service answers with data.
+        children:
+          - attr.properties:
+              name: wire
+              value: { key: service_response, element: service response, format: json, capture: [service.response] }
+          - field.boolean: { name: optional, required: true }
+
+    - object.value:
+        name: ServiceTarget
+        description: What a service can be aimed at. Published empty, it still says the service takes a target.
+        children:
+          - attr.properties:
+              name: wire
+              value: { key: service_target, element: service target, format: json, capture: [service.target] }
+          - field.object[]: { name: entity, objectRef: ServiceTargetEntity, storage: jsonb }
+          - field.string:
+              name: device
+              dbColumnType: jsonb
+              children:
+                - attr.properties:
+                    name: unobserved
+                    value: { reason: "published by a service whose target filters devices, and no integration the lab loads declares one" }
+
+    - object.value:
+        name: ServiceTargetEntity
+        description: One entity filter of a service target.
+        children:
+          - attr.properties:
+              name: wire
+              value: { key: service_target_entity, element: target entity filter, format: json, capture: [service.target.entity] }
+          - field.string[]:
+              name: domain
+              description: >-
+                The capture shows only a list. One string sent in its place is read as a
+                list of one, as axi_toolkit.ha.services has always read it.
+              children:
+                - attr.properties: { name: wire, value: { single: true } }
+          - field.int[]: { name: supported_features, description: "A disjunction: any one mask, and every bit of that one." }

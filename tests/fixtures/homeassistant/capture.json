@@ -1,0 +1,84 @@
+{
+  "captured": {
+    "date": "2026-10-05",
+    "home_assistant": "2026.8.3",
+    "image": "ghcr.io/home-assistant/home-assistant:2026.8.3",
+    "note": "names and JSON types only: no value from an installation is recorded here"
+  },
+  "objects": {
+    "service": {
+      "description": ["string"],
+      "fields": ["object"],
+      "name": ["string"],
+      "response": ["object"],
+      "target": ["object"]
+    },
+    "service.domain": {
+      "domain": ["string"],
+      "services": ["object"]
+    },
+    "service.field": {
+      "advanced": ["boolean"],
+      "collapsed": ["boolean"],
+      "default": ["boolean", "integer", "number", "string"],
+      "description": ["string"],
+      "example": ["array", "integer", "number", "object", "string"],
+      "example[]": ["string"],
+      "fields": ["object"],
+      "filter": ["object"],
+      "name": ["string"],
+      "required": ["boolean"],
+      "selector": ["object"]
+    },
+    "service.field.filter": {
+      "attribute": ["object"],
+      "supported_features": ["array"],
+      "supported_features[]": ["integer"]
+    },
+    "service.field.selector": {
+      "area": ["object"],
+      "boolean": ["null", "object"],
+      "color_rgb": ["object"],
+      "color_temp": ["object"],
+      "config_entry": ["object"],
+      "constant": ["object"],
+      "conversation_agent": ["object"],
+      "date": ["object"],
+      "datetime": ["object"],
+      "duration": ["object"],
+      "entity": ["object"],
+      "icon": ["object"],
+      "media": ["object"],
+      "number": ["object"],
+      "object": ["null", "object"],
+      "select": ["object"],
+      "state": ["object"],
+      "statistic": ["object"],
+      "text": ["null", "object"],
+      "theme": ["object"],
+      "time": ["object"]
+    },
+    "service.field.selector.select": {
+      "custom_value": ["boolean"],
+      "multiple": ["boolean"],
+      "options": ["array"],
+      "options[]": ["string"],
+      "sort": ["boolean"],
+      "translation_key": ["string"]
+    },
+    "service.response": {
+      "optional": ["boolean"]
+    },
+    "service.target": {
+      "entity": ["array"],
+      "entity[]": ["object"]
+    },
+    "service.target.entity": {
+      "domain": ["array"],
+      "domain[]": ["string"],
+      "integration": ["string"],
+      "supported_features": ["array"],
+      "supported_features[]": ["integer"]
+    }
+  }
+}

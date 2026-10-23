@@ -1,0 +1,7 @@
+{
+  "src/axi_toolkit/ha/model/__init__.py": "daa04cec586768866d0996c779f62073e6773fe63750ff668327991fac2fd0f5",
+  "src/axi_toolkit/ha/model/readers.py": "f893ceacf4d2ed09e7a135c486decc6cdf3da3b74112b3eb014d5e8c04a6c85b",
+  "tests/hamodel/__init__.py": "daa04cec586768866d0996c779f62073e6773fe63750ff668327991fac2fd0f5",
+  "tests/hamodel/capture_contract.py": "05043d972c788c06fc248f73662611feda4203e7f8cc51b3698cb9ea192a2ce5",
+  "tests/hamodel/test_capture_contract.py": "f568ae42c5aab2390c2f0e165d357bd43f59fa03b14b83de1da6a459d719becc"
+}

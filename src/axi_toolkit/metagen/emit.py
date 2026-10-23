@@ -512,6 +512,14 @@ def _items(value):
     """What a list held, as a tuple, or ``None`` for what is not a list."""
     return tuple(value) if isinstance(value, (list, tuple)) else None
 ''',
+    "_listed": '''
+
+def _listed(value):
+    """What a list held, as a tuple, and one value sent alone as a list of one."""
+    if value is None:
+        return None
+    return tuple(value) if isinstance(value, (list, tuple)) else (value,)
+''',
     "_one": '''
 
 def _one(reader, value):
@@ -539,6 +547,17 @@ def _keyed(reader, value):
             found[key] = reader.read(item)
     return found
 ''',
+    "_every_key": '''
+
+def _every_key(reader, value):
+    """A map of nested objects, every key kept and ``None`` where no object is."""
+    if not isinstance(value, Mapping):
+        return None
+    found = {}
+    for key, item in value.items():
+        found[key] = reader.read(item) if isinstance(item, Mapping) else None
+    return found
+''',
 }
 
 _READERS_NEST = (
@@ -546,6 +565,18 @@ _READERS_NEST = (
     "A name that holds another declared object is read through that object's reader:\n"
     "one as that reader, a list of them as a tuple and a map of them as a dict. What\n"
     "is there and is not an object is left out, and is still in ``raw``.\n"
+)
+
+_READERS_SINGLE = (
+    "\n"
+    "A list the model says may be sent as one value alone reads that value as a\n"
+    "list of one, so whoever reads it never asks which of the two it was sent as.\n"
+)
+
+_READERS_EVERY_KEY = (
+    "\n"
+    "A map the model says keeps every key has an entry for each key it was sent\n"
+    "with: what is under one and is not an object reads as ``None``.\n"
 )
 
 _READERS_COERCE = (
@@ -571,6 +602,8 @@ def _annotation(member) -> str:
         return "object"
     if member.shape == "many":
         return f"tuple[{inner}, ...] | None"
+    if member.shape == "keyed" and member.every_key:
+        return f"dict[str, {inner} | None] | None"
     if member.shape == "keyed":
         return f"dict[str, {inner}] | None"
     return f"{inner} | None"
@@ -580,9 +613,10 @@ def _reading(member, form: str) -> tuple:
     """How one name is read out of ``raw``: the function called, and what it is given."""
     get = f"raw.get({_string(member.name)})"
     if member.reader:
-        return _NESTED[member.shape], (member.reader, get)
+        function = "_every_key" if member.every_key else _NESTED[member.shape]
+        return function, (member.reader, get)
     if member.scalar and member.shape == "many":
-        return "_items", (get,)
+        return "_listed" if member.single else "_items", (get,)
     if form == "xml-attributes" and member.shape == "one":
         if member.scalar == "bool":
             return "_flag", (get,)
@@ -661,6 +695,10 @@ class Readers:
         more = ""
         if any(one.reader for one in members):
             more += _READERS_NEST
+        if "_listed" in used:
+            more += _READERS_SINGLE
+        if "_every_key" in used:
+            more += _READERS_EVERY_KEY
         if used & {"_coerce", "_flag"}:
             more += _READERS_COERCE
         if any(one.attribute != one.name for one in members):

@@ -469,6 +469,48 @@ _ANOTHER_ROOM = (
             "example::hub::Hub: 'time-zone' and 'time_zone' would both be read into an "
             "attribute named time_zone",
         ),
+        (
+            ("value: { single: true }", "value: { single: true, sole: true }"),
+            None,
+            "example::hub::Device.aliases: a field's `wire` bag says ['sole'], and may say",
+        ),
+        (
+            ("value: { single: true }", "value: { single: 1 }"),
+            None,
+            "example::hub::Device.aliases: `wire.single` is said with `true`, or not at all",
+        ),
+        (
+            ("value: { single: true }", "value: {}"),
+            None,
+            "example::hub::Device.aliases: a field's `wire` bag says one or more of",
+        ),
+        (
+            (
+                '{ name: history, objectRef: "example::hub::Reading", isArray: true }',
+                '{ name: history, objectRef: "example::hub::Reading", isArray: true, '
+                "children: [ { attr.properties: { name: wire, value: { single: true } } } ] }",
+            ),
+            None,
+            "example::hub::Device.history: `wire.single` is for a list of plain values",
+        ),
+        (
+            (
+                "{ name: unit }",
+                "{ name: unit, children: [ "
+                "{ attr.properties: { name: wire, value: { single: true } } } ] }",
+            ),
+            None,
+            "example::hub::Reading.unit: `wire.single` is for a list of plain values",
+        ),
+        (
+            (
+                "{ name: counts, valueType: int }",
+                "{ name: counts, valueType: int, children: [ "
+                "{ attr.properties: { name: wire, value: { every_key: true } } } ] }",
+            ),
+            None,
+            "example::hub::Hub.counts: `wire.every_key` is for a map of objects",
+        ),
     ],
 )
 def test_a_model_no_class_can_be_written_for_is_refused_by_the_reader_generator_alone(
@@ -487,4 +529,96 @@ def test_a_model_no_class_can_be_written_for_is_refused_by_the_reader_generator_
     assert not (tmp_path / "generated" / "package" / "readers.py").exists()
     _edit(tmp_path / _CONFIG, _READERS, "")
     result = _run(tmp_path, "gen")
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+#: What a JSON answer of each of four objects carries, declared once more as one object:
+#: the names a client reads before it knows which of the four it has.
+_SHARED = (
+    "metadata:\n"
+    "  package: example::any\n"
+    "  children:\n"
+    "    - object.value:\n"
+    "        name: Answer\n"
+    "        children:\n"
+    "          - attr.properties:\n"
+    "              name: wire\n"
+    "              value:\n"
+    "                key: answer\n"
+    "                element: answer\n"
+    "                format: json\n"
+    "                capture: [room.list, device.list, device.detail, hub.status]\n"
+    "          - field.string: { name: name, required: true }\n"
+    "          - field.string: { name: room_id }\n"
+)
+
+
+def test_an_object_may_declare_what_the_answers_of_several_others_carry(tmp_path):
+    """The route to a reader for an answer that is one of several objects until a name in
+    it is read: one more object, captured by all of their answers, read first."""
+    _copy(tmp_path, "json_project", *SOURCES)
+    (tmp_path / "metaobjects" / "meta.any.yaml").write_text(_SHARED, encoding="utf-8")
+    result = _run(tmp_path, "gen")
+    assert result.returncode == 0, result.stdout + result.stderr
+    result = _python(tmp_path, "generated/tests/capture_contract.py")
+    assert result.returncode == 0, result.stdout + result.stderr
+    readers = _readers(tmp_path)
+    room = {"room_id": "r1", "name": "Example Room"}
+    hub = {"name": "Example Hub", "devices": {}}
+    first = readers.Answer.read(room)
+    assert (first.name, first.room_id) == ("Example Room", "r1")
+    assert readers.Answer.read(hub).room_id is None and not readers.Answer.read(hub).sent("room_id")
+    # Having read it, the client knows which reader the same answer is for.
+    chosen = readers.Room if first.sent("room_id") else readers.Hub
+    assert chosen.read(room).room_id == "r1"
+    # A name it declares that none of the answers carries fails as any other would.
+    _edit(
+        tmp_path / "metaobjects" / "meta.any.yaml",
+        "          - field.string: { name: room_id }\n",
+        "          - field.string: { name: room_id }\n          - field.string: { name: type }\n",
+    )
+    assert _run(tmp_path, "gen").returncode == 0
+    result = _python(tmp_path, "generated/tests/capture_contract.py")
+    assert result.returncode == 1, result.stdout + result.stderr
+    assert "FAIL example::any::Answer: ['type'] is in no captured answer" in result.stdout
+
+
+#: This repository's own model, of what Home Assistant publishes at GET /api/services:
+#: what a regeneration reads, beside the requirements ledger it must leave unread, and
+#: what it writes.
+OWN_SOURCES = (
+    "metaobjects.config.yaml",
+    "models",
+    "metaobjects",
+    ".metaobjects/config.json",
+    "tests/fixtures/homeassistant",
+)
+OWN_OUTPUT = ("src/axi_toolkit/ha/model", "tests/hamodel")
+
+
+def _own(into: Path, *names: str) -> Path:
+    for name in names:
+        source, target = ROOT / name, into / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        if source.is_dir():
+            shutil.copytree(source, target, ignore=shutil.ignore_patterns("__pycache__"))
+        else:
+            shutil.copy2(source, target)
+    return into
+
+
+def test_the_packages_own_model_regenerates_to_the_committed_files(tmp_path):
+    _own(tmp_path, *OWN_SOURCES)
+    result = _run(tmp_path, "gen")
+    assert result.returncode == 0, result.stdout + result.stderr
+    for output in OWN_OUTPUT:
+        assert _tree(tmp_path / output) == _tree(ROOT / output)
+    assert _tree(tmp_path / ".metaobjects" / ".gen-state") == _tree(
+        ROOT / ".metaobjects" / ".gen-state"
+    )
+
+
+def test_the_packages_own_generated_files_verify_clean(tmp_path):
+    _own(tmp_path, *OWN_SOURCES, *OWN_OUTPUT, ".metaobjects/.gen-state")
+    result = _run(tmp_path, "verify", "--codegen")
     assert result.returncode == 0, result.stdout + result.stderr

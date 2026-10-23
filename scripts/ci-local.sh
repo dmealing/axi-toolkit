@@ -119,7 +119,8 @@ done
 # Build .venv when it lacks what a section imports. `test` and `lint` need only
 # .[dev], which keeps a 3.9 venv usable; `requirements` needs .[dev,reqgen].
 ensure_venv() {
-  if ! .venv/bin/python -c "import $1" >/dev/null 2>&1; then
+  # -I: from the root, the metaobjects/ ledger directory imports as an empty namespace package.
+  if ! .venv/bin/python -I -c "import $1" >/dev/null 2>&1; then
     scripts/dev-setup.sh --reqgen
   fi
 }
