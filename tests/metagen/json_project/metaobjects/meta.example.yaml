@@ -7,7 +7,8 @@
 # of them, a map of them and a map of plain values, an open bag, a list of plain values, a
 # name Python keeps for itself and one it cannot spell, two long enough that the line
 # reading them has to be broken, and one object that answers in XML attributes among the
-# ones that answer in JSON.
+# ones that answer in JSON. Two fields say how they are read in a `wire` bag of their own:
+# a list the server may send as one value alone, and a map whose every key counts.
 metadata:
   package: example::hub
   children:
@@ -36,6 +37,11 @@ metadata:
           - field.string: { name: name }
           - field.string: { name: room_id }
           - field.string: { name: labels, isArray: true }
+          - field.string:
+              name: aliases
+              isArray: true
+              children:
+                - attr.properties: { name: wire, value: { single: true } }
           - field.string: { name: class }
           - field.boolean: { name: online }
           - field.string: { name: settings, dbColumnType: jsonb, description: Whatever the device keeps there. }
@@ -60,6 +66,11 @@ metadata:
               value: { key: hub, element: Hub, format: json, capture: [hub.status] }
           - field.string: { name: name, required: true }
           - field.map: { name: devices, objectRef: "example::hub::Device" }
+          - field.map:
+              name: rooms
+              objectRef: "example::hub::Room"
+              children:
+                - attr.properties: { name: wire, value: { every_key: true } }
           - field.map: { name: counts, valueType: int }
           - field.string: { name: "time-zone" }
           - field.string: { name: address_the_hub_was_last_reached_at }

@@ -31,6 +31,7 @@ ATTRIBUTES = {
         "name",
         "room_id",
         "labels",
+        "aliases",
         "class",
         "online",
         "settings",
@@ -45,6 +46,7 @@ ATTRIBUTES = {
     "hub": (
         "name",
         "devices",
+        "rooms",
         "counts",
         "time-zone",
         "address_the_hub_was_last_reached_at",

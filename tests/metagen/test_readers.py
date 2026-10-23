@@ -90,6 +90,7 @@ def _device(device_id: str = "d1", **changed) -> dict:
         "name": "Example Sensor",
         "room_id": "r1",
         "labels": ["upstairs", "example"],
+        "aliases": ["Example Alias"],
         "class": "sensor",
         "online": True,
         "settings": {"interval": 30, "limits": {"low": [1, 2]}},
@@ -105,6 +106,7 @@ def _hub(**changed) -> dict:
     carried = {
         "name": "Example Hub",
         "devices": {"slot-1": _device("d1"), "slot-2": _device("d2")},
+        "rooms": {"r1": _room()},
         "counts": {"online": 2, "offline": 0},
         "time-zone": "Example/Zone",
         ADDRESS: "hub.example.com",
@@ -214,6 +216,36 @@ def test_a_map_of_nested_objects_is_a_dict_of_readers_under_the_servers_own_keys
     assert hub.devices["slot-1"].raw is answer["devices"]["slot-1"]
     # A map of plain values has no reader to go through, and is the server's own.
     assert hub.counts is answer["counts"]
+
+
+def test_a_list_declared_single_reads_one_value_sent_alone_as_a_list_of_one():
+    readers = _load("json_project")
+    assert readers.Device.read(_device(aliases=["one", "two"])).aliases == ("one", "two")
+    alone = readers.Device.read(_device(aliases="one"))
+    assert alone.aliases == ("one",)
+    assert alone.raw["aliases"] == "one"
+    assert readers.Device.read(_device(aliases=[])).aliases == ()
+    # Null is no value, alone or otherwise, and is still told from a name not sent.
+    null = readers.Device.read(_device(aliases=None))
+    assert null.aliases is None and null.sent("aliases")
+    assert readers.Device.read(_without(_device(), "aliases")).aliases is None
+    # A list that says nothing of it reads the same value alone as no list at all.
+    assert readers.Device.read(_device(labels="upstairs")).labels is None
+
+
+def test_a_map_declared_every_key_keeps_each_key_and_reads_what_is_no_object_as_none():
+    readers = _load("json_project")
+    answer = _hub(rooms={"r1": _room(), "r2": None, "r3": "gone"})
+    hub = readers.Hub.read(answer)
+    assert list(hub.rooms) == ["r1", "r2", "r3"]
+    assert type(hub.rooms["r1"]) is readers.Room
+    assert hub.rooms["r1"].raw is answer["rooms"]["r1"]
+    assert (hub.rooms["r2"], hub.rooms["r3"]) == (None, None)
+    assert readers.Hub.read(_hub(rooms={})).rooms == {}
+    assert readers.Hub.read(_hub(rooms=[_room()])).rooms is None
+    # A map that says nothing of it leaves the same two keys out.
+    plain = readers.Hub.read(_hub(devices={"slot-1": _device(), "slot-2": None}))
+    assert list(plain.devices) == ["slot-1"]
 
 
 def test_a_name_too_long_for_one_line_is_read_like_any_other():
@@ -354,7 +386,7 @@ def test_a_reader_reads_every_name_the_builders_build_and_no_other(project):
 @both
 def test_a_module_carries_only_the_helpers_its_own_classes_call(project):
     names = set(vars(_load(project)))
-    nested = {"_one", "_many", "_keyed", "_items", "_flag"}
+    nested = {"_one", "_many", "_keyed", "_every_key", "_items", "_listed", "_flag"}
     assert {"_answer", "_coerce"} <= names
     assert (nested <= names) if project == "json_project" else not (nested & names)
 

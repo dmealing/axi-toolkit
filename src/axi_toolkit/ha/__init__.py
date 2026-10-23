@@ -5,4 +5,8 @@
 decides whether the read is worth paying for, and this package still declares no
 runtime dependency -- the ``ha`` extra exists to say where the tier lives, not to
 install a transport.
+
+:mod:`axi_toolkit.ha.model.readers` is what it reads that model through: one reader per
+object of it, generated from the declaration under ``models/`` and standard-library
+Python like everything else here.
 """

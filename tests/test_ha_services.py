@@ -9,6 +9,12 @@ copy and imports this module, so there is one copy, the gate has been retired, a
 **this file is what states the module's behaviour now** -- which is the right instrument
 once the duplication is gone. AGENTS.md, "Retired gates", carries the reasoning.
 
+The module has since stopped reading the model by key: it reads it through the readers
+generated from ``models/meta.homeassistant.services.yaml``, and hands back a domain, a
+service and a field as their readers. The cases written against the published shape
+still pass that shape in, which every function still takes; what changed is what comes
+back, and the last two sections state that, and the two things the change had to keep.
+
 **What came across, and what could not.** The tool's ``tests/test_service_model.py`` is
 648 lines, and forty-five of them address this module. The rest drive ``service call``
 and ``service get`` end to end against a REST double: they are tests of the command
@@ -26,7 +32,19 @@ directly, against a model in the shape ``GET /api/services`` returns.
 
 from __future__ import annotations
 
+import ast
+from pathlib import Path
+
+import pytest
+
 from axi_toolkit.ha import services
+from axi_toolkit.ha.model.readers import (
+    Service,
+    ServiceDomain,
+    ServiceField,
+    ServiceTarget,
+    ServiceTargetEntity,
+)
 
 #: The published model, in the shape ``GET /api/services`` returns it: a list of
 #: ``{"domain": ..., "services": {...}}`` entries. Deliberately uneven, because a real
@@ -143,8 +161,9 @@ def test_a_model_that_is_not_the_published_shape_reads_as_empty_rather_than_rais
 
 def test_one_domains_entry_is_returned_whole_and_a_missing_one_is_none():
     entry = services.find_domain(MODEL, "switch")
-    assert entry is not None
-    assert sorted(entry["services"]) == ["toggle"]
+    assert type(entry) is ServiceDomain
+    assert entry.raw is MODEL[1]
+    assert sorted(entry.services) == ["toggle"]
     assert services.find_domain(MODEL, "lightt") is None
 
 
@@ -162,8 +181,9 @@ def test_a_domain_whose_services_key_is_not_a_mapping_has_no_services():
 
 def test_one_service_description_is_returned_and_an_unregistered_one_is_none():
     spec = services.find_service(MODEL, "light", "turn_on")
-    assert spec is not None
-    assert spec["name"] == "Turn on"
+    assert type(spec) is Service
+    assert spec.name == "Turn on"
+    assert spec.raw is MODEL[0]["services"]["turn_on"]
     assert services.find_service(MODEL, "light", "turn_onn") is None
     assert services.find_service(MODEL, "lightt", "turn_on") is None
 
@@ -217,8 +237,8 @@ def test_a_section_is_flattened_and_named_as_the_section_it_came_from():
     """
     spec = services.find_service(MODEL, "light", "turn_on")
     assert services.fields(spec) == [
-        ("brightness", {"selector": {"number": {"min": 0, "max": 255}}}, ""),
-        ("profile", {"selector": {"text": None}}, "advanced_fields"),
+        ("brightness", ServiceField.read({"selector": {"number": {"min": 0, "max": 255}}}), ""),
+        ("profile", ServiceField.read({"selector": {"text": None}}), "advanced_fields"),
     ]
     assert services.field_names(spec) == ["brightness", "profile"]
 
@@ -232,8 +252,11 @@ def test_a_service_that_declares_no_fields_declares_none():
 
 def test_a_field_that_is_not_a_mapping_is_kept_as_a_field_with_nothing_declared():
     """Dropping it would hide a name the service does accept."""
-    assert services.fields({"fields": {"delay": None}}) == [("delay", {}, "")]
-    assert services.fields({"fields": {"g": {"fields": {"inner": None}}}}) == [("inner", {}, "g")]
+    assert services.fields({"fields": {"delay": None}}) == [("delay", ServiceField(), "")]
+    assert services.fields({"fields": {"delay": "text"}}) == [("delay", ServiceField(), "")]
+    assert services.fields({"fields": {"g": {"fields": {"inner": None}}}}) == [
+        ("inner", ServiceField(), "g")
+    ]
 
 
 def test_only_the_fields_marked_required_are_required():
@@ -395,3 +418,127 @@ def test_a_state_that_reports_no_capability_bits_reports_none_rather_than_failin
     assert services.entity_features({"attributes": {"supported_features": None}}) == 0
     assert services.entity_features({"attributes": {"supported_features": True}}) == 0
     assert services.entity_features({"attributes": {"supported_features": "44"}}) == 0
+
+
+# ------------------------------------------------------------- what comes back
+
+
+def test_a_domain_a_service_and_a_field_come_back_as_their_readers():
+    spec = services.find_service(MODEL, "climate", "set_temperature")
+    by_name = {name: field for name, field, _ in services.fields(spec)}
+    assert type(by_name["temperature"]) is ServiceField
+    assert by_name["temperature"].required is True
+    assert (
+        by_name["temperature"].raw
+        is MODEL[2]["services"]["set_temperature"]["fields"]["temperature"]
+    )
+
+
+@pytest.mark.parametrize(
+    "ask",
+    [
+        services.field_names,
+        services.required_field_names,
+        services.response_mode,
+        services.takes_target,
+        services.describes_target,
+        services.target_domains,
+        lambda spec: services.feature_masks(spec, "climate"),
+    ],
+)
+def test_a_service_is_answered_the_same_whether_read_or_as_it_was_parsed(ask):
+    for domain in services.domains(MODEL):
+        for name in services.service_names(MODEL, domain):
+            spec = services.find_service(MODEL, domain, name)
+            assert ask(spec) == ask(spec.raw), f"{domain}.{name}"
+
+
+@pytest.mark.parametrize("ask", [services.selector_kind, services.selector_options])
+def test_a_field_is_answered_the_same_whether_read_or_as_it_was_parsed(ask):
+    spec = services.find_service(MODEL, "climate", "set_temperature")
+    for _, field, _ in services.fields(spec):
+        assert ask(field) == ask(field.raw)
+    assert ask(None) == ask({}) == ask(ServiceField())
+
+
+def test_what_is_neither_a_reader_nor_a_mapping_reads_as_declaring_nothing():
+    assert services.fields("not a service") == []
+    assert services.response_mode(["not", "a", "service"]) == services.RESPONSE_NONE
+    assert services.selector_kind("not a field") == ""
+
+
+# --------------------------------------------- what reading through readers kept
+
+
+def test_a_service_published_with_no_description_is_still_listed():
+    """`service list --domain` prints a row for it: it is registered, and a reader of a
+    map of objects that left out what is not one would hide it."""
+    model = [{"domain": "script", "services": {"reload": None, "turn_on": {"fields": {}}}}]
+    assert services.service_names(model, "script") == ["reload", "turn_on"]
+    assert services.find_domain(model, "script").services["reload"] is None
+    assert services.find_service(model, "script", "reload") is None
+    # Every question a row asks of it is answered as for a service that declares nothing.
+    assert services.field_names(None) == []
+    assert services.required_field_names(None) == []
+    assert services.response_mode(None) == services.RESPONSE_NONE
+    assert services.takes_target(None) is False
+    assert services.describes_target(None) is False
+    assert services.target_domains(None) == []
+    assert services.feature_masks(None, "script") == []
+
+
+@pytest.mark.parametrize(
+    ("target", "takes", "describes"),
+    [
+        (None, False, False),
+        ({}, True, False),
+        ({"entity": [{}]}, True, True),
+        ({"entity": [{"domain": ["light"]}]}, True, True),
+        ({"device": [{}]}, True, True),
+    ],
+)
+def test_an_empty_target_is_a_target_that_describes_nothing(target, takes, describes):
+    """A reader of the target is there, and true, whether it is empty or not: whether
+    the target says anything is a question of what was sent, not of the reader."""
+    for spec in ({"target": target}, Service.read({"target": target})):
+        assert services.takes_target(spec) is takes
+        assert services.describes_target(spec) is describes
+    assert services.takes_target({}) is False and services.describes_target({}) is False
+    if target is not None:
+        assert type(Service.read({"target": target}).target) is ServiceTarget
+
+
+def test_an_entity_filter_reads_one_domain_sent_alone_as_a_list_of_one():
+    """The shipped reader, not only the functions over it: a name declared a list that
+    the server may send as one string reads the same either way."""
+    assert ServiceTargetEntity.read({"domain": "light"}).domain == ("light",)
+    assert ServiceTargetEntity.read({"domain": ["light", "switch"]}).domain == ("light", "switch")
+    assert ServiceTargetEntity.read({"domain": None}).domain is None
+    assert ServiceTargetEntity.read({}).domain is None
+    one = {"target": {"entity": [{"domain": "light", "supported_features": [4]}]}}
+    listed = {"target": {"entity": [{"domain": ["light"], "supported_features": [4]}]}}
+    assert services.target_domains(one) == services.target_domains(listed) == ["light"]
+    assert services.feature_masks(one, "light") == services.feature_masks(listed, "light") == [4]
+
+
+#: What the module still reads by key, and why each may be: an option written as a label
+#: and a value, which no capture has shown, and a state, which is not the service model.
+STILL_BY_KEY = {"value", "attributes", "supported_features"}
+
+
+def test_the_module_reads_the_service_model_through_its_readers_and_never_by_key():
+    source = Path(services.__file__).read_text(encoding="utf-8")
+    read = set()
+    # A name is a string: an index into a tuple of readers is not a read by key.
+    for node in ast.walk(ast.parse(source)):
+        if isinstance(node, ast.Subscript) and isinstance(node.slice, ast.Constant):
+            read.add(node.slice.value)
+        elif (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Attribute)
+            and node.func.attr == "get"
+            and node.args
+            and isinstance(node.args[0], ast.Constant)
+        ):
+            read.add(node.args[0].value)
+    assert {name for name in read if isinstance(name, str)} == STILL_BY_KEY

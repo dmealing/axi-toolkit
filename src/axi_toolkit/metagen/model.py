@@ -32,6 +32,12 @@ SCALARS = {
     "boolean": "bool",
 }
 
+#: What a field's own ``wire`` bag may say. Each is about how a reader reads that one
+#: name, each is said with ``true``, and each is for one kind of field: ``single`` for a
+#: list of plain values the server may send as one value alone, ``every_key`` for a map
+#: of objects whose every key counts, whatever is under it.
+FIELD_WIRE = ("single", "every_key")
+
 #: The names a generated reader module already uses for something else. A class or an
 #: attribute the model would spell the same way is spelled with an underscore after it.
 READER_MODULE_NAMES = ("Mapping", "dataclass", "field")
@@ -88,7 +94,8 @@ class Member:
     ``shape`` is ``one`` value, ``many`` in a list or ``keyed`` in a map. ``reader`` is
     the class of the declared object it holds and ``scalar`` the Python type of a plain
     value; with neither, what the server sent is handed over untouched. ``attribute`` is
-    the name itself wherever Python can carry it.
+    the name itself wherever Python can carry it. ``single`` and ``every_key`` are what
+    the field's own ``wire`` bag says.
     """
 
     name: str
@@ -97,6 +104,8 @@ class Member:
     scalar: str | None
     reader: str | None
     required: bool
+    single: bool
+    every_key: bool
 
 
 @dataclass(frozen=True)
@@ -364,6 +373,26 @@ def _spelled(name: str, taken: tuple) -> str:
     return spelled
 
 
+def _read_as(where: str, wire, shape: str, scalar, reader) -> tuple:
+    """What a field's own ``wire`` bag says of reading it, as ``(single, every_key)``."""
+    if wire is None:
+        return False, False
+    if not isinstance(wire, dict) or not wire:
+        raise ModelError(f"{where}: a field's `wire` bag says one or more of {FIELD_WIRE}")
+    unknown = sorted(set(wire) - set(FIELD_WIRE))
+    if unknown:
+        raise ModelError(f"{where}: a field's `wire` bag says {unknown}, and may say {FIELD_WIRE}")
+    for name, value in wire.items():
+        if value is not True:
+            raise ModelError(f"{where}: `wire.{name}` is said with `true`, or not at all")
+    single, every_key = "single" in wire, "every_key" in wire
+    if single and not (shape == "many" and scalar and not reader):
+        raise ModelError(f"{where}: `wire.single` is for a list of plain values, which this is not")
+    if every_key and not (shape == "keyed" and reader):
+        raise ModelError(f"{where}: `wire.every_key` is for a map of objects, which this is not")
+    return single, every_key
+
+
 def _member(owner: str, field, classes: dict, sources: dict) -> Member:
     """One field as a reader reads it, refusing a reference to an object nothing reads."""
     kind, attrs = getattr(field, "sub_type", ""), field.attrs()
@@ -383,6 +412,8 @@ def _member(owner: str, field, classes: dict, sources: dict) -> Member:
         else:
             where = f"{owner}.{field.name}: `objectRef`"
             reader = classes[_wire_or_refuse(sources, str(ref), where).fqn]
+    where = f"{owner}.{field.name}"
+    single, every_key = _read_as(where, bag(field, "wire"), shape, scalar, reader)
     return Member(
         name=field.name,
         attribute=_spelled(field.name, READER_CLASS_NAMES),
@@ -390,6 +421,8 @@ def _member(owner: str, field, classes: dict, sources: dict) -> Member:
         scalar=scalar,
         reader=reader,
         required=bool(attrs.get("required")),
+        single=single,
+        every_key=every_key,
     )
 
 
@@ -398,8 +431,9 @@ def readers(root, objects) -> list:
 
     Only the reader generator needs a model to be one a class can be written for, so only
     it calls this, and only there is a model refused for these reasons: two objects that
-    would be one class, two names of an object that would be one attribute, and a nested
-    object that declares no ``wire`` and so has no reader to be read through.
+    would be one class, two names of an object that would be one attribute, a nested
+    object that declares no ``wire`` and so has no reader to be read through, and a
+    field whose own ``wire`` bag says what cannot be said of it.
     """
     sources = {entry.fqn: entry for entry in objects}
     nodes = {fqn(obj): obj for obj in _objects(root)}

@@ -35,8 +35,18 @@ Four generators, and what each one reads:
     never lost. ``None`` is a name not sent or sent as null; ``sent`` tells which.
     An attribute is the server's own name, except one Python cannot have, which takes
     an underscore where it must. A model is refused, by this generator alone, when two
-    objects would be one class, two names of an object one attribute, or a nested
-    object declares no ``wire`` and so has no reader.
+    objects would be one class, two names of an object one attribute, a nested
+    object declares no ``wire`` and so has no reader, or a field's own ``wire`` bag
+    says what cannot be said of that field.
+
+    An answer that is one of several declared objects until a name in it is read --
+    a frame of a protocol whose ``type`` says which it is -- is read through one more
+    object. It declares the names a client reads before it knows which object it has,
+    and names the answers of all of them in ``wire.capture``, so its reader is the one
+    a client reads first and the capture check holds those names to those answers as
+    it holds any object's. A ``read`` that picked a class by the value of one named key
+    would need that value to tell every pair apart, and a protocol in which a refusal
+    and a success share a ``type`` is one where it does not.
 
 What a model may say beyond that, and what is assumed of one that does not:
 
@@ -53,6 +63,14 @@ What a model may say beyond that, and what is assumed of one that does not:
     For a capture that records what a list held as a second name beside the list's
     own, that name's ending. Such a name is not one the server sent, and no check is
     shown it. A capture that names no ending is read as it is written.
+``wire.single``
+    On a field that is a list of plain values: the server may send one value alone in
+    its place, and a reader reads that value as a list of one. Without it, a value that
+    is not a list reads as ``None``.
+``wire.every_key``
+    On a field that is a map of objects: every key the server sends is kept, and what
+    is under one and is not an object reads as ``None``. Without it, such a key is left
+    out, and is only in ``raw``.
 ``derived.also``
     On a column: the names it reads of objects other than its row's own, by object.
     Each is checked against that object, ``READS`` carries it as ``package::Object.name``,
