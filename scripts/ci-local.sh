@@ -93,7 +93,7 @@ root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 cd "$root" || exit 1
 
 SECTIONS=(leakcheck commits lint test requirements metagen drift)
-METAOBJECTS=${METAOBJECTS:-"metaobjects==1.0.13"}
+METAOBJECTS=${METAOBJECTS:-"metaobjects==1.1.0"}
 MATRIX_PYTHONS=${MATRIX_PYTHONS:-"3.9 3.10 3.11 3.12"}
 
 usage() { sed -n '2,/^set -uo/p' "$0" | sed '$d; s/^# \{0,1\}//'; }

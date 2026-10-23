@@ -236,7 +236,7 @@ def test_the_generators_ride_in_a_development_extra_that_declares_the_toolchain(
     section = text.split("[project.optional-dependencies]", 1)[1].split("\n[", 1)[0]
     extra = section.split("\nmetagen = [", 1)[1].split("]", 1)[0]
     assert [line.strip() for line in extra.splitlines() if line.strip()] == [
-        '"metaobjects==1.0.13",'
+        '"metaobjects==1.1.0",'
     ]
     comment = section.split("\nmetagen = [", 1)[0].rsplit("\n\n", 1)[-1]
     assert "3.11" in comment, "the extra must say what Python it needs"
