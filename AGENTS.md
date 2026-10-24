@@ -292,11 +292,10 @@ Consequences worth keeping straight:
   why each existed, why each went, and the two techniques worth reusing. A live gate's
   reach is the reach every capture-backed check has and no more: drift introduced
   **here** goes red on the next `pytest`, drift introduced **there** goes red at the
-  next `reqgen drift`, which the gate runs. **There are no live instances today**, which is why
-  `anExtractedModuleIsGatedAgainstItsOriginUntilTheToolTakesIt` is the ledger's only
-  `planned` entry and names no fact: no module lives in two places, so there is nothing
-  to gate. The next extraction — the Plex probing layer — reopens the window and puts it
-  back to `live` with its new gate named there.
+  next `reqgen drift`, which the gate runs. **There are no live instances today**, and
+  none is planned: no module lives in two places, so there is nothing to gate, and the
+  ledger no longer carries a `planned` entry for it. A future extraction would reopen
+  the window and need a gate of its own, written then.
 - **A gate states what the move left invariant, and a rewrite leaves different things
   invariant than a copy does.** A digest of the source text works only for a module that
   moved verbatim; the Plex move deliberately rewrote every recovery line, so a digest
@@ -406,20 +405,19 @@ still not in the set (`ERR_BAD_ATTR_VALUE`), and `reqgen.DANGLING_OK` is `planne
 The four gates above stay deleted; `retired` is the slot to use if the ledger itself
 should ever carry the "do not re-add" rule, with its statement written as a prohibition.
 
-**Three requirements went; one stayed, at `planned`.** `theHomeAssistantServiceModelIsHere`
+**Three requirements went; one stayed, and has since been retired.** `theHomeAssistantServiceModelIsHere`
 and `thePlexIdAndFilterLanguageFollows` each claimed a module was here as its tool had
 it, which is a claim only that tool's copy could judge — deleted with their facts.
 `theDomainTierFollows` held those two leaves and went with them: both halves it named
 have moved and been adopted, and the sequencing it prescribed — a domain half never
 overtaking the toolkit it depends on — can no longer be violated, because the toolkit is
-here and both tools already run on it. What stayed is
+here and both tools already run on it. What stayed was
 `anExtractedModuleIsGatedAgainstItsOriginUntilTheToolTakesIt`, moved from `live` to
-`planned` with its `implementedBy` removed. That is the one prescription of the four
-that is **not discharged**: it is a conditional whose antecedent is currently false, and
-it becomes true again the day the Plex probing layer moves. `planned` is the honest slot
-for it — `reqgen.bind` refuses a `live` leaf that names no fact, and it is right to,
-because such a requirement reads as coverage that does not exist. It generates no check,
-so it cannot go falsely green.
+`planned` with its `implementedBy` removed, as a conditional whose antecedent would
+become true the day the Plex probing layer moved. That move is withdrawn (see **Why
+`bump-minor-pre-major` is on**), so the antecedent can never become true and the entry
+is now `thePlexProbingLayerStaysInTheTool`, at `retired`: a prohibition, naming no fact
+and generating no check, so it cannot go falsely green.
 
 **What states those modules' behaviour now.** `tests/test_ha_services.py`,
 `tests/test_plex_ids.py` and `tests/test_plex_filters.py` — ordinary suites, which are
@@ -498,8 +496,8 @@ machine happens to have, run against whatever interpreter it was installed for.)
   the tool has *no* direct test of any function in the pure half of `music.py`. Every
   one of them is reached only through a command. So a rating scale, an operator that
   had already been wrong once on every real server, and a date grammar all arrived with
-  no direct coverage; both files above are what they have now. Assume the same for the
-  probing layer when it moves, and budget for writing the suite rather than moving it.
+  no direct coverage; both files above are what they have now. The probing layer
+  is not moving (see **Why `bump-minor-pre-major` is on**), so that budget is not needed.
 - **Those two files are now the whole of what this repository says about
   `axi_toolkit.plex`**, because the three drift gates that also exercised it are retired.
   That was measured before they came out rather than hoped for: the two files alone reach
@@ -652,15 +650,19 @@ whichever one is used.
 ### Why `bump-minor-pre-major` is on
 
 `release-please-config.json` sets `"bump-minor-pre-major": true`. That is deliberate, not
-an oversight to be tidied away. This package is pre-1.0 **on purpose**: the extraction is
-not finished. Step 2 has landed — `servicemodel.py` is here as `axi_toolkit.ha.services`
+an oversight to be tidied away. This package is pre-1.0 **on purpose**: the extraction was
+staged, and the flag stays until a deliberate decision to declare the surface stable.
+Step 2 has landed — `servicemodel.py` is here as `axi_toolkit.ha.services`
 — and so has step 3's first half, the Plex id and filter language as `axi_toolkit.plex`.
 **Both tools have now adopted and deleted their copies**, so the two-adopter data point
-the surface was waiting for exists and every drift gate is retired. What has *not*
-happened is step 3's second half: the probing layer that reads a section's advertised
-fields, plus the `plexapi` exception classification. That remainder changes the public
-surface substantially, so the flag stays on and the version stays in 0.x until it has
-landed and been adopted in its turn.
+the surface was waiting for exists and every drift gate is retired. Step 3's second half
+— the probing layer that reads a section's advertised fields, plus the `plexapi`
+exception classification — is **retired, not pending**: that code stays in `plex-axi`.
+It has one consumer, so moving it removes no duplication; it reaches into private
+PlexAPI internals that would then sit under this package's release cycle; it needs a
+client library, against the pure-stdlib dependency contract; and `plex-axi`'s own notes
+already say it is about that tool's output and must not move. Step 3 is complete, and
+the ledger records the retirement as `thePlexProbingLayerStaysInTheTool`.
 
 Without the flag, release-please applies strict semver, and the rename commit's `feat!:`
 marker alone would have made the very first artifact ever to appear on PyPI a 1.0.0 — a
@@ -671,8 +673,9 @@ version is below 1.0.0, so `feat!:` gives 0.2.0.
 `bump-patch-for-minor-pre-major` is left unset (it defaults to false) so an ordinary
 `feat:` bumps the minor too, which is the conventional 0.x behaviour.
 
-1.0.0 is reached by **removing** this flag once the extraction has landed and the surface
-is one somebody is willing to keep — a deliberate act, which is the whole point.
+1.0.0 is reached by **removing** this flag once the surface is one somebody is willing
+to keep — a deliberate act, which is the whole point. The extraction no longer stands in
+the way.
 
 ### Why the distribution is called `axi-toolkit`
 
