@@ -524,8 +524,8 @@ trusted publisher and the `pypi` environment, with no long-lived token anywhere.
 repository, so `release.yml` runs nowhere: release-please and the upload are both run
 locally, and the upload authenticates with a long-lived PyPI token rather than the
 trusted publisher. An upload made that way carries **no attestations** -- they are minted
-from the workflow's own identity, which a local run does not have -- and every release from 0.4.2
-through 0.8.0 is on PyPI without them. The job is left in place as the path publishing returns
+from the workflow's own identity, which a local run does not have -- and every release since 0.4.2
+is on PyPI without them. The job is left in place as the path publishing returns
 to if Actions is re-enabled; until then, do not describe a release as token-less or as
 attested.
 
