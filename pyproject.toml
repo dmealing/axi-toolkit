@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "axi-toolkit"
-version = "0.8.0"
+version = "0.8.1"
 description = "Python library for building AXI (Agent eXperience Interface) CLIs: a strict TOON encoder, errors that carry recovery as data, secret redaction, and environment-only credentials"
 readme = "README.md"
 license = { text = "MIT" }

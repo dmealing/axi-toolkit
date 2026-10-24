@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.8.1](https://github.com/dmealing/axi-toolkit/compare/v0.8.0...v0.8.1) (2026-10-24)
+
+
+### Bug Fixes
+
+* **plex:** accept only ASCII digits in rating keys, local guids and dates ([#34](https://github.com/dmealing/axi-toolkit/issues/34)) ([10fa96c](https://github.com/dmealing/axi-toolkit/commit/10fa96cef45c055b2dac3e7d5cb6bbac3ba3fc98))
+
+
+### Documentation
+
+* add search terms to package summary and keywords ([#36](https://github.com/dmealing/axi-toolkit/issues/36)) ([700e7b4](https://github.com/dmealing/axi-toolkit/commit/700e7b4c27ef6e00b809b34fa1e8c4dc2be1665d))
+* retire the Plex probing-layer extraction ([#35](https://github.com/dmealing/axi-toolkit/issues/35)) ([8ecf812](https://github.com/dmealing/axi-toolkit/commit/8ecf8122c29fc515264edbd9cdb96c2a95bc97eb))
+
 ## [0.8.0](https://github.com/dmealing/axi-toolkit/compare/v0.7.1...v0.8.0) (2026-10-24)
 
 
