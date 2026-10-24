@@ -658,3 +658,32 @@ pending**: that code stays in `plex-axi` (one consumer, so moving it removes no
 duplication; it reaches into private PlexAPI internals; it needs a client library,
 against the pure-stdlib dependency contract). The ledger records that as
 `thePlexProbingLayerStaysInTheTool`.
+
+1.0.0 itself is cut by running release-please with `--release-as 1.0.0`, or, per the
+forcing section above, by a commit whose last footer is `Release-As: 1.0.0`; removing the
+flag alone computes a patch bump from a non-breaking commit.
+
+### Why the distribution is called `axi-toolkit`
+
+It was `axi-core` first, and PyPI **rejected** that name. `axl-core` -- with an L -- is
+already registered there at 0.7.0, and PyPI does not compare the name you submit against
+the names that exist. It compares *normalised* forms, and its confusability check folds
+`i`, `l` and `1` together, folds `o` and `0` together, and strips the separators `-`,
+`_` and `.` entirely. `axi-core` and `axl-core` normalise to the same string, so the
+upload was refused after the name looked free in every way anyone had thought to check.
+
+An exact-name lookup does not answer the question. Before proposing any distribution
+name for this project or a sibling, expand it over the whole confusable class and check
+every member: substitute each `i`/`l`/`1` for the others, each `o`/`0` for the other, and
+test the separator-stripped spelling as well. `axi-toolkit` was cleared that way -- all
+216 variants of it were free -- and that is the only reason to believe it will upload.
+
+Two consequences worth keeping straight:
+
+- **The distribution name and the repository name are independent.** They happen to
+  agree today, but a trusted publisher is configured per repository and per project, and
+  it is content with a distribution whose name differs from the repository's. A future
+  rename of one does not compel the other.
+- **The import package follows the distribution, with no alias left behind.** There is
+  no `axi_core` shim: a compatibility alias would let a downstream consumer keep the old
+  spelling, and the old spelling is the one PyPI will not accept.
