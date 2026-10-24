@@ -507,28 +507,20 @@ metadata:
     # AGENTS.md carries the why, for all four.
 
     - requirement.architectural:
-        name: anExtractedModuleIsGatedAgainstItsOriginUntilTheToolTakesIt
-        # PLANNED, and it has been live twice. No module lives in two places today, so
-        # there is nothing to gate and this names no fact -- which is the honest status
-        # rather than a weakened one: a live requirement with no check would read as
-        # coverage, which is the rule `reqgen.bind` enforces. It is kept, where the four
-        # above were deleted, because it is the one prescription here that is not
-        # discharged: the next extraction -- the Plex probing layer -- reopens the
-        # window, and on that day this goes back to `live` with the new gate named here.
-        # DEFERRED is the ruling on that gap: it waits on the Plex probing layer moving.
-        status: planned
-        disposition: deferred
+        name: thePlexProbingLayerStaysInTheTool
+        # RETIRED: this was the one `planned` entry, a conditional gate that was to come
+        # back to `live` when the Plex probing layer moved here. That move is withdrawn,
+        # so the antecedent can no longer become true and the entry is restated as the
+        # prohibition the schema's `retired` status exists for. It names no fact and
+        # carries no `@implementedBy`, which the loader refuses on `retired`. AGENTS.md
+        # carries the why.
+        status: retired
         statement: >-
-          While a module lives here and in the tool it came from, the two copies are
-          compared on every run, by whichever comparison states what the move left
-          invariant: source text where the move was verbatim, and the surface plus the
-          rendered answer where it deliberately restated recovery as data. The day the
-          tool imports this package instead, that comparison goes in the same change:
-          the window it existed for has closed and it has nothing left to read.
+          The Plex probing layer -- the code that reads a library section's advertised
+          fields, filters and sorts -- and the classification of `plexapi`'s own
+          exceptions are not extracted into this package; they stay in the tool.
         counterexample: >-
-          A fix landing in the tool's copy and not in this one, so an extraction meant to
-          end the duplication doubled it instead -- invisible until somebody diffs two
-          checkouts by hand. Or a gate weakened to a comparison the rewrite could pass,
-          which is worse than no gate because it reads as one. Or one left standing after
-          adoption, describing a file that is gone while the committed capture keeps it
-          green.
+          That code moved here anyway. It reaches into private PlexAPI internals, so
+          they would sit under this package's release cycle; it needs a client library
+          the pure-stdlib dependency contract forbids; and the tool is its only
+          consumer, so the move would remove no duplication.
