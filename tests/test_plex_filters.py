@@ -285,7 +285,18 @@ def test_a_period_or_a_date_is_accepted_and_the_sign_is_left_to_plexapi(raw, exp
     assert filters.parse_relative_date(raw, flag="--since") == expected
 
 
-@pytest.mark.parametrize("raw", ["last week", "30x", "2024-1-31", "", "d30"])
+@pytest.mark.parametrize(
+    "raw",
+    [
+        "last week",
+        "30x",
+        "2024-1-31",
+        "",
+        "d30",
+        "\u0663\u0660d",
+        "\u0662\u0660\u0662\u0664-\u0660\u0661-\u0663\u0661",
+    ],
+)
 def test_a_malformed_period_is_refused_before_the_client_library_sees_it(raw):
     """plexapi answers one with a message about its own field key rather than the flag."""
     with pytest.raises(UsageError) as caught:

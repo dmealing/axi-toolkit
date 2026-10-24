@@ -74,6 +74,7 @@ def test_a_content_id_needs_the_machine_identifier():
         "not-a-key",
         "",
         "12a",
+        "\u0661\u0662\u0663",
     ],
 )
 def test_only_a_decimal_rating_key_is_accepted(value):
@@ -237,3 +238,7 @@ def test_no_recovery_writes_the_tool_slot_into_a_command():
     for value in (CATALOGUE_GUID, "local://311", "plex://0f0f0f0f/311", "not-a-key"):
         for item in _raised(value).recovery:
             assert TOOL_SLOT not in item.fragment
+
+
+def test_a_local_guid_with_non_ascii_digits_is_not_form_six():
+    assert ids.stability_note("local://\u0661\u0662\u0663") == ids.STABILITY_NOTE

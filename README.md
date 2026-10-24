@@ -35,6 +35,8 @@ files instead of re-vendoring 179 cases and hoping they stayed in step.
 | `axi_toolkit.ha.services` | Home Assistant's published service model, read: fields and their selectors, the response mode, the capability a target must have. |
 | `axi_toolkit.plex.ids` | The six `plex://` forms in circulation, and which one is safe to hand a media player. Two of the others break a consumer and one raises inside it. |
 | `axi_toolkit.plex.filters` | The music filter language: stars, field scoping, the one inequality real Plex offers for an integer, relative dates and sort directions. |
+| `axi_toolkit.ha.model` | The generated readers `axi_toolkit.ha.services` reads the service model through. Generated from `models/`; not edited by hand. |
+| `axi_toolkit.metagen` | The shared MetaObjects generators (`rows`, `elements` and two more) a tool's own config names at `axi_toolkit.metagen:<generator>`. Development-only: needs the `.[metagen]` extra and Python 3.11+, and the library never imports it. |
 
 What deliberately does **not** exist: an `agent/` package, framework adapters, an MCP
 server, a dual sync/async API, and any client class wrapping an HTTP library. The agent
