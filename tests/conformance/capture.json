@@ -399,6 +399,10 @@
         "expected": "Run `hass-axi area create --name 'Example Room'`"
       },
       {
+        "case": "Run `hass-axi area list --fields area_id,name,floor_id` to see which area is where",
+        "expected": "Run `hass-axi area list --fields area_id,name,floor_id` to see which area is where"
+      },
+      {
         "case": "Run `hass-axi area list` to see each area's id",
         "expected": "Run `hass-axi area list` to see each area's id"
       },
@@ -499,12 +503,24 @@
         "expected": "Run `hass-axi entity update <entity_id> --name \"<name>\" --area <id|name>` to preview a change, and add --write to send it"
       },
       {
+        "case": "Run `hass-axi floor list` to see each floor's id and how many areas it holds",
+        "expected": "Run `hass-axi floor list` to see each floor's id and how many areas it holds"
+      },
+      {
+        "case": "Run `hass-axi floor list` to see each floor's id and name",
+        "expected": "Run `hass-axi floor list` to see each floor's id and name"
+      },
+      {
         "case": "Run `hass-axi history get <entity_id>` for the recorded state timeline",
         "expected": "Run `hass-axi history get <entity_id>` for the recorded state timeline"
       },
       {
         "case": "Run `hass-axi history get <entity_id>` for time spent in each state",
         "expected": "Run `hass-axi history get <entity_id>` for time spent in each state"
+      },
+      {
+        "case": "Run `hass-axi label list` to see each label's id and what carries it",
+        "expected": "Run `hass-axi label list` to see each label's id and what carries it"
       },
       {
         "case": "Run `hass-axi logbook get --entity <entity_id>` for what caused each change",
@@ -537,6 +553,14 @@
       {
         "case": "Run `hass-axi service call <domain>.<service> --target-entity <entity_id>` to preview an action and add --write to send it",
         "expected": "Run `hass-axi service call <domain>.<service> --target-entity <entity_id>` to preview an action and add --write to send it"
+      },
+      {
+        "case": "Run `hass-axi service call <domain>.<service> --target-floor <floor_id>` to preview a call on every entity on a floor",
+        "expected": "Run `hass-axi service call <domain>.<service> --target-floor <floor_id>` to preview a call on every entity on a floor"
+      },
+      {
+        "case": "Run `hass-axi service call <domain>.<service> --target-label <label_id>` to preview a call on everything a label is on",
+        "expected": "Run `hass-axi service call <domain>.<service> --target-label <label_id>` to preview a call on everything a label is on"
       },
       {
         "case": "Run `hass-axi service call light.turn_on --target-entity <entity_id>`",
@@ -681,10 +705,6 @@
       {
         "case": "Run `hass-axi ws <command> --param key=value` to send one",
         "expected": "Run `hass-axi ws <command> --param key=value` to send one"
-      },
-      {
-        "case": "Run `hass-axi ws floor.list` to see each floor's id and name",
-        "expected": "Run `hass-axi ws floor.list` to see each floor's id and name"
       },
       {
         "case": "Run `hass-axi` for this installation at a glance",
@@ -907,6 +927,10 @@
       {
         "case": "A server that allows unauthenticated access on the local network issues tokens like this; `--user` needs a token minted by signing in to plex.tv",
         "expected": "A server that allows unauthenticated access on the local network issues tokens like this; `--user` needs a token minted by signing in to plex.tv"
+      },
+      {
+        "case": "A smart playlist is a saved search, and this tool cannot create one, so a deletion could not be undone from here",
+        "expected": "A smart playlist is a saved search, and this tool cannot create one, so a deletion could not be undone from here"
       },
       {
         "case": "A smart playlist's contents are a saved search that Plex re-runs; its items are a result, not a list, and adding to it is not something the server offers",
@@ -1173,6 +1197,10 @@
         "expected": "Run `plex-axi playlist list` for the audio playlists on this server"
       },
       {
+        "case": "Run `plex-axi playlist list` to confirm",
+        "expected": "Run `plex-axi playlist list` to confirm"
+      },
+      {
         "case": "Run `plex-axi rate --help` or `plex-axi playlist --help` for the writes this tool does offer, each gated and previewable",
         "expected": "Run `plex-axi rate --help` or `plex-axi playlist --help` for the writes this tool does offer, each gated and previewable"
       },
@@ -1183,6 +1211,10 @@
       {
         "case": "Run `plex-axi search --artist '<name>' --track '<title>'` to search field by field",
         "expected": "Run `plex-axi search --artist '<name>' --track '<title>'` to search field by field"
+      },
+      {
+        "case": "Run `plex-axi search --artist '<name>' --type artist` to check the spelling",
+        "expected": "Run `plex-axi search --artist '<name>' --type artist` to check the spelling"
       },
       {
         "case": "Run `plex-axi search --artist '<name>' --type track` to find a track key",
