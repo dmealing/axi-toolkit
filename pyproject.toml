@@ -57,6 +57,9 @@ metagen = [
 [project.urls]
 Homepage = "https://github.com/dmealing/axi-toolkit"
 Source = "https://github.com/dmealing/axi-toolkit"
+Issues = "https://github.com/dmealing/axi-toolkit/issues"
+Changelog = "https://github.com/dmealing/axi-toolkit/blob/main/CHANGELOG.md"
+Documentation = "https://github.com/dmealing/axi-toolkit#readme"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/axi_toolkit"]
