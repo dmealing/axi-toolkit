@@ -74,10 +74,11 @@ __all__ = [
     "validate_rating_key",
 ]
 
-#: A rating key is a decimal integer. Validating the shape before building a URL
+#: A rating key is a decimal integer in ASCII digits (``\d`` would also take
+#: other scripts' digits, which no server resolves). Validating the shape before building a URL
 #: turns the guid/rating-key collision from an uncaught ``ValueError`` deep in a
 #: consumer into a message naming both identifier shapes.
-_RATING_KEY = re.compile(r"^\d+\Z")
+_RATING_KEY = re.compile(r"^[0-9]+\Z")
 
 #: A Plex guid for a music item: a namespace and a 24-character hex id.
 _GUID = re.compile(r"^plex://(artist|album|track)/[0-9a-f]{24}\Z")
@@ -85,7 +86,7 @@ _GUID = re.compile(r"^plex://(artist|album|track)/[0-9a-f]{24}\Z")
 #: Form six. Plex hands this out for an item it never matched to its catalogue,
 #: and it is the rating key with a scheme in front of it -- so it is a guid that
 #: is not durable, which is the one combination the note must not get wrong.
-_LOCAL_GUID = re.compile(r"^local://\d+\Z")
+_LOCAL_GUID = re.compile(r"^local://[0-9]+\Z")
 
 STABILITY_NOTE = (
     "rating_key is local to this server and changes when an item is re-matched or the "
