@@ -132,10 +132,10 @@ def test_a_planned_leaf_may_name_nothing_and_may_dangle():
     """Planned is the one status where the nodes do not exist yet, by definition.
 
     Both spellings of "not yet" are legal and the declaration uses the second one:
-    naming a fact that has not been written, and naming none at all. The gate policy
-    a planned requirement with no `@implementedBy` is the shape for a prescription whose
-    gate is not written yet -- and a `live` requirement with no check would read as
-    coverage, which is the rule the previous test states.
+    naming a fact that has not been written, and naming none at all. A planned
+    requirement with no `@implementedBy` is the shape for a prescription whose gate is
+    not written yet -- and a `live` requirement with no check would read as coverage,
+    which is the rule the previous test states.
     """
     facts = [fact("toonEncodeCaseCount")]
     bind(
