@@ -75,9 +75,9 @@ __all__ = [
 ]
 
 #: A rating key is a decimal integer in ASCII digits (``\d`` would also take
-#: other scripts' digits, which no server resolves). Validating the shape before building a URL
-#: turns the guid/rating-key collision from an uncaught ``ValueError`` deep in a
-#: consumer into a message naming both identifier shapes.
+#: other scripts' digits, which no server resolves). Validating the shape before
+#: building a URL turns the guid/rating-key collision from an uncaught
+#: ``ValueError`` deep in a consumer into a message naming both identifier shapes.
 _RATING_KEY = re.compile(r"^[0-9]+\Z")
 
 #: A Plex guid for a music item: a namespace and a 24-character hex id.
