@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.0](https://github.com/dmealing/axi-toolkit/compare/v0.8.1...v1.0.0) (2026-10-24)
+
+
+### Documentation
+
+* declare stable surface and drop pre-1.0 version rule ([#38](https://github.com/dmealing/axi-toolkit/issues/38)) ([76c09ce](https://github.com/dmealing/axi-toolkit/commit/76c09ce596ef080712423728ef9622990990c79c))
+
 ## [0.8.1](https://github.com/dmealing/axi-toolkit/compare/v0.8.0...v0.8.1) (2026-10-24)
 
 
