@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.8.0](https://github.com/dmealing/axi-toolkit/compare/v0.7.1...v0.8.0) (2026-10-24)
+
+
+### ⚠ BREAKING CHANGES
+
+* **ha:** axi_toolkit.ha.services.find_domain, find_service and fields return generated reader objects instead of the raw mappings. Each reader keeps the mapping it read as `.raw`.
+
+### Features
+
+* **ha:** read published service model through generated readers ([#32](https://github.com/dmealing/axi-toolkit/issues/32)) ([3504400](https://github.com/dmealing/axi-toolkit/commit/35044007e1bf3c86c1188b340a36c0334ed8392e))
+
 ## [0.7.1](https://github.com/dmealing/axi-toolkit/compare/v0.7.0...v0.7.1) (2026-10-23)
 
 
