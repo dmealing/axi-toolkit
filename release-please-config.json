@@ -6,7 +6,6 @@
       "package-name": "axi-toolkit",
       "changelog-path": "CHANGELOG.md",
       "include-component-in-tag": false,
-      "bump-minor-pre-major": true,
       "extra-files": ["src/axi_toolkit/__init__.py"]
     }
   }

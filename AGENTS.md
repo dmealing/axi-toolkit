@@ -414,8 +414,7 @@ overtaking the toolkit it depends on — can no longer be violated, because the 
 here and both tools already run on it. What stayed was
 `anExtractedModuleIsGatedAgainstItsOriginUntilTheToolTakesIt`, moved from `live` to
 `planned` with its `implementedBy` removed, as a conditional whose antecedent would
-become true the day the Plex probing layer moved. That move is withdrawn (see **Why
-`bump-minor-pre-major` is on**), so the antecedent can never become true and the entry
+become true the day the Plex probing layer moved. That move is withdrawn (see **Versioning: semver from 1.0**), so the antecedent can never become true and the entry
 is now `thePlexProbingLayerStaysInTheTool`, at `retired`: a prohibition, naming no fact
 and generating no check, so it cannot go falsely green.
 
@@ -497,7 +496,7 @@ machine happens to have, run against whatever interpreter it was installed for.)
   one of them is reached only through a command. So a rating scale, an operator that
   had already been wrong once on every real server, and a date grammar all arrived with
   no direct coverage; both files above are what they have now. The probing layer
-  is not moving (see **Why `bump-minor-pre-major` is on**), so that budget is not needed.
+  is not moving (see **Versioning: semver from 1.0**), so that budget is not needed.
 - **Those two files are now the whole of what this repository says about
   `axi_toolkit.plex`**, because the three drift gates that also exercised it are retired.
   That was measured before they came out rather than hoped for: the two files alone reach
@@ -625,7 +624,7 @@ were got wrong before this note existed.
 
 **The version is a judgement about the commits being released, not about the forcing
 one.** Read the landed commits: if nothing a consumer imports behaves differently, it is
-a patch, whatever `bump-minor-pre-major` would have done with the types involved.
+a patch, whatever the types involved would have computed.
 `Release-As:` overrides the computed bump entirely -- `buildNewVersion` takes the note's
 text ahead of the versioning strategy -- so the number is asserted and has to be argued
 for in the commit message.
@@ -647,57 +646,15 @@ request body too. The squash message is drawn from the commit message or from th
 depending on a repository setting nobody checks at merge time, and a footer in both is in
 whichever one is used.
 
-### Why `bump-minor-pre-major` is on
+### Versioning: semver from 1.0
 
-`release-please-config.json` sets `"bump-minor-pre-major": true`. That is deliberate, not
-an oversight to be tidied away. This package is pre-1.0 **on purpose**: the extraction was
-staged, and the flag stays until a deliberate decision to declare the surface stable.
-Step 2 has landed — `servicemodel.py` is here as `axi_toolkit.ha.services`
-— and so has step 3's first half, the Plex id and filter language as `axi_toolkit.plex`.
-**Both tools have now adopted and deleted their copies**, so the two-adopter data point
-the surface was waiting for exists and every drift gate is retired. Step 3's second half
-— the probing layer that reads a section's advertised fields, plus the `plexapi`
-exception classification — is **retired, not pending**: that code stays in `plex-axi`.
-It has one consumer, so moving it removes no duplication; it reaches into private
-PlexAPI internals that would then sit under this package's release cycle; it needs a
-client library, against the pure-stdlib dependency contract; and `plex-axi`'s own notes
-already say it is about that tool's output and must not move. Step 3 is complete, and
-the ledger records the retirement as `thePlexProbingLayerStaysInTheTool`.
-
-Without the flag, release-please applies strict semver, and the rename commit's `feat!:`
-marker alone would have made the very first artifact ever to appear on PyPI a 1.0.0 — a
-public statement that the API is stable, published as a side effect of a commit prefix
-rather than as a decision. With it on, a breaking change bumps the **minor** while the
-version is below 1.0.0, so `feat!:` gives 0.2.0.
-
-`bump-patch-for-minor-pre-major` is left unset (it defaults to false) so an ordinary
-`feat:` bumps the minor too, which is the conventional 0.x behaviour.
-
-1.0.0 is reached by **removing** this flag once the surface is one somebody is willing
-to keep — a deliberate act, which is the whole point. The extraction no longer stands in
-the way.
-
-### Why the distribution is called `axi-toolkit`
-
-It was `axi-core` first, and PyPI **rejected** that name. `axl-core` -- with an L -- is
-already registered there at 0.7.0, and PyPI does not compare the name you submit against
-the names that exist. It compares *normalised* forms, and its confusability check folds
-`i`, `l` and `1` together, folds `o` and `0` together, and strips the separators `-`,
-`_` and `.` entirely. `axi-core` and `axl-core` normalise to the same string, so the
-upload was refused after the name looked free in every way anyone had thought to check.
-
-An exact-name lookup does not answer the question. Before proposing any distribution
-name for this project or a sibling, expand it over the whole confusable class and check
-every member: substitute each `i`/`l`/`1` for the others, each `o`/`0` for the other, and
-test the separator-stripped spelling as well. `axi-toolkit` was cleared that way -- all
-216 variants of it were free -- and that is the only reason to believe it will upload.
-
-Two consequences worth keeping straight:
-
-- **The distribution name and the repository name are independent.** They happen to
-  agree today, but a trusted publisher is configured per repository and per project, and
-  it is content with a distribution whose name differs from the repository's. A future
-  rename of one does not compel the other.
-- **The import package follows the distribution, with no alias left behind.** There is
-  no `axi_core` shim: a compatibility alias would let a downstream consumer keep the old
-  spelling, and the old spelling is the one PyPI will not accept.
+`release-please-config.json` no longer sets `bump-minor-pre-major`: the flag was removed
+when the surface was declared stable, so release-please applies strict semantic
+versioning. A breaking change (`feat!:` or a `BREAKING CHANGE:` footer) bumps the
+**major**, a `feat:` the minor, a `fix:` the patch. The package was pre-1.0 on purpose
+while the extraction was staged; that is complete. Both tools adopted and deleted their
+copies, every drift gate is retired, and the Plex probing layer is **retired, not
+pending**: that code stays in `plex-axi` (one consumer, so moving it removes no
+duplication; it reaches into private PlexAPI internals; it needs a client library,
+against the pure-stdlib dependency contract). The ledger records that as
+`thePlexProbingLayerStaysInTheTool`.
