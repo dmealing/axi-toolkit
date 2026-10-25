@@ -1,7 +1,7 @@
 """Project-owned MetaObjects generators: what an upstream API answers, declared once.
 
 The stock ``metaobjects gen`` runs these; ``metaobjects.config.yaml`` names each one as
-``metagen:<symbol>``. They read the loaded model under ``metaobjects/`` and emit Python
+``axi_toolkit.metagen:<generator>``. They read the loaded model under ``metaobjects/`` and emit Python
 that imports the standard library alone and is written in the oldest syntax the
 consuming package supports, so the toolchain's own Python floor never reaches it.
 
