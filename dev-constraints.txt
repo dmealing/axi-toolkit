@@ -1,0 +1,4 @@
+# What this repository itself develops and checks against. The extras in pyproject.toml
+# declare a compatible range for downstream tools; this file is the exact version for
+# our own .venv (scripts/dev-setup.sh, ci.yml) and scripts/ci-local.sh's METAOBJECTS.
+metaobjects==1.1.4

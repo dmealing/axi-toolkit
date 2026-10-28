@@ -117,11 +117,18 @@ while [ $# -gt 0 ]; do
 done
 [ ${#only[@]} -gt 0 ] || only=("${SECTIONS[@]}")
 
+# A .venv built before the pin moved still imports metaobjects, so importable is not enough:
+# for that module the installed version must be the one METAOBJECTS names.
+venv_has_pinned_metaobjects() {
+  [ "$1" = metaobjects ] || return 0
+  [ "metaobjects==$(.venv/bin/python -I -c 'import importlib.metadata as m; print(m.version("metaobjects"))' 2>/dev/null)" = "$METAOBJECTS" ]
+}
+
 # Build .venv when it lacks what a section imports. `test` and `lint` need only
 # .[dev], which keeps a 3.9 venv usable; `requirements` needs .[dev,reqgen].
 ensure_venv() {
   # -I: from the root, the metaobjects/ ledger directory imports as an empty namespace package.
-  if ! .venv/bin/python -I -c "import $1" >/dev/null 2>&1; then
+  if ! .venv/bin/python -I -c "import $1" >/dev/null 2>&1 || ! venv_has_pinned_metaobjects "$1"; then
     scripts/dev-setup.sh --reqgen
   fi
 }

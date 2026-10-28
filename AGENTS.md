@@ -192,7 +192,9 @@ the MetaObjects toolchain, which needs Python 3.11+; the toolkit's own floor sta
 
 The generators live in a subpackage the library never imports (`tests/test_purity.py`
 enforces this), so installing the wheel without the `.[metagen]` extra gives exactly the
-library. The extra requires Python 3.11 and pins `metaobjects==1.1.4`, and an install on
+library. The extra requires Python 3.11 and `metaobjects>=1.1.0,<2` (a range, never an exact pin:
+downstream tools pick their own version; `dev-constraints.txt` holds the 1.1.4 this
+repository checks against), and an install on
 Python 3.9 fails where it is asked for (the pyproject.toml pin) rather than quietly
 installing nothing.
 

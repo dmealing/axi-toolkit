@@ -164,7 +164,7 @@ jobs:
           python-version: "3.12"
       - run: python -m venv --clear .venv
       - run: .venv/bin/python -m pip install --upgrade pip
-      - run: .venv/bin/pip install -e ".[dev,reqgen]"
+      - run: .venv/bin/pip install -c dev-constraints.txt -e ".[dev,reqgen]"
       # Loads the declaration under the sealed-registry discipline and applies
       # the binding rules — an invented attribute, a requirement with no check,
       # a reference that no longer resolves, all fail here.
@@ -205,7 +205,7 @@ jobs:
           python-version: "3.12"
       - run: python -m venv --clear .venv
       - run: .venv/bin/python -m pip install --upgrade pip
-      - run: .venv/bin/pip install -e ".[dev,reqgen]"
+      - run: .venv/bin/pip install -c dev-constraints.txt -e ".[dev,reqgen]"
       - run: scripts/ci-local.sh --only drift
 
   # Nothing watches a workflow that runs on main and overnight, so a failure has

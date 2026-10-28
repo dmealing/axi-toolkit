@@ -121,7 +121,7 @@ if [ -n "$need_create" ]; then
 fi
 
 .venv/bin/python -m pip install --upgrade pip
-.venv/bin/pip install -e ".[$extras]"
+.venv/bin/pip install -c dev-constraints.txt -e ".[$extras]"
 
 echo
 echo "dev-setup: .venv ready — $(.venv/bin/python -V 2>&1), extras: $extras"
