@@ -170,6 +170,18 @@ jobs:
       # a reference that no longer resolves, all fail here.
       - run: scripts/ci-local.sh --only requirements
 
+  # metaobjects verify at the pinned toolchain: generated output, templates and the
+  # requirements ledger. Runs under uvx on 3.12, never in .venv.
+  verify:
+    name: metaobjects verify
+    runs-on: [self-hosted, linux]
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - run: scripts/ci-local.sh --only verify
+
   # The one job that reads something other than this repository: it fetches both
   # source tools at their main and fails when the committed capture is no longer
   # what they say. Nightly is the trigger that matters here, because the change
@@ -193,7 +205,7 @@ jobs:
   # Nothing watches a workflow that runs on main and overnight, so a failure has
   # to come and find someone.
   notify:
-    needs: [leakcheck, commits, lint, test, requirements, drift]
+    needs: [leakcheck, commits, lint, test, requirements, verify, drift]
     if: always() && contains(needs.*.result, 'failure')
     runs-on: [self-hosted, linux]
     timeout-minutes: 5
