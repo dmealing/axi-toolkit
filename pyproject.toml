@@ -40,7 +40,7 @@ dev = [
 # pytest. Its own floor is 3.11, which is why it is not in `dev`: the test matrix
 # runs down to 3.9 and must not need it.
 reqgen = [
-  "metaobjects==1.1.0",
+  "metaobjects==1.1.4",
 ]
 
 # The shared MetaObjects generators in `axi_toolkit.metagen`: what a tool's own
@@ -49,9 +49,9 @@ reqgen = [
 # there), so installing the wheel without this extra gives exactly the library. The
 # toolchain requires Python 3.11 or newer, and the pin makes an install on an older
 # interpreter fail where it is asked for rather than quietly install nothing. The package
-# floor above does not move. 1.1.0 is the version this package is checked against.
+# floor above does not move. 1.1.4 is the version this package is checked against.
 metagen = [
-  "metaobjects==1.1.0",
+  "metaobjects==1.1.4",
 ]
 
 [project.urls]

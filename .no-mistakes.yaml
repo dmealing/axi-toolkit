@@ -22,7 +22,7 @@
 # default branch, so an edit here takes effect only once it is merged to main.
 
 commands:
-  test: "scripts/ci-local.sh --only leakcheck --only commits --only test --only requirements --only drift"
+  test: "scripts/ci-local.sh --only leakcheck --only commits --only test --only requirements --only verify --only drift"
   lint: "scripts/ci-local.sh --only lint"
 
 # Public repository: keep PR bodies short and the run intent out of them.

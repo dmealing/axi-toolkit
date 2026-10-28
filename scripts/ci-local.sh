@@ -15,6 +15,7 @@
 #   lint          ruff check . && ruff format --check .
 #   test          pytest, once, on the interpreter that built .venv
 #   requirements  scripts/reqgen.py list, then scripts/reqgen.py check
+#   verify        metaobjects verify --codegen --templates under the pinned toolchain
 #   metagen       tests/metagen under the MetaObjects toolchain (see below)
 #   drift         fetch both source tools at their main, then scripts/reqgen.py
 #                 check and scripts/reqgen.py drift against them (see below)
@@ -92,8 +93,8 @@ set -uo pipefail
 root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 cd "$root" || exit 1
 
-SECTIONS=(leakcheck commits lint test requirements metagen drift)
-METAOBJECTS=${METAOBJECTS:-"metaobjects==1.1.0"}
+SECTIONS=(leakcheck commits lint test requirements verify metagen drift)
+METAOBJECTS=${METAOBJECTS:-"metaobjects==1.1.4"}
 MATRIX_PYTHONS=${MATRIX_PYTHONS:-"3.9 3.10 3.11 3.12"}
 
 usage() { sed -n '2,/^set -uo/p' "$0" | sed '$d; s/^# \{0,1\}//'; }
@@ -169,6 +170,16 @@ sec_requirements() {
   ensure_venv metaobjects
   .venv/bin/python scripts/reqgen.py list
   .venv/bin/python scripts/reqgen.py check
+}
+
+# `metaobjects verify` with its checks named, because a bare run does not yet run them
+# all: --codegen (the committed generated files are what a regeneration writes) and
+# --templates (template/payload drift; a project with no template.* nodes reports so and
+# passes). The requirements-ledger check is the `requirements` section's reqgen check.
+# --db is not run: the Python port refuses it (exit 2) and this package has no database.
+sec_verify() {
+  command -v uvx >/dev/null 2>&1 || { echo "ci-local: verify needs uv on PATH" >&2; return 1; }
+  PYTHONPATH=src uvx --quiet --python 3.12 --from "$METAOBJECTS" metaobjects verify --codegen --templates
 }
 
 sec_metagen() {
