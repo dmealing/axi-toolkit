@@ -195,7 +195,7 @@ enforces this), so installing the wheel without the `.[metagen]` extra gives exa
 library. The extra requires Python 3.11 and `metaobjects>=1.1.0,<2` (a range, never an exact pin:
 downstream tools pick their own version; `dev-constraints.txt` holds the 1.1.4 this
 repository checks against), and an install on
-Python 3.9 fails where it is asked for (the pyproject.toml pin) rather than quietly
+Python 3.9 fails where it is asked for (the pyproject.toml requirement) rather than quietly
 installing nothing.
 
 `scripts/ci-local.sh --only metagen` runs them under Python 3.12 with the pinned

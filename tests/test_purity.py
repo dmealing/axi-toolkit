@@ -261,17 +261,18 @@ def test_the_development_extras_declare_a_range_not_an_exact_pin(extra):
         assert Version(refused) not in requirement.specifier
 
 
-def test_this_repository_checks_against_the_version_its_constraints_file_holds():
-    """The exact version lives in dev-constraints.txt and ci-local.sh's default, and they agree."""
+def test_this_repository_checks_against_metaobjects_1_1_4():
+    """dev-constraints.txt is the one place the exact development version is held."""
+    from packaging.requirements import Requirement
+
     constraint = (ROOT / "dev-constraints.txt").read_text(encoding="utf-8")
-    pins = [
-        line.strip()
+    [requirement] = [
+        Requirement(line.split("#", 1)[0])
         for line in constraint.splitlines()
-        if line.strip() and not line.startswith("#")
+        if line.split("#", 1)[0].strip()
     ]
-    assert len(pins) == 1 and pins[0].startswith("metaobjects==")
-    script = (ROOT / "scripts" / "ci-local.sh").read_text(encoding="utf-8")
-    assert f'METAOBJECTS=${{METAOBJECTS:-"{pins[0]}"}}' in script
+    assert requirement.name == "metaobjects"
+    assert [(spec.operator, spec.version) for spec in requirement.specifier] == [("==", "1.1.4")]
 
 
 def test_the_package_floor_is_unmoved_by_the_extra():

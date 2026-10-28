@@ -94,7 +94,9 @@ root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 cd "$root" || exit 1
 
 SECTIONS=(leakcheck commits lint test requirements verify metagen drift)
-METAOBJECTS=${METAOBJECTS:-"metaobjects==1.1.4"}
+METAOBJECTS_PIN=$(grep -m1 '^metaobjects==' dev-constraints.txt) ||
+  { echo "ci-local: dev-constraints.txt pins no metaobjects==" >&2; exit 1; }
+METAOBJECTS=${METAOBJECTS:-$METAOBJECTS_PIN}
 MATRIX_PYTHONS=${MATRIX_PYTHONS:-"3.9 3.10 3.11 3.12"}
 
 usage() { sed -n '2,/^set -uo/p' "$0" | sed '$d; s/^# \{0,1\}//'; }
@@ -118,10 +120,11 @@ done
 [ ${#only[@]} -gt 0 ] || only=("${SECTIONS[@]}")
 
 # A .venv built before the pin moved still imports metaobjects, so importable is not enough:
-# for that module the installed version must be the one METAOBJECTS names.
+# for that module the installed version must be the one dev-constraints.txt pins, which is
+# what scripts/dev-setup.sh installs whatever METAOBJECTS is set to.
 venv_has_pinned_metaobjects() {
   [ "$1" = metaobjects ] || return 0
-  [ "metaobjects==$(.venv/bin/python -I -c 'import importlib.metadata as m; print(m.version("metaobjects"))' 2>/dev/null)" = "$METAOBJECTS" ]
+  [ "metaobjects==$(.venv/bin/python -I -c 'import importlib.metadata as m; print(m.version("metaobjects"))' 2>/dev/null)" = "$METAOBJECTS_PIN" ]
 }
 
 # Build .venv when it lacks what a section imports. `test` and `lint` need only
