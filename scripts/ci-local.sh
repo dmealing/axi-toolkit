@@ -174,6 +174,7 @@ sec_requirements() {
 }
 
 # `metaobjects verify` runs the checks explicitly: a bare verify running every check
+# only ships after 1.1.4, so until then each is named by flag (do not simplify to bare).
 # ships after 1.1.4. --codegen is generated-output drift, --templates template drift,
 # and the ledger directory as the positional adds the requirements check, with
 # --require-implementers making a live requirement nothing implements an error. The
