@@ -170,6 +170,24 @@ jobs:
       # a reference that no longer resolves, all fail here.
       - run: scripts/ci-local.sh --only requirements
 
+  # metaobjects verify with its checks named: the committed generated files are what a
+  # regeneration writes, and template/payload drift. uv supplies the pinned toolchain.
+  verify:
+    name: generated files are current
+    runs-on: [self-hosted, linux]
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m venv --clear .venv
+      - run: .venv/bin/python -m pip install --upgrade pip uv
+      - run: echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
+      - run: scripts/ci-local.sh --only verify
+
   # The one job that reads something other than this repository: it fetches both
   # source tools at their main and fails when the committed capture is no longer
   # what they say. Nightly is the trigger that matters here, because the change
@@ -193,7 +211,7 @@ jobs:
   # Nothing watches a workflow that runs on main and overnight, so a failure has
   # to come and find someone.
   notify:
-    needs: [leakcheck, commits, lint, test, requirements, drift]
+    needs: [leakcheck, commits, lint, test, requirements, verify, drift]
     if: always() && contains(needs.*.result, 'failure')
     runs-on: [self-hosted, linux]
     timeout-minutes: 5
