@@ -1049,9 +1049,24 @@ def commits_since(rev_range, root="."):
     from it. Without it a work-in-progress message inside a merged branch would
     be reported as a commit release-please dropped, when release-please was never
     going to look at it -- a guard that cries wolf gets switched off.
+
+    ``--no-merges`` for the same reason: a merge of main into a feature branch
+    carries git's own ``Merge ...`` subject, which commitlint ignores by default
+    and which release-please never reads, so it must not fail the audit. Squash
+    commits, the ones release-please does read, have one parent and stay checked.
     """
     result = subprocess.run(
-        ["git", "-C", str(root), "log", "--first-parent", "-z", "--format=%H%n%B", rev_range],
+        [
+            "git",
+            "-C",
+            str(root),
+            "log",
+            "--first-parent",
+            "--no-merges",
+            "-z",
+            "--format=%H%n%B",
+            rev_range,
+        ],
         capture_output=True,
         text=True,
         check=True,

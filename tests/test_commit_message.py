@@ -479,6 +479,46 @@ def _unclosed_body_that_parses():
     )
 
 
+def _merge_main_into_a_branch(root):
+    """Branch off, advance both sides, then merge main into the branch with git's own subject."""
+
+    def run(*args):
+        subprocess.run(["git", "-C", str(root), *args], check=True, capture_output=True, text=True)
+
+    run("checkout", "-q", "-b", "feature")
+    run("commit", "-q", "--allow-empty", "-m", "fix: work on the branch")
+    run("checkout", "-q", "main")
+    run("commit", "-q", "--allow-empty", "-m", "fix: work landed on main")
+    run("checkout", "-q", "feature")
+    run(
+        "merge",
+        "-q",
+        "--no-ff",
+        "-m",
+        "Merge remote-tracking branch 'origin/main' into feature",
+        "main",
+    )
+
+
+def test_the_audit_ignores_a_merge_of_main_into_a_branch(tmp_path, capsys):
+    """git's own ``Merge ...`` subject is not conventional and release-please never reads it."""
+    root = _repo(tmp_path, [])
+    _merge_main_into_a_branch(root)
+    assert commitcheck.audit_range("v1.0.0..HEAD", engine="python", root=root) == 0
+    assert "Merge remote-tracking" not in capsys.readouterr().out
+
+
+def test_the_audit_still_faults_a_non_merge_commit_beside_a_merge(tmp_path):
+    root = _repo(tmp_path, [])
+    _merge_main_into_a_branch(root)
+    subprocess.run(
+        ["git", "-C", str(root), "commit", "-q", "--allow-empty", "-m", "not conventional"],
+        check=True,
+        capture_output=True,
+    )
+    assert commitcheck.audit_range("v1.0.0..HEAD", engine="python", root=root) == 1
+
+
 def test_the_audit_fails_on_a_perfect_message_whose_body_replaces_it(tmp_path, capsys, monkeypatch):
     """Every commit message in the range is impeccable, and the audit must still fail.
 
