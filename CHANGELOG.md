@@ -3,6 +3,12 @@
 ## [1.0.1](https://github.com/dmealing/axi-toolkit/compare/v1.0.0...v1.0.1) (2026-10-29)
 
 
+### Build System
+
+* pin MetaObjects 1.1.4 and run `metaobjects verify` in the build ([#41](https://github.com/dmealing/axi-toolkit/issues/41)) ([9b28094](https://github.com/dmealing/axi-toolkit/commit/9b28094))
+* run `metaobjects verify` in CI and loosen the development extras from an exact MetaObjects pin to `metaobjects>=1.1.0,<2` ([#42](https://github.com/dmealing/axi-toolkit/issues/42)) ([7a422ee](https://github.com/dmealing/axi-toolkit/commit/7a422ee))
+
+
 ### Documentation
 
 * **metagen:** name generators as axi_toolkit.metagen:&lt;generator&gt; in module docstring ([#40](https://github.com/dmealing/axi-toolkit/issues/40)) ([020ac6c](https://github.com/dmealing/axi-toolkit/commit/020ac6cdf44835bd7524f4f85838359c39216fe5))
