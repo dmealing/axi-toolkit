@@ -199,7 +199,7 @@ Python 3.9 fails where it is asked for (the pyproject.toml requirement) rather t
 installing nothing.
 
 `scripts/ci-local.sh --only metagen` runs them under Python 3.12 with the pinned
-toolchain via `uvx --python 3.12 --from "metaobjects==1.1.4"`, never in `.venv`. A skip
+toolchain via `uvx --python 3.12 --from "$METAOBJECTS"` (the `dev-constraints.txt` pin), never in `.venv`. A skip
 there is not a pass, so running them explicitly is how you learn whether the toolchain is
 absent; `tests/metagen` skips individually where needed. `scripts/ci-local.sh --only verify`
 runs `metaobjects verify --codegen --templates` (also in the gate's test command); `--db`
