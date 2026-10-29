@@ -38,20 +38,23 @@ dev = [
 # the generator that reads it. Build-time only -- nothing under `src/axi_toolkit`
 # imports it, and the generated checks it emits are committed and run under plain
 # pytest. Its own floor is 3.11, which is why it is not in `dev`: the test matrix
-# runs down to 3.9 and must not need it.
+# runs down to 3.9 and must not need it. A range, not a pin: a downstream tool picks its
+# own MetaObjects within it. This repository's own checks run against the exact version
+# in dev-constraints.txt.
 reqgen = [
-  "metaobjects==1.1.4",
+  "metaobjects>=1.1.0,<2",
 ]
 
 # The shared MetaObjects generators in `axi_toolkit.metagen`: what a tool's own
 # `metaobjects.config.yaml` names as `axi_toolkit.metagen:<generator>`. Development time
 # only -- nothing in the library imports that subpackage (tests/test_purity.py holds it
 # there), so installing the wheel without this extra gives exactly the library. The
-# toolchain requires Python 3.11 or newer, and the pin makes an install on an older
+# toolchain requires Python 3.11 or newer, and the requirement makes an install on an older
 # interpreter fail where it is asked for rather than quietly install nothing. The package
-# floor above does not move. 1.1.4 is the version this package is checked against.
+# floor above does not move. The range leaves the version to the consumer; 1.1.4, the
+# version this package is checked against, is held in dev-constraints.txt.
 metagen = [
-  "metaobjects==1.1.4",
+  "metaobjects>=1.1.0,<2",
 ]
 
 [project.urls]

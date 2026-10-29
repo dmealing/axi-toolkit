@@ -232,16 +232,47 @@ def test_the_generators_import_only_the_standard_library_and_the_toolchain():
     assert found - {"__future__", "json", "dataclasses", "keyword"} == {"metaobjects"}
 
 
-def test_the_generators_ride_in_a_development_extra_that_declares_the_toolchain():
-    """The pin is what makes an install on Python 3.9 fail instead of installing nothing."""
-    text = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
-    section = text.split("[project.optional-dependencies]", 1)[1].split("\n[", 1)[0]
-    extra = section.split("\nmetagen = [", 1)[1].split("]", 1)[0]
-    assert [line.strip() for line in extra.splitlines() if line.strip()] == [
-        '"metaobjects==1.1.4",'
+def _extra_requirements(extra):
+    """The requirements the installed distribution declares for one extra, parsed."""
+    from importlib.metadata import requires
+
+    from packaging.requirements import Requirement
+
+    found = []
+    for line in requires("axi-toolkit") or []:
+        requirement = Requirement(line)
+        marker = requirement.marker
+        if marker and marker.evaluate({"extra": extra}) and not marker.evaluate({"extra": ""}):
+            found.append(requirement)
+    return found
+
+
+@pytest.mark.parametrize("extra", ["reqgen", "metagen"])
+def test_the_development_extras_declare_a_range_not_an_exact_pin(extra):
+    """A downstream tool picks its own MetaObjects; an exact pin would lock it to ours."""
+    from packaging.version import Version
+
+    [requirement] = _extra_requirements(extra)
+    assert requirement.name == "metaobjects"
+    assert not any(spec.operator in ("==", "===") for spec in requirement.specifier)
+    for accepted in ("1.1.0", "1.1.4", "1.9.9"):
+        assert Version(accepted) in requirement.specifier
+    for refused in ("1.0.9", "2.0.0"):
+        assert Version(refused) not in requirement.specifier
+
+
+def test_this_repository_checks_against_metaobjects_1_1_4():
+    """dev-constraints.txt is the one place the exact development version is held."""
+    from packaging.requirements import Requirement
+
+    constraint = (ROOT / "dev-constraints.txt").read_text(encoding="utf-8")
+    [requirement] = [
+        Requirement(line.split("#", 1)[0])
+        for line in constraint.splitlines()
+        if line.split("#", 1)[0].strip()
     ]
-    comment = section.split("\nmetagen = [", 1)[0].rsplit("\n\n", 1)[-1]
-    assert "3.11" in comment, "the extra must say what Python it needs"
+    assert requirement.name == "metaobjects"
+    assert [(spec.operator, spec.version) for spec in requirement.specifier] == [("==", "1.1.4")]
 
 
 def test_the_package_floor_is_unmoved_by_the_extra():

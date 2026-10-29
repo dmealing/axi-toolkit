@@ -164,22 +164,28 @@ jobs:
           python-version: "3.12"
       - run: python -m venv --clear .venv
       - run: .venv/bin/python -m pip install --upgrade pip
-      - run: .venv/bin/pip install -e ".[dev,reqgen]"
+      - run: .venv/bin/pip install -c dev-constraints.txt -e ".[dev,reqgen]"
       # Loads the declaration under the sealed-registry discipline and applies
       # the binding rules — an invented attribute, a requirement with no check,
       # a reference that no longer resolves, all fail here.
       - run: scripts/ci-local.sh --only requirements
 
-  # metaobjects verify at the pinned toolchain: generated output, templates and the
-  # requirements ledger. Runs under uvx on 3.12, never in .venv.
+  # metaobjects verify at the pinned toolchain, each check named by flag: generated output,
+  # templates and the requirements ledger. uvx runs it on 3.12; .venv here holds only uv.
   verify:
-    name: metaobjects verify
+    name: generated files are current
     runs-on: [self-hosted, linux]
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m venv --clear .venv
+      - run: .venv/bin/python -m pip install --upgrade pip uv
+      - run: echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
       - run: scripts/ci-local.sh --only verify
 
   # The one job that reads something other than this repository: it fetches both
@@ -199,7 +205,7 @@ jobs:
           python-version: "3.12"
       - run: python -m venv --clear .venv
       - run: .venv/bin/python -m pip install --upgrade pip
-      - run: .venv/bin/pip install -e ".[dev,reqgen]"
+      - run: .venv/bin/pip install -c dev-constraints.txt -e ".[dev,reqgen]"
       - run: scripts/ci-local.sh --only drift
 
   # Nothing watches a workflow that runs on main and overnight, so a failure has

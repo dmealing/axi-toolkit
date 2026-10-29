@@ -8,8 +8,9 @@
 # The two commands together are a bare `scripts/ci-local.sh`, cut along its
 # `--only` sections so neither step repeats the other: ruff is the lint step,
 # and everything else — the leak scan, the commit-message audit, pytest, the
-# requirements check, the metaobjects verify section and the drift check against both source tools' main — is
-# the test step. `scripts/ci-local.sh --help` says what each section runs. The
+# requirements check, `metaobjects verify` (needs uv on PATH) and the drift check
+# against both source tools' main — is the test step; `metagen` is left to a
+# deliberate run. `scripts/ci-local.sh --help` says what each section runs. The
 # drift section is the one that needs a network, and it fails rather than passes
 # without one. The gate runs pytest once, on the interpreter that builds
 # .venv; the 3.9-3.12 matrix is `scripts/ci-local.sh --matrix`, run by hand
