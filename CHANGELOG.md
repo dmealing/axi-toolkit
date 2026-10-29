@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/dmealing/axi-toolkit/compare/v1.0.0...v1.0.1) (2026-10-29)
+
+
+### Documentation
+
+* **metagen:** name generators as axi_toolkit.metagen:&lt;generator&gt; in module docstring ([#40](https://github.com/dmealing/axi-toolkit/issues/40)) ([020ac6c](https://github.com/dmealing/axi-toolkit/commit/020ac6cdf44835bd7524f4f85838359c39216fe5))
+
 ## [1.0.0](https://github.com/dmealing/axi-toolkit/compare/v0.8.1...v1.0.0) (2026-10-24)
 
 
