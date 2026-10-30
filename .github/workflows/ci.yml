@@ -170,7 +170,7 @@ jobs:
       # a reference that no longer resolves, all fail here.
       - run: scripts/ci-local.sh --only requirements
 
-  # metaobjects verify at the pinned toolchain, each check named by flag: generated output,
+  # metaobjects verify at the pinned toolchain, generated output,
   # templates and the requirements ledger. uvx runs it on 3.12; .venv here holds only uv.
   verify:
     name: generated files are current

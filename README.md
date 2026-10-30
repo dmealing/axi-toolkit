@@ -138,7 +138,7 @@ the conformance checks from the requirements declaration — and needs 3.11. `.[
 provides shared generators for tools to name in their own MetaObjects configs, and also
 needs 3.11 (run via `uvx`, never in `.venv`). Both extras require `metaobjects>=1.1.0,<2`,
 so a downstream tool picks its own version in that range; this repository's own checks run
-against the 1.1.4 held in `dev-constraints.txt`. Both are pure Python. The generated
+against the 1.2.0 held in `dev-constraints.txt`. Both are pure Python. The generated
 artifacts are committed and run under plain pytest on 3.9 upwards.
 
 ## Development

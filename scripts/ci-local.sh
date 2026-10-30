@@ -15,7 +15,7 @@
 #   lint          ruff check . && ruff format --check .
 #   test          pytest, once, on the interpreter that built .venv
 #   requirements  scripts/reqgen.py list, then scripts/reqgen.py check
-#   verify        metaobjects verify --codegen --templates, then --codegen
+#   verify        metaobjects verify, then --codegen
 #                 --require-implementers over the metaobjects/ ledger, at the pinned $METAOBJECTS
 #   metagen       tests/metagen under the MetaObjects toolchain (see below)
 #   drift         fetch both source tools at their main, then scripts/reqgen.py
@@ -183,19 +183,17 @@ sec_requirements() {
   .venv/bin/python scripts/reqgen.py check
 }
 
-# `metaobjects verify` runs the checks explicitly: a bare verify running every check
-# only ships after 1.1.4, so until then each is named by flag (do not simplify to bare).
-# --codegen is generated-output drift, --templates template drift, and the ledger
-# directory as the positional adds the requirements check, with --require-implementers
-# making a live requirement nothing implements an error. The positional makes
-# --templates demand --prompts, so the ledger is a second call.
+# A bare `metaobjects verify` runs every check the config supports (generated-output
+# drift and template drift). The ledger directory as the positional adds the requirements
+# check, with --require-implementers making a live requirement nothing implements an
+# error; the positional makes --templates demand --prompts, so the ledger is a second call.
 # --db is left out: the Python port does not support it (exit 2), and nothing in this
 # package has a database. src is on PYTHONPATH so the config's `axi_toolkit.metagen:`
 # generators import from this checkout.
 sec_verify() {
   command -v uvx >/dev/null 2>&1 || { echo "ci-local: verify needs uv on PATH" >&2; return 1; }
   PYTHONPATH=src uvx --quiet --python 3.12 --from "$METAOBJECTS" \
-    metaobjects verify --codegen --templates
+    metaobjects verify
   PYTHONPATH=src uvx --quiet --python 3.12 --from "$METAOBJECTS" \
     metaobjects verify --codegen --require-implementers metaobjects
 }
