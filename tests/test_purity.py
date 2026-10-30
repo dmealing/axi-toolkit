@@ -255,13 +255,13 @@ def test_the_development_extras_declare_a_range_not_an_exact_pin(extra):
     [requirement] = _extra_requirements(extra)
     assert requirement.name == "metaobjects"
     assert not any(spec.operator in ("==", "===") for spec in requirement.specifier)
-    for accepted in ("1.1.0", "1.1.4", "1.9.9"):
+    for accepted in ("1.1.0", "1.2.0", "1.9.9"):
         assert Version(accepted) in requirement.specifier
     for refused in ("1.0.9", "2.0.0"):
         assert Version(refused) not in requirement.specifier
 
 
-def test_this_repository_checks_against_metaobjects_1_1_4():
+def test_this_repository_checks_against_metaobjects_1_2_0():
     """dev-constraints.txt is the one place the exact development version is held."""
     from packaging.requirements import Requirement
 
@@ -272,7 +272,7 @@ def test_this_repository_checks_against_metaobjects_1_1_4():
         if line.split("#", 1)[0].strip()
     ]
     assert requirement.name == "metaobjects"
-    assert [(spec.operator, spec.version) for spec in requirement.specifier] == [("==", "1.1.4")]
+    assert [(spec.operator, spec.version) for spec in requirement.specifier] == [("==", "1.2.0")]
 
 
 def test_the_package_floor_is_unmoved_by_the_extra():
