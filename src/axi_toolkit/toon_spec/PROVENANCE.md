@@ -21,7 +21,7 @@ surfaced when somebody ran both encoders against one set of files: 179/179 again
 One copy of the encoder only fixes that if there is also one copy of the rig that
 judges it. `axi_toolkit.toon_spec.run(encode)` takes the encoder as an argument, so a tool
 that installs this package asserts its own score against these files instead of
-re-vendoring 179 cases and hoping they stayed in step — and the same call is what
+re-vendoring the cases and hoping they stayed in step — and the same call is what
 measures a *different* encoder, which is how the divergence was found.
 
 `checksums.txt` records the SHA-256 of each vendored file, and

@@ -19,7 +19,7 @@ One copy of the encoder fixes that class of failure permanently — but only if 
 also one copy of the thing that judges it. So the fixtures live *inside the package*,
 beside the encoder, and `axi_toolkit.toon_spec.run(encode)` takes the encoder as an
 argument. A tool that installs this package asserts its own score against the same
-files instead of re-vendoring 179 cases and hoping they stayed in step.
+files instead of re-vendoring the cases and hoping they stayed in step.
 
 ## What is in it
 
