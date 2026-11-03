@@ -25,7 +25,7 @@ files instead of re-vendoring 179 cases and hoping they stayed in step.
 
 | Module | What it is |
 | --- | --- |
-| `axi_toolkit.toon` | A strict TOON encoder (spec v4.1). Encoding happens at the output boundary only. |
+| `axi_toolkit.toon` | A strict TOON encoder (spec v4.4). Encoding happens at the output boundary only. |
 | `axi_toolkit.toon_spec` | The specification's own encode fixtures, vendored and checksummed, plus the rig that runs them against *any* encoder. |
 | `axi_toolkit.errors` | `AxiError`, a code, the fault classes, and the closed recovery vocabulary. |
 | `axi_toolkit.render.cli` | Recovery intent → the line a shell user reads. Also `parse`, its inverse. |
