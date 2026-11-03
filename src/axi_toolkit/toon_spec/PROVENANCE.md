@@ -6,8 +6,8 @@
 | --- | --- |
 | Upstream | <https://github.com/toon-format/spec> |
 | Upstream path | `tests/fixtures/encode/` inside the upstream clone — the vendored copy is `src/axi_toolkit/toon_spec/encode/` |
-| Spec version | 4.1.1 (SPEC.md v4.1, released 2026-08-05) |
-| Commit | `62f16b369408180f1faf1cba7da1b46d1f336f12` |
+| Spec version | 4.4 (SPEC.md v4.4, tag `v4.4.0`; fixtures taken from `main` at the commit below) |
+| Commit | `5e73f85065d8d9f3ad0619b9a31198f1e386e091` |
 | Licence | MIT — the copy in this repository is `src/axi_toolkit/toon_spec/LICENSE`, from the same commit |
 
 ## Why these live inside the package and not under `tests/`
