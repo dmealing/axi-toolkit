@@ -1653,67 +1653,63 @@
       "delimiter",
       "indentSize"
     ],
-    "toonEncodeCaseCount": 179,
+    "toonEncodeCaseCount": 160,
     "toonEncodeCases": [
       {
         "case": "arrays-nested-0",
-        "expected": "pairs[2]:\n  - [2]: a,b\n  - [2]: c,d"
-      },
-      {
-        "case": "arrays-nested-1",
         "expected": "pairs[2]:\n  - [2]: a,b\n  - [3]: \"c,d\",\"e:f\",\"true\""
       },
       {
-        "case": "arrays-nested-2",
+        "case": "arrays-nested-1",
         "expected": "pairs[2]:\n  - [0]:\n  - [0]:"
       },
       {
-        "case": "arrays-nested-3",
-        "expected": "pairs[2]:\n  - [1]: 1\n  - [2]: 2,3"
-      },
-      {
-        "case": "arrays-nested-4",
+        "case": "arrays-nested-2",
         "expected": "[5]: x,y,\"true\",true,10"
       },
       {
-        "case": "arrays-nested-5",
+        "case": "arrays-nested-3",
         "expected": "[2]{id}:\n  1\n  2"
       },
       {
-        "case": "arrays-nested-6",
+        "case": "arrays-nested-4",
         "expected": "[2]:\n  - id: 1\n  - id: 2\n    name: Ada"
       },
       {
-        "case": "arrays-nested-7",
+        "case": "arrays-nested-5",
         "expected": "[3]:\n  - summary\n  - id: 1\n    name: Ada\n  - [2]:\n    - id: 2\n    - status: draft"
       },
       {
-        "case": "arrays-nested-8",
+        "case": "arrays-nested-6",
         "expected": "[2]:\n  - [2]: 1,2\n  - [0]:"
       },
       {
-        "case": "arrays-nested-9",
+        "case": "arrays-nested-7",
         "expected": "[]"
       },
       {
-        "case": "arrays-nested-10",
-        "expected": "user:\n  id: 123\n  name: Ada\n  tags[2]: reading,gaming\n  active: true\n  prefs: []"
-      },
-      {
-        "case": "arrays-nested-11",
+        "case": "arrays-nested-8",
         "expected": "items[3]:\n  - 1\n  - a: 1\n  - text"
       },
       {
-        "case": "arrays-nested-12",
+        "case": "arrays-nested-9",
         "expected": "items[2]:\n  - a: 1\n  - [2]: 1,2"
       },
       {
-        "case": "arrays-nested-13",
+        "case": "arrays-nested-10",
         "expected": "items[2]:\n  - \"#x\"\n  - a: 1"
       },
       {
-        "case": "arrays-nested-14",
+        "case": "arrays-nested-11",
         "expected": "a[1]:\n  - [2]:\n    - x: 1\n    - x: 2"
+      },
+      {
+        "case": "arrays-nested-12",
+        "expected": "[1]:\n  - [1]:\n    - [1]: 1"
+      },
+      {
+        "case": "arrays-nested-13",
+        "expected": "a[2]:\n  - [2]:\n    - 1\n    - x: 1\n  - 2"
       },
       {
         "case": "arrays-objects-0",
@@ -1721,122 +1717,90 @@
       },
       {
         "case": "arrays-objects-1",
-        "expected": "items[2]:\n  - id: 1\n    nested:\n      x: 1\n  - id: 2\n    nested:\n      y: 2"
+        "expected": "items[2]:\n  - nums[3]: 1,2,3\n    name: Ada\n  - name: Ada\n    nums[3]: 1,2,3"
       },
       {
         "case": "arrays-objects-2",
-        "expected": "items[1]:\n  - nums[3]: 1,2,3\n    name: Ada"
-      },
-      {
-        "case": "arrays-objects-3",
-        "expected": "items[1]:\n  - name: Ada\n    nums[3]: 1,2,3"
-      },
-      {
-        "case": "arrays-objects-4",
         "expected": "items[1]:\n  - matrix[2]:\n      - [2]: 1,2\n      - [2]: 3,4\n    name: grid"
       },
       {
-        "case": "arrays-objects-5",
-        "expected": "items[1]:\n  - users[2]{id,name}:\n      1,Ada\n      2,Bob\n    status: active"
+        "case": "arrays-objects-3",
+        "expected": "items[2]:\n  - users[2]{id,name}:\n      1,Ada\n      2,Bob\n    status: active\n  - users[2]{id,name}:\n      3,Cy\n      4,Dee"
       },
       {
-        "case": "arrays-objects-6",
+        "case": "arrays-objects-4",
         "expected": "items[1]:\n  - users[2]:\n      - id: 1\n        name: Ada\n      - id: 2\n    status: active"
       },
       {
-        "case": "arrays-objects-7",
-        "expected": "items[1]:\n  - nums[2]: 1,2\n    tags[2]: a,b\n    name: test"
+        "case": "arrays-objects-5",
+        "expected": "items[2]:\n  - data: []\n    name: Ada\n  - name: Bob\n    data: []"
       },
       {
-        "case": "arrays-objects-8",
-        "expected": "items[1]:\n  - nums[3]: 1,2,3\n    tags[2]: a,b"
-      },
-      {
-        "case": "arrays-objects-9",
-        "expected": "items[1]:\n  - name: Ada\n    data: []"
-      },
-      {
-        "case": "arrays-objects-10",
-        "expected": "items[1]:\n  - users[2]{id}:\n      1\n      2\n    note: x"
-      },
-      {
-        "case": "arrays-objects-11",
-        "expected": "items[1]:\n  - users[2]{id,name}:\n      1,Ada\n      2,Bob"
-      },
-      {
-        "case": "arrays-objects-12",
-        "expected": "items[1]:\n  - data: []\n    name: x"
-      },
-      {
-        "case": "arrays-objects-13",
-        "expected": "items[3]:\n  - first\n  - second\n  -"
-      },
-      {
-        "case": "arrays-objects-14",
+        "case": "arrays-objects-6",
         "expected": "items[2]{a,b,c}:\n  1,2,3\n  10,20,30"
       },
       {
-        "case": "arrays-objects-15",
+        "case": "arrays-objects-7",
         "expected": "items[2]:\n  - id: 1\n    data: string\n  - id: 2\n    data:\n      nested: true"
       },
       {
-        "case": "arrays-objects-16",
+        "case": "arrays-objects-8",
         "expected": "items[2]:\n  -\n  -"
       },
       {
-        "case": "arrays-objects-17",
+        "case": "arrays-objects-9",
         "expected": "a[1]{t{p{x},q{x}},other}:\n  1,2,9"
       },
       {
+        "case": "arrays-objects-10",
+        "expected": "items[1]:\n  - a:\n    b: 1"
+      },
+      {
+        "case": "arrays-objects-11",
+        "expected": "items[1]:\n  - id: 1\n    users[2]{id,name}:\n      1,Ada\n      2,Bob"
+      },
+      {
         "case": "arrays-primitive-0",
-        "expected": "tags[2]: reading,gaming"
-      },
-      {
-        "case": "arrays-primitive-1",
-        "expected": "nums[3]: 1,2,3"
-      },
-      {
-        "case": "arrays-primitive-2",
         "expected": "data[4]: x,y,true,10"
       },
       {
-        "case": "arrays-primitive-3",
+        "case": "arrays-primitive-1",
         "expected": "items: []"
       },
       {
-        "case": "arrays-primitive-4",
+        "case": "arrays-primitive-2",
         "expected": "\"\"[3]: 1,2,3"
       },
       {
-        "case": "arrays-primitive-5",
+        "case": "arrays-primitive-3",
         "expected": "\"\": []"
       },
       {
-        "case": "arrays-primitive-6",
+        "case": "arrays-primitive-4",
         "expected": "items[1]: \"\""
       },
       {
-        "case": "arrays-primitive-7",
+        "case": "arrays-primitive-5",
         "expected": "items[3]: a,\"\",b"
       },
       {
-        "case": "arrays-primitive-8",
+        "case": "arrays-primitive-6",
         "expected": "items[2]: \" \",\"  \""
       },
       {
-        "case": "arrays-primitive-9",
+        "case": "arrays-primitive-7",
         "expected": "items[3]: a,\"b,c\",\"d:e\""
       },
       {
-        "case": "arrays-primitive-10",
+        "case": "arrays-primitive-8",
         "expected": "items[4]: x,\"true\",\"42\",\"-3.14\""
       },
       {
-        "case": "arrays-primitive-11",
-        "expected": "items[3]: \"[5]\",\"- item\",\"{key}\""
+        "case": "arrays-primitive-9",
+        "expected": "items[5]: \"[5\",\"x]\",\"- item\",\"{key\",\"y}\""
       },
       {
-        "case": "arrays-primitive-12",
+        "case": "arrays-primitive-10",
         "expected": "tags[2]: \"#a\",b"
       },
       {
@@ -1929,7 +1893,7 @@
       },
       {
         "case": "delimiters-6",
-        "expected": "pairs[2|]:\n  - [2|]: a|b\n  - [2|]: c|d"
+        "expected": "pairs[2|]:\n  - [2|]: a|b\n  - [2|]: c|d\nitems[1|]:\n  - k[1|]:\n      - [2|]:\n        - 1\n        - x: 1"
       },
       {
         "case": "delimiters-7",
@@ -1949,47 +1913,31 @@
       },
       {
         "case": "delimiters-11",
-        "expected": "items[3\t]: a\t\"b\\tc\"\td"
-      },
-      {
-        "case": "delimiters-12",
         "expected": "items[3|]: a|\"b|c\"|d"
       },
       {
-        "case": "delimiters-13",
+        "case": "delimiters-12",
         "expected": "items[2\t]: a,b\tc,d"
       },
       {
-        "case": "delimiters-14",
-        "expected": "items[2|]: a,b|c,d"
-      },
-      {
-        "case": "delimiters-15",
-        "expected": "items[2]{id,note}:\n  1,\"a,b\"\n  2,\"c,d\""
-      },
-      {
-        "case": "delimiters-16",
+        "case": "delimiters-13",
         "expected": "items[2\t]{id\tnote}:\n  1\ta,b\n  2\tc,d"
       },
       {
-        "case": "delimiters-17",
+        "case": "delimiters-14",
         "expected": "note: a,b"
       },
       {
-        "case": "delimiters-18",
-        "expected": "note: a,b"
-      },
-      {
-        "case": "delimiters-19",
+        "case": "delimiters-15",
         "expected": "pairs[1|]:\n  - [2|]: a|\"b|c\""
       },
       {
-        "case": "delimiters-20",
-        "expected": "pairs[1\t]:\n  - [2\t]: a\t\"b\\tc\""
+        "case": "delimiters-16",
+        "expected": "a[3|]:\n  - \"x|y\"\n  - p,q\n  - b: 1"
       },
       {
-        "case": "delimiters-21",
-        "expected": "items[3|]: \"true\"|\"42\"|\"-3.14\""
+        "case": "delimiters-17",
+        "expected": "a,b"
       },
       {
         "case": "objects-keyed-0",
@@ -2009,7 +1957,7 @@
       },
       {
         "case": "objects-keyed-4",
-        "expected": "servers[2:|]{host|port}:\n  alpha: a.example.com|8080\n  beta: b.example.com|9090"
+        "expected": "servers[2:|]{host|port|note}:\n  alpha: a.example.com|8080|\"x|y\"\n  beta: b.example.com|9090|p,q"
       },
       {
         "case": "objects-keyed-5",
@@ -2044,140 +1992,132 @@
         "expected": "items[2]:\n  - a:\n      x: 1\n    b:\n      x: 2\n  - 5"
       },
       {
+        "case": "objects-keyed-13",
+        "expected": "m:\n  a:\n  b:"
+      },
+      {
         "case": "objects-0",
-        "expected": "id: 123\nname: Ada\nactive: true"
+        "expected": "id: 123\nname: Ada\nactive: true\nvalue: null"
       },
       {
         "case": "objects-1",
-        "expected": "id: 123\nvalue: null"
-      },
-      {
-        "case": "objects-2",
         "expected": ""
       },
       {
-        "case": "objects-3",
+        "case": "objects-2",
         "expected": "note: \"a:b\""
       },
       {
-        "case": "objects-4",
+        "case": "objects-3",
         "expected": "note: \"a,b\""
       },
       {
-        "case": "objects-5",
+        "case": "objects-4",
         "expected": "text: \"line1\\nline2\""
       },
       {
-        "case": "objects-6",
+        "case": "objects-5",
         "expected": "text: \"say \\\"hello\\\"\""
       },
       {
-        "case": "objects-7",
-        "expected": "text: \" padded \""
+        "case": "objects-6",
+        "expected": "lead: \" padded\"\ntrail: \"padded \""
       },
       {
-        "case": "objects-8",
+        "case": "objects-7",
         "expected": "text: \"  \""
       },
       {
-        "case": "objects-9",
+        "case": "objects-8",
         "expected": "v: \"true\""
       },
       {
-        "case": "objects-10",
+        "case": "objects-9",
         "expected": "v: \"42\""
       },
       {
-        "case": "objects-11",
-        "expected": "v: \"-7.5\""
+        "case": "objects-10",
+        "expected": "v: \"1E6\""
       },
       {
-        "case": "objects-12",
+        "case": "objects-11",
         "expected": "\"order:id\": 7"
       },
       {
+        "case": "objects-12",
+        "expected": "\"[index]\": 5\n\"{key}\": 6"
+      },
+      {
         "case": "objects-13",
-        "expected": "\"[index]\": 5"
-      },
-      {
-        "case": "objects-14",
-        "expected": "\"{key}\": 5"
-      },
-      {
-        "case": "objects-15",
         "expected": "\"a,b\": 1"
       },
       {
+        "case": "objects-14",
+        "expected": "\"full name\": Ada\n\" a \": 1"
+      },
+      {
+        "case": "objects-15",
+        "expected": "\"-lead\": 1\n\"a-b\": 2"
+      },
+      {
         "case": "objects-16",
-        "expected": "\"full name\": Ada"
-      },
-      {
-        "case": "objects-17",
-        "expected": "\"-lead\": 1"
-      },
-      {
-        "case": "objects-18",
-        "expected": "\" a \": 1"
-      },
-      {
-        "case": "objects-19",
         "expected": "\"123\": x"
       },
       {
-        "case": "objects-20",
+        "case": "objects-17",
         "expected": "\"\": 1"
       },
       {
-        "case": "objects-21",
+        "case": "objects-18",
         "expected": "\"caf\u00e9\": 1"
       },
       {
-        "case": "objects-22",
-        "expected": "\"\u540d\u524d\": x"
+        "case": "objects-19",
+        "expected": "a.b: 1\ntrue: 2"
       },
       {
-        "case": "objects-23",
-        "expected": "\"line\\nbreak\": 1"
+        "case": "objects-20",
+        "expected": "\"line\\n\": 1\n\"he said \\\"hi\\\"\": 2"
       },
       {
-        "case": "objects-24",
+        "case": "objects-21",
         "expected": "\"tab\\there\": 2"
       },
       {
-        "case": "objects-25",
-        "expected": "\"he said \\\"hi\\\"\": 1"
-      },
-      {
-        "case": "objects-26",
+        "case": "objects-22",
         "expected": "\"a\\u0004b\": 1"
       },
       {
-        "case": "objects-27",
+        "case": "objects-23",
         "expected": "\"x\\u001fy\": 2"
       },
       {
-        "case": "objects-28",
+        "case": "objects-24",
         "expected": "a:\n  b:\n    c: deep"
       },
       {
-        "case": "objects-29",
+        "case": "objects-25",
         "expected": "user:"
       },
       {
-        "case": "objects-30",
+        "case": "objects-26",
         "expected": "__proto__: polluted\nsafe: true"
       },
       {
-        "case": "objects-31",
-        "expected": "constructor: 1\nprototype: 2"
-      },
-      {
-        "case": "objects-32",
+        "case": "objects-27",
         "expected": "rows[2]{__proto__,x}:\n  a,1\n  b,2"
       },
       {
-        "case": "objects-33",
+        "case": "objects-28",
         "expected": "note: \"#x\""
+      },
+      {
+        "case": "objects-29",
+        "expected": "\"\":\n  a: 1"
+      },
+      {
+        "case": "objects-30",
+        "expected": "a: .5\nb: NaN\nc: True\nd: \ufeffx\ne: a\u007fb\nf: \u0664\u0662"
       },
       {
         "case": "primitives-0",
@@ -2209,7 +2149,7 @@
       },
       {
         "case": "primitives-7",
-        "expected": "\"-3.14\""
+        "expected": "\"3.14\""
       },
       {
         "case": "primitives-8",
@@ -2221,155 +2161,139 @@
       },
       {
         "case": "primitives-10",
-        "expected": "\"line1\\nline2\""
+        "expected": "[3]: \"line1\\nline2\",\"tab\\there\",\"return\\rcarriage\""
       },
       {
         "case": "primitives-11",
-        "expected": "\"tab\\there\""
+        "expected": "val: \"a\\u0004\\u0008\\u000cb\"\nsep: \"a:\u007f\u0085\u2028b\""
       },
       {
         "case": "primitives-12",
-        "expected": "\"return\\rcarriage\""
+        "expected": "\"Users\\\\path\""
       },
       {
         "case": "primitives-13",
-        "expected": "val: \"a\\u0004b\""
+        "expected": "a-b #c"
       },
       {
         "case": "primitives-14",
-        "expected": "\"C:\\\\Users\\\\path\""
-      },
-      {
-        "case": "primitives-15",
-        "expected": "\"[3]: x,y\""
-      },
-      {
-        "case": "primitives-16",
         "expected": "\"- item\""
       },
       {
+        "case": "primitives-15",
+        "expected": "marker: \"-\"\nnote: \"- item\""
+      },
+      {
+        "case": "primitives-16",
+        "expected": "items[2]: \"-\",\"-x\""
+      },
+      {
         "case": "primitives-17",
-        "expected": "marker: \"-\""
+        "expected": "\"a[test]\""
       },
       {
         "case": "primitives-18",
-        "expected": "note: \"- item\""
-      },
-      {
-        "case": "primitives-19",
-        "expected": "items[1]: \"-\""
-      },
-      {
-        "case": "primitives-20",
-        "expected": "tags[3]: a,\"- item\",b"
-      },
-      {
-        "case": "primitives-21",
-        "expected": "\"[test]\""
-      },
-      {
-        "case": "primitives-22",
         "expected": "\"{key}\""
       },
       {
-        "case": "primitives-23",
+        "case": "primitives-19",
         "expected": "caf\u00e9"
       },
       {
-        "case": "primitives-24",
-        "expected": "\u4f60\u597d"
-      },
-      {
-        "case": "primitives-25",
-        "expected": "\ud83d\ude80"
-      },
-      {
-        "case": "primitives-26",
+        "case": "primitives-20",
         "expected": "hello \ud83d\udc4b world"
       },
       {
-        "case": "primitives-27",
+        "case": "primitives-21",
         "expected": "\"a,\ud83d\ude80\""
       },
       {
-        "case": "primitives-28",
+        "case": "primitives-22",
         "expected": "42"
       },
       {
-        "case": "primitives-29",
+        "case": "primitives-23",
         "expected": "3.14"
       },
       {
-        "case": "primitives-30",
+        "case": "primitives-24",
         "expected": "-7"
       },
       {
-        "case": "primitives-31",
+        "case": "primitives-25",
         "expected": "0"
       },
       {
-        "case": "primitives-32",
+        "case": "primitives-26",
         "expected": "0"
       },
       {
-        "case": "primitives-33",
+        "case": "primitives-27",
         "expected": "1000000"
       },
       {
-        "case": "primitives-34",
+        "case": "primitives-28",
         "expected": "0.000001"
       },
       {
-        "case": "primitives-35",
+        "case": "primitives-29",
         "expected": "100000000000000000000"
       },
       {
-        "case": "primitives-36",
+        "case": "primitives-30",
         "expected": "9007199254740991"
       },
       {
-        "case": "primitives-37",
-        "expected": "0.3333333333333333"
+        "case": "primitives-31",
+        "expected": "[3]: 0.3333333333333333,0.30000000000000004,-0.000001"
       },
       {
-        "case": "primitives-38",
+        "case": "primitives-32",
         "expected": "true"
       },
       {
-        "case": "primitives-39",
+        "case": "primitives-33",
         "expected": "false"
       },
       {
-        "case": "primitives-40",
+        "case": "primitives-34",
         "expected": "null"
       },
       {
-        "case": "primitives-41",
+        "case": "primitives-35",
         "expected": "\"+1\""
       },
       {
-        "case": "primitives-42",
-        "expected": "\"#\""
-      },
-      {
-        "case": "primitives-43",
+        "case": "primitives-36",
         "expected": "\"#hello\""
       },
       {
-        "case": "whitespace-0",
-        "expected": "id: 123"
+        "case": "primitives-37",
+        "expected": "\"\ufeff8\""
       },
       {
-        "case": "whitespace-1",
+        "case": "primitives-38",
+        "expected": "123456789012345680000"
+      },
+      {
+        "case": "primitives-39",
+        "expected": "items[3]: \"a,\u0301b\",\"-\u0301\",\"#\u0301\"\nk: \"x:\u0301\""
+      },
+      {
+        "case": "whitespace-0",
         "expected": "user:\n  id: 123\n  name: Ada\nitems[2]: a,b"
       },
       {
-        "case": "whitespace-2",
+        "case": "whitespace-1",
         "expected": "user:\n    name: Ada\n    role: admin"
       },
       {
-        "case": "whitespace-3",
+        "case": "whitespace-2",
         "expected": "k: \u00a0x\u00a0"
+      },
+      {
+        "case": "whitespace-3",
+        "expected": "a[2]:\n    - b: 1\n        c: 2\n    - 1"
       }
     ],
     "toonExercisedDelimiters": [
@@ -2381,15 +2305,15 @@
       "encode"
     ],
     "toonFixtureDigests": [
-      "arrays-nested.json e30b3def09d2df11971f15b87c3e6cd8c5b8a375cc9036c7ae0fdf755d07f86b",
-      "arrays-objects.json a4829052e36a365624526816b7d8f9ddae10e7df0e93eaf6b089603e7f302b7a",
-      "arrays-primitive.json 0ab7c14b9d5038ed52f4449680ccda54081867bfef0b383816aeebc069d8054f",
-      "arrays-tabular.json c6a4079a188533fd3983363c80816e69dbd82cfd3abf4497c7b5bd0c32d8e94d",
-      "delimiters.json db6b0b8a6695e2194122f3e035dd4d0481d7f90068090f34c96f02fa0c7f0166",
-      "objects-keyed.json b064d9fe983c737d1273c05db4b4f38889e04c341637b0d0d33d681c1f5877d0",
-      "objects.json 94703db9232df9ea09b3543733fa1cb34379d3cdc8b6d9db56196d9afc2954c5",
-      "primitives.json 19c54507f5a08d6d8f6c9907c5ed831097489963f8a33e8847ab94ef857e929e",
-      "whitespace.json 581d0fdf6c2f433b7a4c48b123a471346245249d1bb15352885f7ce51865dcfe"
+      "arrays-nested.json 5dc352a16c2608b88401962ceea86502678a1914bd776b06a7d58c42cd032424",
+      "arrays-objects.json ebe6287c010f76a29a5ea940a50ecbf9fa053a8aa268c9b27c191b469e752968",
+      "arrays-primitive.json daaed970b64900d374c30af4befff03040ce85a94fac883a967b8f648bbfe9c2",
+      "arrays-tabular.json 1cbb3a45a34e09afe77e90b67e2aee96c754b4403191413aa361df9e33b1cd07",
+      "delimiters.json a6b7aade1032843d773b142a86de6d2ae1ee648320b5c1d51879a81616368dfc",
+      "objects-keyed.json f819eaff223ef2294b3741f652cedddadfaceff0fb6f12b3f7c47a67997dfcaf",
+      "objects.json e638288b2b10bf537a048a544a6ff398cb0979d309c8e537ccc5f65689879b2f",
+      "primitives.json 0564b03bb7f10a0b07ab7e1ea4f05178dd6ca4bfcacb71f772d11a1faeb7e3b2",
+      "whitespace.json 0351de0a97ecd021f666cdcbb3936e17ae7730500cb6b6296548603312aa5953"
     ]
   }
 }

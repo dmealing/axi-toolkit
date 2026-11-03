@@ -19,13 +19,13 @@ One copy of the encoder fixes that class of failure permanently — but only if 
 also one copy of the thing that judges it. So the fixtures live *inside the package*,
 beside the encoder, and `axi_toolkit.toon_spec.run(encode)` takes the encoder as an
 argument. A tool that installs this package asserts its own score against the same
-files instead of re-vendoring 179 cases and hoping they stayed in step.
+files instead of re-vendoring the cases and hoping they stayed in step.
 
 ## What is in it
 
 | Module | What it is |
 | --- | --- |
-| `axi_toolkit.toon` | A strict TOON encoder (spec v4.1). Encoding happens at the output boundary only. |
+| `axi_toolkit.toon` | A strict TOON encoder (spec v4.4). Encoding happens at the output boundary only. |
 | `axi_toolkit.toon_spec` | The specification's own encode fixtures, vendored and checksummed, plus the rig that runs them against *any* encoder. |
 | `axi_toolkit.errors` | `AxiError`, a code, the fault classes, and the closed recovery vocabulary. |
 | `axi_toolkit.render.cli` | Recovery intent → the line a shell user reads. Also `parse`, its inverse. |

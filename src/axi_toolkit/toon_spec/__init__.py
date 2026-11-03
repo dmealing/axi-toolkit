@@ -6,7 +6,7 @@ each carried their own copy of both the encoder and these fixtures; one copy got
 somebody ran both against the same files. One copy of the encoder fixes that only if
 there is also one copy of the thing that judges it -- so a tool taking this package
 gets the rig too, and asserts its own score with :func:`run` rather than re-vendoring
-179 cases and hoping they stayed in step.
+the cases and hoping they stayed in step.
 
 Nothing here imports :mod:`axi_toolkit.toon`. The fixtures are the specification's
 opinion and the encoder is this package's; keeping the two modules apart is what lets
@@ -92,7 +92,7 @@ class Report(NamedTuple):
 
     @property
     def score(self) -> str:
-        """``"179/179"`` -- the form the assessments quote."""
+        """``"N/N"`` (passed over total) -- the form the assessments quote."""
         return f"{self.passed}/{self.total}"
 
 

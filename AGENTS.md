@@ -100,7 +100,7 @@ line. That is the defect, not the simplification.
 
 ## Architecture
 
-- **`toon.py` + `toon_spec/`** — a strict TOON encoder (spec v4.1) and the
+- **`toon.py` + `toon_spec/`** — a strict TOON encoder (spec v4.4) and the
   specification's own encode fixtures, vendored **inside the package** rather than under
   `tests/`. That placement is load-bearing, not tidiness: one copy of the encoder only
   ends the divergence if there is one copy of the rig that judges it, so

@@ -25,10 +25,10 @@ from axi_toolkit.toon import encode
 #: expectation: every *value* a check compares against comes from the machine-written
 #: capture, but the published total is the thing a refresh changes, and it has to be
 #: edited by a person who noticed. See PROVENANCE.md's refresh recipe.
-CASE_COUNT = 179
+CASE_COUNT = 160
 
 
-def test_the_score_is_179_of_179():
+def test_the_score_is_160_of_160():
     """The headline claim, asserted rather than stated."""
     report = toon_spec.run(encode)
     assert report.failures == [], _explain(report)

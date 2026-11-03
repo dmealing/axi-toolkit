@@ -1,6 +1,6 @@
 """A strict TOON (Token-Oriented Object Notation) encoder.
 
-Implements the encoder half of the TOON specification v4.1
+Implements the encoder half of the TOON specification v4.4
 (https://github.com/toon-format/spec) for the JSON data model: objects,
 primitive arrays in inline form, arrays of uniform objects in tabular form,
 objects of uniform objects in keyed tabular form, and list form for everything
@@ -242,6 +242,11 @@ class _Encoder:
             return self.object_body(value, 0)
         if isinstance(value, list):
             return self.array(None, value, 0)
+        if isinstance(value, str) and value.startswith("\ufeff"):
+            # Section 7.2: a root primitive starting with U+FEFF is quoted, or a
+            # reader would strip it as a byte-order mark (section 12). Only the
+            # root: elsewhere the character is content and stays bare.
+            return [self.quote(value)]
         return [self.primitive(value)]
 
     # --------------------------------------------------------------- objects
