@@ -1,8 +1,9 @@
 # The TypeScript package (`ts/`)
 
 `axi-toolkit` on npm: the TypeScript counterpart of the Python package in `src/`, in the
-same repository and versioned on its own (`ts` in `release-please-config.json`, tags
-`axi-toolkit-ts-v<version>`). The root `AGENTS.md` still governs everything here,
+same repository and versioned on its own. It is not a release-please package yet: the root
+package's `exclude-paths: ["ts"]` keeps commits here from bumping the Python version, and
+how `ts` is released is still to be decided. The root `AGENTS.md` still governs everything here,
 above all the **public-repository constraint**: no host addresses, credentials, real
 data, local paths or personal identifiers in any file, fixture, test or commit message.
 `scripts/leakcheck.py` and `scripts/commitcheck.py` at the repository root already scan
@@ -33,8 +34,9 @@ data, local paths or personal identifiers in any file, fixture, test or commit m
 - `parse` uses Python's whitespace set, not JS `\s`, and `[^\n]` where Python's `.` stops
   only at `\n`. Never add the `m` flag to an anchored pattern.
 - Look a fault code up with `Object.hasOwn`, never by plain indexing.
-- Every conformance expectation comes from the pack; the one deliberate literal is
-  `CASE_COUNT` in `test/toon.test.ts`, a ratchet on a fixture refresh.
+- Every conformance expectation comes from the pack. The deliberate literals are ratchets
+  on a pack or fixture refresh, not expectations: `CASE_COUNT` and `FIXTURE_FILE_COUNT` in
+  `test/toon.test.ts`, and the corpus population `307` in `test/render.test.ts`.
 
 ## Commands
 

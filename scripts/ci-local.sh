@@ -257,8 +257,8 @@ sec_drift() {
   PYTHONDONTWRITEBYTECODE=1 .venv/bin/python scripts/reqgen.py drift
 }
 
-# THE TYPESCRIPT PACKAGE. ts/ is a second package in this repository, versioned on its
-# own (see release-please-config.json). It reads the language-neutral conformance/ pack
+# THE TYPESCRIPT PACKAGE. ts/ is a second package in this repository, kept out of the
+# Python release by exclude-paths in release-please-config.json. It reads the conformance/ pack
 # and the TOON fixtures in place, so these two sections need nothing but node and the
 # packages npm installs from its lockfile. The leak scan and the commit audit above
 # already cover ts/ -- they scan every tracked file and every commit -- so there is no

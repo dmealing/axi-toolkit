@@ -652,7 +652,7 @@ whichever one is used.
 
 ### Versioning: semver from 1.0
 
-`release-please-config.json` no longer sets `bump-minor-pre-major`: the flag was removed
+`release-please-config.json` no longer sets `bump-minor-pre-major` for the Python package: the flag was removed
 when the surface was declared stable, so release-please applies strict semantic
 versioning. A breaking change (`feat!:` or a `BREAKING CHANGE:` footer) bumps the
 **major**, a `feat:` the minor, a `fix:` the patch. The package was pre-1.0 on purpose

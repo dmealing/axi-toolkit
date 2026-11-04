@@ -158,13 +158,10 @@ describe("the recovery corpus", () => {
   });
 
   it("exercises every kind", () => {
+    // `choose` is the one kind no recovery line in the corpus produces.
     const kinds = new Set(corpus.entries.map((entry) => entry.intent.kind));
-    expect([...kinds].sort()).toEqual(
-      ["choose", "note", "retry", "run", "set_env"].filter((k) => kinds.has(k)),
-    );
-    expect(
-      kinds.has("run") && kinds.has("retry") && kinds.has("set_env") && kinds.has("note"),
-    ).toBe(true);
+    const declared = pack<{ kinds: string[] }>("errors.json").kinds;
+    expect([...kinds].sort()).toEqual(declared.filter((kind) => kind !== "choose").sort());
   });
 });
 

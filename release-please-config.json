@@ -1,6 +1,5 @@
 {
   "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
-  "separate-pull-requests": true,
   "packages": {
     ".": {
       "release-type": "python",
@@ -9,14 +8,6 @@
       "include-component-in-tag": false,
       "exclude-paths": ["ts"],
       "extra-files": ["src/axi_toolkit/__init__.py"]
-    },
-    "ts": {
-      "release-type": "node",
-      "package-name": "axi-toolkit",
-      "component": "axi-toolkit-ts",
-      "include-component-in-tag": true,
-      "bump-minor-pre-major": true,
-      "changelog-path": "CHANGELOG.md"
     }
   }
 }

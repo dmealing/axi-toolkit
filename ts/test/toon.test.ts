@@ -19,13 +19,14 @@ import {
   run,
 } from "../src/toon-spec/index.js";
 
-// A ratchet on a fixture refresh, not an expectation: the one deliberate literal here.
+// Ratchets on a fixture refresh, not expectations: the two deliberate literals here.
 const CASE_COUNT = 160;
+const FIXTURE_FILE_COUNT = 9;
 
 describe("the specification's encode fixtures, read in place", () => {
   it("are the number the ratchet expects", () => {
     expect(cases().length).toBe(CASE_COUNT);
-    expect(fixtureFiles().length).toBe(9);
+    expect(fixtureFiles().length).toBe(FIXTURE_FILE_COUNT);
   });
 
   it("are all encode fixtures", () => {
@@ -47,11 +48,10 @@ describe("the specification's encode fixtures, read in place", () => {
       Object.entries(real).filter(([name]) => name !== "objects.json"),
     );
     const extra = { ...real, "new.json": "0".repeat(64) };
-    const diff = (a: Record<string, string>, b: Record<string, string>) =>
-      [...new Set([...Object.keys(a), ...Object.keys(b)])].filter((name) => a[name] !== b[name]);
-    expect(diff(recorded, edited)).toEqual(["objects.json"]);
-    expect(diff(recorded, missing)).toEqual(["objects.json"]);
-    expect(diff(recorded, extra)).toEqual(["new.json"]);
+    expect(digestMismatches(recorded, edited)).toEqual(["objects.json"]);
+    expect(digestMismatches(recorded, missing)).toEqual(["objects.json"]);
+    expect(digestMismatches(recorded, extra)).toEqual(["new.json"]);
+    expect(digestMismatches(missing, recorded)).toEqual(["objects.json"]);
   });
 
   it("use only options the rig applies, and name a case by file and index", () => {
@@ -102,7 +102,7 @@ describe("encode and encodeScalar", () => {
     expect(encodeScalar(true)).toBe("true");
     expect(encodeScalar(3)).toBe("3");
     // The root-only rule for a leading U+FEFF does not apply inside a document.
-    expect(encodeScalar("\ufeffx")).toBe(encode({ k: "\ufeffx" }).slice(3));
+    expect(encodeScalar("\ufeffx")).toBe("\ufeffx");
   });
 
   it("refuses what is not a scalar", () => {

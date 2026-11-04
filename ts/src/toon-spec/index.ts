@@ -203,9 +203,10 @@ export function actualDigests(): Record<string, string> {
  * File names whose content no longer matches the recorded checksums, including a file
  * present in one view and not the other.
  */
-export function digestMismatches(): string[] {
-  const recorded = recordedDigests();
-  const actual = actualDigests();
+export function digestMismatches(
+  recorded: Record<string, string> = recordedDigests(),
+  actual: Record<string, string> = actualDigests(),
+): string[] {
   return [...new Set([...Object.keys(recorded), ...Object.keys(actual)])]
     .filter((name) => recorded[name] !== actual[name])
     .sort();
