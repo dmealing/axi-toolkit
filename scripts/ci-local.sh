@@ -20,6 +20,8 @@
 #   metagen       tests/metagen under the MetaObjects toolchain (see below)
 #   drift         fetch both source tools at their main, then scripts/reqgen.py
 #                 check and scripts/reqgen.py drift against them (see below)
+#   tslint        the TypeScript package in ts/: biome check, then tsc --noEmit
+#   tstest        the TypeScript package in ts/: vitest, then a build
 #
 # Usage:
 #   scripts/ci-local.sh                        # every section
@@ -94,7 +96,7 @@ set -uo pipefail
 root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 cd "$root" || exit 1
 
-SECTIONS=(leakcheck commits lint test requirements verify metagen drift)
+SECTIONS=(leakcheck commits lint test requirements verify metagen drift tslint tstest)
 METAOBJECTS_PIN=$(grep -m1 '^metaobjects==' dev-constraints.txt) ||
   { echo "ci-local: dev-constraints.txt pins no metaobjects==" >&2; exit 1; }
 METAOBJECTS=${METAOBJECTS:-$METAOBJECTS_PIN}
@@ -253,6 +255,32 @@ sec_drift() {
   ensure_venv metaobjects
   .venv/bin/python scripts/reqgen.py check
   PYTHONDONTWRITEBYTECODE=1 .venv/bin/python scripts/reqgen.py drift
+}
+
+# THE TYPESCRIPT PACKAGE. ts/ is a second package in this repository, kept out of the
+# Python release by exclude-paths in release-please-config.json. It reads the conformance/ pack
+# and the TOON fixtures in place, so these two sections need nothing but node and the
+# packages npm installs from its lockfile. The leak scan and the commit audit above
+# already cover ts/ -- they scan every tracked file and every commit -- so there is no
+# second copy of either. `npm ci` runs when node_modules is missing or older than the
+# lockfile, and only ever installs into ts/node_modules, never globally.
+ensure_ts_deps() {
+  command -v npm >/dev/null 2>&1 || { echo "ci-local: ts needs node and npm on PATH" >&2; return 1; }
+  if [ ! -e ts/node_modules/.package-lock.json ] || [ ts/package-lock.json -nt ts/node_modules/.package-lock.json ]; then
+    npm --prefix ts ci
+  fi
+}
+
+sec_tslint() {
+  ensure_ts_deps
+  npm --prefix ts run --silent lint
+  npm --prefix ts run --silent typecheck
+}
+
+sec_tstest() {
+  ensure_ts_deps
+  npm --prefix ts run --silent test
+  npm --prefix ts run --silent build
 }
 
 # Each section runs in its own subshell under `set -e`, so its first failing

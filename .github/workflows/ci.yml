@@ -112,6 +112,23 @@ jobs:
       - run: .venv/bin/pip install -e ".[dev]"
       - run: scripts/ci-local.sh --only lint
 
+  # The TypeScript package in ts/. Node only: it reads the conformance pack and the
+  # TOON fixtures in place and installs from its lockfile into ts/node_modules.
+  typescript:
+    name: typescript
+    runs-on: [self-hosted, linux]
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: ts/package-lock.json
+      - run: scripts/ci-local.sh --only tslint --only tstest
+
   test:
     name: test (py${{ matrix.python-version }})
     runs-on: [self-hosted, linux]

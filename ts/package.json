@@ -1,0 +1,55 @@
+{
+  "name": "axi-toolkit",
+  "version": "0.1.0",
+  "description": "Shared toolkit for AXI command-line tools: errors carrying recovery as data, recovery rendering, and TOON output.",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=20.19"
+  },
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./errors": {
+      "types": "./dist/errors.d.ts",
+      "default": "./dist/errors.js"
+    },
+    "./render/cli": {
+      "types": "./dist/render/cli.d.ts",
+      "default": "./dist/render/cli.js"
+    },
+    "./render/prose": {
+      "types": "./dist/render/prose.d.ts",
+      "default": "./dist/render/prose.js"
+    },
+    "./toon": {
+      "types": "./dist/toon.d.ts",
+      "default": "./dist/toon.js"
+    },
+    "./toon-spec": {
+      "types": "./dist/toon-spec/index.d.ts",
+      "default": "./dist/toon-spec/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "biome check .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@toon-format/toon": "~4.4.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.6.5",
+    "@types/node": "26.6.6",
+    "typescript": "7.0.2",
+    "vitest": "5.1.0"
+  }
+}
