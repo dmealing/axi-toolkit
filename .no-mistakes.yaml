@@ -16,6 +16,10 @@
 # .venv; the 3.9-3.12 matrix is `scripts/ci-local.sh --matrix`, run by hand
 # (see the script's header for why).
 #
+# The TypeScript package in ts/ rides along: `tslint` (biome and tsc) is part of the lint
+# step and `tstest` (vitest and a build) of the test step, so one review run covers both
+# packages. They install into ts/node_modules from the lockfile (`npm ci`).
+#
 # The gate checks out a fresh worktree with no .venv; the script builds one
 # with `scripts/dev-setup.sh --reqgen` the first time a section needs it.
 #
@@ -23,8 +27,8 @@
 # default branch, so an edit here takes effect only once it is merged to main.
 
 commands:
-  test: "scripts/ci-local.sh --only leakcheck --only commits --only test --only requirements --only verify --only drift"
-  lint: "scripts/ci-local.sh --only lint"
+  test: "scripts/ci-local.sh --only leakcheck --only commits --only test --only requirements --only verify --only drift --only tstest"
+  lint: "scripts/ci-local.sh --only lint --only tslint"
 
 # Public repository: keep PR bodies short and the run intent out of them.
 pr:

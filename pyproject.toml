@@ -67,6 +67,10 @@ Documentation = "https://github.com/dmealing/axi-toolkit#readme"
 [tool.hatch.build.targets.wheel]
 packages = ["src/axi_toolkit"]
 
+# The TypeScript package in ts/ is released on its own and is not part of this sdist.
+[tool.hatch.build.targets.sdist]
+exclude = ["/ts"]
+
 [tool.ruff]
 line-length = 100
 target-version = "py39"
