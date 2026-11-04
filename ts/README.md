@@ -28,7 +28,7 @@ npm --prefix ts run build
 
 ## Public surface
 
-Everything is importable from the package root; each module is also its own subpath.
+Everything except `toon-spec` is importable from the package root; each module is also its own subpath.
 
 | Import | What it gives you |
 | --- | --- |

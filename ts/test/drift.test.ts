@@ -6,6 +6,7 @@ import {
   actualDigests,
   CONFORMANCE_ROOT,
   digestMismatches,
+  parseChecksums,
   recordedDigests,
 } from "../src/toon-spec/index.js";
 import { pack } from "./pack.js";
@@ -16,17 +17,6 @@ import { pack } from "./pack.js";
 // without its checksums. This is the local drift check; it needs no network.
 
 type Digests = Record<string, string>;
-
-/** `sha256sum` lines → `{ name: digest }`. */
-function parseChecksums(text: string): Digests {
-  const recorded: Digests = {};
-  for (const line of text.split("\n")) {
-    if (line.trim() === "") continue;
-    const [digest, ...name] = line.trim().split(/\s+/);
-    recorded[name.join(" ")] = digest as string;
-  }
-  return recorded;
-}
 
 function packDigests(): { recorded: Digests; actual: Digests } {
   const recorded = parseChecksums(readFileSync(join(CONFORMANCE_ROOT, "checksums.txt"), "utf8"));

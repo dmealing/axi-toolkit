@@ -40,6 +40,10 @@ for (const path of shipped) {
   }
 }
 
+if (readFileSync(join(root, "LICENSE"), "utf8") !== readFileSync(join(root, "..", "LICENSE"), "utf8")) {
+  problems.push("ts/LICENSE differs from the repository LICENSE");
+}
+
 if (problems.length > 0) {
   console.error(problems.join("\n"));
   process.exit(1);

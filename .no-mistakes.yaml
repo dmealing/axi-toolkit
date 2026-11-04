@@ -17,7 +17,7 @@
 # (see the script's header for why).
 #
 # The TypeScript package in ts/ rides along: `tslint` (biome and tsc) is part of the lint
-# step and `tstest` (vitest and a build) of the test step, with `tsdrift` and `tspack` (checksums,
+# step and `tstest` (vitest and a build) of the test step, with `tspack` (
 # tarball contents, publint, attw), so one review run covers both
 # packages. They install into ts/node_modules from the lockfile (`npm ci`).
 #
@@ -28,7 +28,7 @@
 # default branch, so an edit here takes effect only once it is merged to main.
 
 commands:
-  test: "scripts/ci-local.sh --only leakcheck --only commits --only test --only requirements --only verify --only drift --only tstest --only tsdrift --only tspack"
+  test: "scripts/ci-local.sh --only leakcheck --only commits --only test --only requirements --only verify --only drift --only tstest --only tspack"
   lint: "scripts/ci-local.sh --only lint --only tslint"
 
 # Public repository: keep PR bodies short and the run intent out of them.

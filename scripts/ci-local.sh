@@ -300,6 +300,8 @@ sec_tsdrift() {
 # ones this package claims to support.
 sec_tspack() {
   ensure_ts_deps
+  # tsc never deletes output, so a stale dist/ would pass every check below.
+  rm -rf ts/dist
   npm --prefix ts run --silent build
   npm --prefix ts run --silent check:pack
   npm --prefix ts run --silent check:publint
