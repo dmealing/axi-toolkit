@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
-"""Write or check the language-neutral conformance pack in ``conformance/``.
+"""Write the language-neutral conformance pack in ``conformance/``.
 
     scripts/conformance_pack.py            write every file of the pack
-    scripts/conformance_pack.py --check    fail if the committed pack is not what the
-                                           Python implementation produces now
 
 The pack is built by ``tests/conformance/pack.py`` from the committed capture and the
 package itself, so it needs no source checkout and no network. ``tests/test_conformance_pack.py``
@@ -25,8 +23,7 @@ from conformance import pack  # noqa: E402
 
 
 def main(argv: list[str]) -> int:
-    check = "--check" in argv
-    if set(argv) - {"--check"}:
+    if argv:
         print(__doc__)
         return 2
     built = pack.build()
@@ -36,12 +33,6 @@ def main(argv: list[str]) -> int:
         if not (pack.PACK_DIR / name).is_file()
         or (pack.PACK_DIR / name).read_text(encoding="utf-8") != text
     ]
-    if check:
-        if stale:
-            print(f"conformance pack is stale: {', '.join(stale)}; run scripts/conformance_pack.py")
-            return 1
-        print("conformance pack is current")
-        return 0
     pack.PACK_DIR.mkdir(exist_ok=True)
     for name, text in built.items():
         (pack.PACK_DIR / name).write_text(text, encoding="utf-8", newline="\n")

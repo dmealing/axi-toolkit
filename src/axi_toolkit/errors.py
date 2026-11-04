@@ -242,7 +242,9 @@ class Recovery:
         out: dict = {"kind": self.kind}
         for name in sorted(_ALLOWED[self.kind]):
             value = getattr(self, name)
-            if value == _OPTIONAL_DEFAULTS[name]:
+            if value == _OPTIONAL_DEFAULTS[name] and not (
+                name == "lead" and self.kind in _FACTORY_LEADS
+            ):
                 continue
             key = "text" if (self.kind == KIND_NOTE and name == "fragment") else name
             out[key] = list(value) if isinstance(value, tuple) else value
@@ -254,8 +256,8 @@ class Recovery:
 
         An absent ``lead`` on a ``run`` or ``retry`` takes the factory default rather
         than ``""``: a hand-written ``{"kind": "run", "args": ["x"]}`` otherwise
-        renders with a leading space. :meth:`as_dict` writes every non-default lead,
-        so a recovery built through the factories round-trips exactly.
+        renders with a leading space. :meth:`as_dict` writes the lead of every ``run``
+        and ``retry``, an empty one included, so every recovery round-trips exactly.
         """
         payload = dict(data)
         kind = payload.pop("kind", "")

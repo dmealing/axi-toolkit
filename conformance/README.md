@@ -36,8 +36,7 @@ them at build time from that path rather than keeping a second source of truth.
 ## Regenerating
 
 ```sh
-.venv/bin/python scripts/conformance_pack.py          # write
-.venv/bin/python scripts/conformance_pack.py --check  # compare only
+.venv/bin/python scripts/conformance_pack.py
 ```
 
 The pack is built from the committed `tests/conformance/capture.json` and the package

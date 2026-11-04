@@ -518,11 +518,12 @@ def es_pattern(source: str) -> dict:
     raises: a pattern this function cannot read is a pattern whose meaning in another
     engine is unknown, which is a reason to stop and not a reason to guess. The leading
     ``(?i)`` becomes the ``i`` flag; ``\\"`` (an escape JavaScript's unicode mode refuses)
-    becomes the bare quote.
+    becomes the bare quote. Every pattern carries the ``u`` flag, the mode that refusal
+    belongs to.
     """
-    flags = ""
+    flags = "u"
     if source.startswith("(?i)"):
-        source, flags = source[len("(?i)") :], "i"
+        source, flags = source[len("(?i)") :], "iu"
     source = source.replace('\\"', '"')
     if re.search(r"\(\?[a-zA-Z]", source) or "(?P" in source:
         raise ValueError(f"not translatable to ECMAScript: {source!r}")
@@ -670,9 +671,11 @@ def _redaction() -> dict:
             "Order of application: registered literals (longest first), the bearer rule, the "
             "tool's registered patterns in order, then the token rule. A pattern with a "
             "capture group keeps group 1 and redacts the rest; one without is replaced whole. "
-            "Patterns are ECMAScript. A literal is registered only when it is at least "
-            "`min_length` long. An input is a list of strings and `{ref}` markers, resolved "
-            "through `fragments`, so no credential-shaped value is written into this file."
+            "Patterns are ECMAScript, compiled with their `flags`. What `\\b` and `\\s` match "
+            "is engine-defined; the cases are the contract. A literal is registered only when "
+            "it is at least `min_length` long. An input is a list of strings and `{ref}` "
+            "markers, resolved through `fragments`, so no credential-shaped value is written "
+            "into this file."
         ),
         "redacted": redact.REDACTED,
         "min_secret_length": redact.MIN_SECRET_LENGTH,

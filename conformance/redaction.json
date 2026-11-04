@@ -3,7 +3,7 @@
   "version": 1,
   "topic": "redaction",
   "generated_by": "scripts/conformance_pack.py",
-  "description": "Order of application: registered literals (longest first), the bearer rule, the tool's registered patterns in order, then the token rule. A pattern with a capture group keeps group 1 and redacts the rest; one without is replaced whole. Patterns are ECMAScript. A literal is registered only when it is at least `min_length` long. An input is a list of strings and `{ref}` markers, resolved through `fragments`, so no credential-shaped value is written into this file.",
+  "description": "Order of application: registered literals (longest first), the bearer rule, the tool's registered patterns in order, then the token rule. A pattern with a capture group keeps group 1 and redacts the rest; one without is replaced whole. Patterns are ECMAScript, compiled with their `flags`. What `\\b` and `\\s` match is engine-defined; the cases are the contract. A literal is registered only when it is at least `min_length` long. An input is a list of strings and `{ref}` markers, resolved through `fragments`, so no credential-shaped value is written into this file.",
   "redacted": "<redacted>",
   "min_secret_length": 8,
   "order": [
@@ -15,11 +15,11 @@
   "builtin": {
     "bearer": {
       "source": "\\b(bearer\\s+)[A-Za-z0-9._~+/=-]{8,}",
-      "flags": "i"
+      "flags": "iu"
     },
     "token": {
       "source": "\\beyJ[A-Za-z0-9_-]{4,}\\.[A-Za-z0-9_-]{4,}\\.[A-Za-z0-9_-]{4,}",
-      "flags": ""
+      "flags": "u"
     }
   },
   "fragments": {
@@ -48,7 +48,7 @@
       "patterns": [
         {
           "source": "([?&](?:token|access_token|authsig)=)[^&\\s\"'<>]+",
-          "flags": "i"
+          "flags": "iu"
         }
       ],
       "secrets": [
@@ -207,15 +207,15 @@
       "patterns": [
         {
           "source": "(X-Plex-Token=)[A-Za-z0-9._~-]{4,}",
-          "flags": "i"
+          "flags": "iu"
         },
         {
           "source": "([?&]token=)[A-Za-z0-9._~-]{8,}",
-          "flags": "i"
+          "flags": "iu"
         },
         {
           "source": "(X-Plex-Token['\"]?\\s*[:=]\\s*['\"]?)[A-Za-z0-9._~-]{8,}",
-          "flags": "i"
+          "flags": "iu"
         }
       ],
       "secrets": [

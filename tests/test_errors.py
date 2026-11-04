@@ -80,6 +80,18 @@ def test_a_hand_written_run_or_retry_without_a_lead_takes_the_factory_default():
     assert cli.line(rebuilt, "t") == "Run the command again with `--x` for z"
 
 
+def test_an_empty_lead_survives_the_wire_form():
+    """A parsed line with no lead must not come back with the factory one."""
+    from axi_toolkit.render import cli
+
+    for line in (" `--x`", " `t x`"):
+        parsed = cli.parse(line, "t")
+        assert parsed.lead == ""
+        rebuilt = Recovery.from_dict(json.loads(json.dumps(parsed.as_dict())))
+        assert rebuilt == parsed
+        assert cli.line(rebuilt, "t") == line
+
+
 def test_a_lead_that_is_written_is_kept_and_the_other_kinds_take_none():
     assert Recovery.from_dict({"kind": "run", "args": ["x"], "lead": "Raise with"}).lead == (
         "Raise with"
