@@ -18,7 +18,9 @@ files in place; there is no vendored copy and nothing to sync.
 
 Wire form, as written by `Recovery.as_dict()`: `kind` first, then the kind's fields in
 sorted order, a note's text under `text`, and a field omitted when it holds its unset
-value (`""`, an empty list, a `" "` separator).
+value (`""`, an empty list, a `" "` separator), except the `lead` of a `run` or `retry`,
+which is always written, an empty one included, because an absent lead means the factory
+default.
 
 A redaction input is never a credential-shaped string. It is a list of literal strings and
 `{"ref": name}` markers, and `fragments` holds the recipe for each name (parts to join, or a
