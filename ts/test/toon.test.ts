@@ -15,6 +15,7 @@ import {
   exercisedDelimiters,
   fixtureFiles,
   optionNames,
+  parseChecksums,
   recordedDigests,
   run,
 } from "../src/toon-spec/index.js";
@@ -114,22 +115,19 @@ describe("encode and encodeScalar", () => {
 
 describe("the conformance pack's own checksums", () => {
   it("match the files they cover", () => {
-    const lines = readFileSync(join(CONFORMANCE_ROOT, "checksums.txt"), "utf8").trim().split("\n");
-    expect(lines.length).toBeGreaterThan(0);
-    for (const entry of lines) {
-      const [digest, name] = entry.split(/\s+/);
+    const recorded = parseChecksums(readFileSync(join(CONFORMANCE_ROOT, "checksums.txt"), "utf8"));
+    expect(Object.keys(recorded).length).toBeGreaterThan(0);
+    for (const [name, digest] of Object.entries(recorded)) {
       const actual = createHash("sha256")
-        .update(readFileSync(join(CONFORMANCE_ROOT, name as string)))
+        .update(readFileSync(join(CONFORMANCE_ROOT, name)))
         .digest("hex");
       expect(actual, name).toBe(digest);
     }
   });
 
   it("declare the pack name and version, and the topic their file name", () => {
-    for (const entry of readFileSync(join(CONFORMANCE_ROOT, "checksums.txt"), "utf8")
-      .trim()
-      .split("\n")) {
-      const name = entry.split(/\s+/)[1] as string;
+    const recorded = parseChecksums(readFileSync(join(CONFORMANCE_ROOT, "checksums.txt"), "utf8"));
+    for (const name of Object.keys(recorded)) {
       const file = pack<{ pack: string; version: number; topic: string }>(name);
       expect(file.pack).toBe("axi-toolkit-conformance");
       expect(file.version).toBe(1);

@@ -10,21 +10,19 @@ Version `0.1.0` has not been published to npm.
 
 ## Install
 
-```sh
-npm install axi-toolkit
-```
-
-Requires Node 20.19 or later. The package is ESM-only; a CommonJS consumer on Node 20.19+
-or 22.12+ can still `require()` it. Its single runtime dependency is
-[`@toon-format/toon`](https://www.npmjs.com/package/@toon-format/toon) (`~4.4.0`), used
-only behind `encode` and never re-exported.
-
-From a checkout of the repository:
+The package is not on npm yet. Install from a checkout of the repository:
 
 ```sh
 npm --prefix ts ci
 npm --prefix ts run build
 ```
+
+After the first publish, `npm install axi-toolkit` will work.
+
+Requires Node 20.19 or later. The package is ESM-only; a CommonJS consumer on Node 20.19+
+or 22.12+ can still `require()` it. Its single runtime dependency is
+[`@toon-format/toon`](https://www.npmjs.com/package/@toon-format/toon) (`~4.4.0`), used
+only behind `encode` and never re-exported.
 
 ## Public surface
 

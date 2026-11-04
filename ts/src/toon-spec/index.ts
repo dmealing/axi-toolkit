@@ -189,7 +189,7 @@ export function recordedDigests(): Record<string, string> {
 }
 
 /** `sha256sum` lines to `{ name: digest }`. */
-function parseChecksums(text: string): Record<string, string> {
+export function parseChecksums(text: string): Record<string, string> {
   const recorded: Record<string, string> = {};
   for (const line of text.split("\n")) {
     if (line.trim() === "") continue;
