@@ -38,7 +38,7 @@ Everything except `toon-spec` is importable from the package root; each module i
 | `axi-toolkit/toon` | `encode` and `encodeScalar`: TOON on stdout. |
 | `axi-toolkit/toon-spec` | The specification's encode fixtures and a rig, `run(encode)`, that scores any encoder against them. Needs a checkout of the repository; see below. |
 | `axi-toolkit/redact` | `Redactor`, a default instance behind `redact`, `registerSecret`, `registerPattern`; order is literals, bearer, registered shapes, JWT. |
-| `axi-toolkit/envconfig` | `credentialSpec`, `loadCredentials`, `normalizeBaseUrl`, `describeEnvironment`, `missingVars`, `setupRecovery`: credentials come from the environment only. |
+| `axi-toolkit/envconfig` | `credentialSpec`, `load` (`loadCredentials` at the package root), `normalizeBaseUrl`, `describeEnvironment`, `missingVars`, `setupRecovery`: credentials come from the environment only. |
 
 ```ts
 import { ConfigError, line, note, run } from "axi-toolkit";

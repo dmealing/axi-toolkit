@@ -17,8 +17,8 @@
 # (see the script's header for why).
 #
 # The TypeScript package in ts/ rides along: `tslint` (biome and tsc) is part of the lint
-# step and `tstest` (vitest and a build) of the test step, with `tspack` (
-# tarball contents, publint, attw), so one review run covers both
+# step, and `tstest` (vitest and a build) and `tspack` (tarball contents, publint, attw)
+# of the test step, so one review run covers both
 # packages. They install into ts/node_modules from the lockfile (`npm ci`).
 #
 # The gate checks out a fresh worktree with no .venv; the script builds one
