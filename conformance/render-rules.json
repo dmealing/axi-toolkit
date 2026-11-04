@@ -1,0 +1,957 @@
+{
+  "pack": "axi-toolkit-conformance",
+  "version": 1,
+  "topic": "render-rules",
+  "generated_by": "scripts/conformance_pack.py",
+  "description": "`cases`: render `recovery` for each tool in `renders` and compare `line` (shell) and `sentence` (prose). `hand_written`: a wire form a person wrote; normalise it (`recovery` is the result) and render it. `rejected`: wire forms that must be refused. `parse`: shell lines and the intent they parse to; `parse_refused`: lines that must be refused.",
+  "cases": [
+    {
+      "name": "run, bare",
+      "recovery": {
+        "kind": "run",
+        "args": [
+          "doctor"
+        ],
+        "lead": "Run"
+      },
+      "mentions_tool": true,
+      "renders": {
+        "hass-axi": {
+          "line": "Run `hass-axi doctor`",
+          "sentence": "Use hass-axi's `doctor` command."
+        },
+        "plex-axi": {
+          "line": "Run `plex-axi doctor`",
+          "sentence": "Use plex-axi's `doctor` command."
+        }
+      }
+    },
+    {
+      "name": "run, with a purpose",
+      "recovery": {
+        "kind": "run",
+        "args": [
+          "area",
+          "list"
+        ],
+        "lead": "Run",
+        "purpose": "to see each area's id"
+      },
+      "mentions_tool": true,
+      "renders": {
+        "hass-axi": {
+          "line": "Run `hass-axi area list` to see each area's id",
+          "sentence": "To see each area's id, use hass-axi's `area list` command."
+        },
+        "plex-axi": {
+          "line": "Run `plex-axi area list` to see each area's id",
+          "sentence": "To see each area's id, use plex-axi's `area list` command."
+        }
+      }
+    },
+    {
+      "name": "run, a flag as the first word",
+      "recovery": {
+        "kind": "run",
+        "args": [
+          "--help"
+        ],
+        "lead": "Run",
+        "purpose": "for the full reference"
+      },
+      "mentions_tool": true,
+      "renders": {
+        "hass-axi": {
+          "line": "Run `hass-axi --help` for the full reference",
+          "sentence": "For the full reference, use hass-axi's `--help` command."
+        },
+        "plex-axi": {
+          "line": "Run `plex-axi --help` for the full reference",
+          "sentence": "For the full reference, use plex-axi's `--help` command."
+        }
+      }
+    },
+    {
+      "name": "run, custom lead",
+      "recovery": {
+        "kind": "run",
+        "args": [
+          "--timeout",
+          "60",
+          "<command>"
+        ],
+        "lead": "Raise the limit with"
+      },
+      "mentions_tool": true,
+      "renders": {
+        "hass-axi": {
+          "line": "Raise the limit with `hass-axi --timeout 60 <command>`",
+          "sentence": "Raise the limit with hass-axi's `--timeout 60 <command>`."
+        },
+        "plex-axi": {
+          "line": "Raise the limit with `plex-axi --timeout 60 <command>`",
+          "sentence": "Raise the limit with plex-axi's `--timeout 60 <command>`."
+        }
+      }
+    },
+    {
+      "name": "run, colon separator",
+      "recovery": {
+        "kind": "run",
+        "args": [
+          "doctor"
+        ],
+        "lead": "Run",
+        "purpose": "a library that has not finished scanning has no metadata",
+        "separator": ": "
+      },
+      "mentions_tool": true,
+      "renders": {
+        "hass-axi": {
+          "line": "Run `hass-axi doctor`: a library that has not finished scanning has no metadata",
+          "sentence": "A library that has not finished scanning has no metadata, use hass-axi's `doctor` command."
+        },
+        "plex-axi": {
+          "line": "Run `plex-axi doctor`: a library that has not finished scanning has no metadata",
+          "sentence": "A library that has not finished scanning has no metadata, use plex-axi's `doctor` command."
+        }
+      }
+    },
+    {
+      "name": "run, separator without a purpose",
+      "recovery": {
+        "kind": "run",
+        "args": [
+          "doctor"
+        ],
+        "lead": "Run",
+        "separator": "."
+      },
+      "mentions_tool": true,
+      "renders": {
+        "hass-axi": {
+          "line": "Run `hass-axi doctor`.",
+          "sentence": "Use hass-axi's `doctor` command."
+        },
+        "plex-axi": {
+          "line": "Run `plex-axi doctor`.",
+          "sentence": "Use plex-axi's `doctor` command."
+        }
+      }
+    },
+    {
+      "name": "run, purpose naming a variable",
+      "recovery": {
+        "kind": "run",
+        "args": [
+          "doctor"
+        ],
+        "lead": "Run",
+        "purpose": "to check HA_URL reaches Home Assistant"
+      },
+      "mentions_tool": true,
+      "renders": {
+        "hass-axi": {
+          "line": "Run `hass-axi doctor` to check HA_URL reaches Home Assistant",
+          "sentence": "To check HA_URL reaches Home Assistant, use hass-axi's `doctor` command."
+        },
+        "plex-axi": {
+          "line": "Run `plex-axi doctor` to check HA_URL reaches Home Assistant",
+          "sentence": "To check HA_URL reaches Home Assistant, use plex-axi's `doctor` command."
+        }
+      }
+    },
+    {
+      "name": "retry, default lead",
+      "recovery": {
+        "kind": "retry",
+        "fragment": "--limit 50",
+        "lead": "Run the command again with"
+      },
+      "mentions_tool": false,
+      "renders": {
+        "hass-axi": {
+          "line": "Run the command again with `--limit 50`",
+          "sentence": "Run the same hass-axi command again with `--limit 50`."
+        },
+        "plex-axi": {
+          "line": "Run the command again with `--limit 50`",
+          "sentence": "Run the same plex-axi command again with `--limit 50`."
+        }
+      }
+    },
+    {
+      "name": "retry, custom lead and purpose",
+      "recovery": {
+        "kind": "retry",
+        "fragment": "--debug",
+        "lead": "Re-run with",
+        "purpose": "for a diagnostic trace on stderr"
+      },
+      "mentions_tool": false,
+      "renders": {
+        "hass-axi": {
+          "line": "Re-run with `--debug` for a diagnostic trace on stderr",
+          "sentence": "Re-run with `--debug` for a diagnostic trace on stderr, then run it again with hass-axi."
+        },
+        "plex-axi": {
+          "line": "Re-run with `--debug` for a diagnostic trace on stderr",
+          "sentence": "Re-run with `--debug` for a diagnostic trace on stderr, then run it again with plex-axi."
+        }
+      }
+    },
+    {
+      "name": "retry, custom lead",
+      "recovery": {
+        "kind": "retry",
+        "fragment": "--path <dir>",
+        "lead": "Pass a writable repository root with"
+      },
+      "mentions_tool": false,
+      "renders": {
+        "hass-axi": {
+          "line": "Pass a writable repository root with `--path <dir>`",
+          "sentence": "Pass a writable repository root with `--path <dir>`, then run it again with hass-axi."
+        },
+        "plex-axi": {
+          "line": "Pass a writable repository root with `--path <dir>`",
+          "sentence": "Pass a writable repository root with `--path <dir>`, then run it again with plex-axi."
+        }
+      }
+    },
+    {
+      "name": "set_env, with an example",
+      "recovery": {
+        "kind": "set_env",
+        "describes": "your Home Assistant base URL",
+        "example": "export HA_URL=https://host.example.com",
+        "variable": "HA_URL"
+      },
+      "mentions_tool": false,
+      "renders": {
+        "hass-axi": {
+          "line": "Set HA_URL to your Home Assistant base URL, e.g. export HA_URL=https://host.example.com",
+          "sentence": "hass-axi reads HA_URL from the environment: set it to your Home Assistant base URL, e.g. export HA_URL=https://host.example.com."
+        },
+        "plex-axi": {
+          "line": "Set HA_URL to your Home Assistant base URL, e.g. export HA_URL=https://host.example.com",
+          "sentence": "plex-axi reads HA_URL from the environment: set it to your Home Assistant base URL, e.g. export HA_URL=https://host.example.com."
+        }
+      }
+    },
+    {
+      "name": "set_env, with a reference",
+      "recovery": {
+        "kind": "set_env",
+        "describes": "a Plex access token",
+        "reference": "https://support.example.com/tokens",
+        "variable": "PLEX_TOKEN"
+      },
+      "mentions_tool": false,
+      "renders": {
+        "hass-axi": {
+          "line": "Set PLEX_TOKEN to a Plex access token; see https://support.example.com/tokens",
+          "sentence": "hass-axi reads PLEX_TOKEN from the environment: set it to a Plex access token; see https://support.example.com/tokens."
+        },
+        "plex-axi": {
+          "line": "Set PLEX_TOKEN to a Plex access token; see https://support.example.com/tokens",
+          "sentence": "plex-axi reads PLEX_TOKEN from the environment: set it to a Plex access token; see https://support.example.com/tokens."
+        }
+      }
+    },
+    {
+      "name": "set_env, bare",
+      "recovery": {
+        "kind": "set_env",
+        "describes": "a long-lived access token",
+        "variable": "HA_TOKEN"
+      },
+      "mentions_tool": false,
+      "renders": {
+        "hass-axi": {
+          "line": "Set HA_TOKEN to a long-lived access token",
+          "sentence": "hass-axi reads HA_TOKEN from the environment: set it to a long-lived access token."
+        },
+        "plex-axi": {
+          "line": "Set HA_TOKEN to a long-lived access token",
+          "sentence": "plex-axi reads HA_TOKEN from the environment: set it to a long-lived access token."
+        }
+      }
+    },
+    {
+      "name": "set_env, example and reference",
+      "recovery": {
+        "kind": "set_env",
+        "describes": "an access token",
+        "example": "export EXAMPLE_TOKEN=value",
+        "reference": "https://docs.example.com/tokens",
+        "variable": "EXAMPLE_TOKEN"
+      },
+      "mentions_tool": false,
+      "renders": {
+        "hass-axi": {
+          "line": "Set EXAMPLE_TOKEN to an access token, e.g. export EXAMPLE_TOKEN=value; see https://docs.example.com/tokens",
+          "sentence": "hass-axi reads EXAMPLE_TOKEN from the environment: set it to an access token, e.g. export EXAMPLE_TOKEN=value; see https://docs.example.com/tokens."
+        },
+        "plex-axi": {
+          "line": "Set EXAMPLE_TOKEN to an access token, e.g. export EXAMPLE_TOKEN=value; see https://docs.example.com/tokens",
+          "sentence": "plex-axi reads EXAMPLE_TOKEN from the environment: set it to an access token, e.g. export EXAMPLE_TOKEN=value; see https://docs.example.com/tokens."
+        }
+      }
+    },
+    {
+      "name": "choose",
+      "recovery": {
+        "kind": "choose",
+        "label": "did you mean",
+        "values": [
+          "light.turn_on",
+          "light.turn_off"
+        ]
+      },
+      "mentions_tool": false,
+      "renders": {
+        "hass-axi": {
+          "line": "did you mean: light.turn_on, light.turn_off",
+          "sentence": "Did you mean: light.turn_on, light.turn_off."
+        },
+        "plex-axi": {
+          "line": "did you mean: light.turn_on, light.turn_off",
+          "sentence": "Did you mean: light.turn_on, light.turn_off."
+        }
+      }
+    },
+    {
+      "name": "choose, one value",
+      "recovery": {
+        "kind": "choose",
+        "label": "one of",
+        "values": [
+          "a"
+        ]
+      },
+      "mentions_tool": false,
+      "renders": {
+        "hass-axi": {
+          "line": "one of: a",
+          "sentence": "One of: a."
+        },
+        "plex-axi": {
+          "line": "one of: a",
+          "sentence": "One of: a."
+        }
+      }
+    },
+    {
+      "name": "note, plain",
+      "recovery": {
+        "kind": "note",
+        "text": "Retry the command; a dropped connection is often a one-off"
+      },
+      "mentions_tool": false,
+      "renders": {
+        "hass-axi": {
+          "line": "Retry the command; a dropped connection is often a one-off",
+          "sentence": "Retry the command; a dropped connection is often a one-off."
+        },
+        "plex-axi": {
+          "line": "Retry the command; a dropped connection is often a one-off",
+          "sentence": "Retry the command; a dropped connection is often a one-off."
+        }
+      }
+    },
+    {
+      "name": "note, with the tool slot",
+      "recovery": {
+        "kind": "note",
+        "text": "This is a bug in {tool}; the command did not complete"
+      },
+      "mentions_tool": true,
+      "renders": {
+        "hass-axi": {
+          "line": "This is a bug in hass-axi; the command did not complete",
+          "sentence": "This is a bug in hass-axi; the command did not complete."
+        },
+        "plex-axi": {
+          "line": "This is a bug in plex-axi; the command did not complete",
+          "sentence": "This is a bug in plex-axi; the command did not complete."
+        }
+      }
+    },
+    {
+      "name": "note, slot at the start",
+      "recovery": {
+        "kind": "note",
+        "text": "{tool} could not finish"
+      },
+      "mentions_tool": true,
+      "renders": {
+        "hass-axi": {
+          "line": "hass-axi could not finish",
+          "sentence": "hass-axi could not finish."
+        },
+        "plex-axi": {
+          "line": "plex-axi could not finish",
+          "sentence": "plex-axi could not finish."
+        }
+      }
+    },
+    {
+      "name": "note, two slots",
+      "recovery": {
+        "kind": "note",
+        "text": "{tool} and {tool}"
+      },
+      "mentions_tool": true,
+      "renders": {
+        "hass-axi": {
+          "line": "hass-axi and hass-axi",
+          "sentence": "hass-axi and hass-axi."
+        },
+        "plex-axi": {
+          "line": "plex-axi and plex-axi",
+          "sentence": "plex-axi and plex-axi."
+        }
+      }
+    },
+    {
+      "name": "note, ends with a full stop",
+      "recovery": {
+        "kind": "note",
+        "text": "Nothing was sent to the server."
+      },
+      "mentions_tool": false,
+      "renders": {
+        "hass-axi": {
+          "line": "Nothing was sent to the server.",
+          "sentence": "Nothing was sent to the server."
+        },
+        "plex-axi": {
+          "line": "Nothing was sent to the server.",
+          "sentence": "Nothing was sent to the server."
+        }
+      }
+    },
+    {
+      "name": "note, ends with a question mark",
+      "recovery": {
+        "kind": "note",
+        "text": "Which of these did you mean?"
+      },
+      "mentions_tool": false,
+      "renders": {
+        "hass-axi": {
+          "line": "Which of these did you mean?",
+          "sentence": "Which of these did you mean?"
+        },
+        "plex-axi": {
+          "line": "Which of these did you mean?",
+          "sentence": "Which of these did you mean?"
+        }
+      }
+    },
+    {
+      "name": "note, ends with a colon",
+      "recovery": {
+        "kind": "note",
+        "text": "Two things are wrong here:"
+      },
+      "mentions_tool": false,
+      "renders": {
+        "hass-axi": {
+          "line": "Two things are wrong here:",
+          "sentence": "Two things are wrong here:"
+        },
+        "plex-axi": {
+          "line": "Two things are wrong here:",
+          "sentence": "Two things are wrong here:"
+        }
+      }
+    }
+  ],
+  "hand_written": [
+    {
+      "name": "run, no lead",
+      "input": {
+        "kind": "run",
+        "args": [
+          "x"
+        ]
+      },
+      "recovery": {
+        "kind": "run",
+        "args": [
+          "x"
+        ],
+        "lead": "Run"
+      },
+      "renders": {
+        "hass-axi": {
+          "line": "Run `hass-axi x`",
+          "sentence": "Use hass-axi's `x` command."
+        }
+      }
+    },
+    {
+      "name": "run, no lead, with a purpose",
+      "input": {
+        "kind": "run",
+        "args": [
+          "x"
+        ],
+        "purpose": "to see y"
+      },
+      "recovery": {
+        "kind": "run",
+        "args": [
+          "x"
+        ],
+        "lead": "Run",
+        "purpose": "to see y"
+      },
+      "renders": {
+        "hass-axi": {
+          "line": "Run `hass-axi x` to see y",
+          "sentence": "To see y, use hass-axi's `x` command."
+        }
+      }
+    },
+    {
+      "name": "retry, no lead",
+      "input": {
+        "kind": "retry",
+        "fragment": "--x"
+      },
+      "recovery": {
+        "kind": "retry",
+        "fragment": "--x",
+        "lead": "Run the command again with"
+      },
+      "renders": {
+        "hass-axi": {
+          "line": "Run the command again with `--x`",
+          "sentence": "Run the same hass-axi command again with `--x`."
+        }
+      }
+    },
+    {
+      "name": "retry, no lead, with a purpose",
+      "input": {
+        "kind": "retry",
+        "fragment": "--x",
+        "purpose": "for z"
+      },
+      "recovery": {
+        "kind": "retry",
+        "fragment": "--x",
+        "lead": "Run the command again with",
+        "purpose": "for z"
+      },
+      "renders": {
+        "hass-axi": {
+          "line": "Run the command again with `--x` for z",
+          "sentence": "Run the same hass-axi command again with `--x` for z."
+        }
+      }
+    },
+    {
+      "name": "run, lead given",
+      "input": {
+        "kind": "run",
+        "args": [
+          "x"
+        ],
+        "lead": "Raise the limit with"
+      },
+      "recovery": {
+        "kind": "run",
+        "args": [
+          "x"
+        ],
+        "lead": "Raise the limit with"
+      },
+      "renders": {
+        "hass-axi": {
+          "line": "Raise the limit with `hass-axi x`",
+          "sentence": "Raise the limit with hass-axi's `x`."
+        }
+      }
+    },
+    {
+      "name": "run, empty lead kept",
+      "input": {
+        "kind": "run",
+        "args": [
+          "x"
+        ],
+        "lead": ""
+      },
+      "recovery": {
+        "kind": "run",
+        "args": [
+          "x"
+        ],
+        "lead": ""
+      },
+      "renders": {
+        "hass-axi": {
+          "line": " `hass-axi x`",
+          "sentence": " hass-axi's `x`."
+        }
+      }
+    },
+    {
+      "name": "retry, empty lead kept",
+      "input": {
+        "kind": "retry",
+        "fragment": "--x",
+        "lead": ""
+      },
+      "recovery": {
+        "kind": "retry",
+        "fragment": "--x",
+        "lead": ""
+      },
+      "renders": {
+        "hass-axi": {
+          "line": " `--x`",
+          "sentence": " `--x`, then run it again with hass-axi."
+        }
+      }
+    },
+    {
+      "name": "note, text key",
+      "input": {
+        "kind": "note",
+        "text": "hello {tool}"
+      },
+      "recovery": {
+        "kind": "note",
+        "text": "hello {tool}"
+      },
+      "renders": {
+        "hass-axi": {
+          "line": "hello hass-axi",
+          "sentence": "hello hass-axi."
+        }
+      }
+    },
+    {
+      "name": "set_env, fields in any order",
+      "input": {
+        "variable": "V",
+        "kind": "set_env",
+        "describes": "d"
+      },
+      "recovery": {
+        "kind": "set_env",
+        "describes": "d",
+        "variable": "V"
+      },
+      "renders": {
+        "hass-axi": {
+          "line": "Set V to d",
+          "sentence": "hass-axi reads V from the environment: set it to d."
+        }
+      }
+    },
+    {
+      "name": "choose, values as an array",
+      "input": {
+        "kind": "choose",
+        "label": "l",
+        "values": [
+          "a",
+          "b"
+        ]
+      },
+      "recovery": {
+        "kind": "choose",
+        "label": "l",
+        "values": [
+          "a",
+          "b"
+        ]
+      },
+      "renders": {
+        "hass-axi": {
+          "line": "l: a, b",
+          "sentence": "L: a, b."
+        }
+      }
+    }
+  ],
+  "rejected": [
+    {
+      "name": "unknown kind",
+      "input": {
+        "kind": "incantation"
+      }
+    },
+    {
+      "name": "no kind",
+      "input": {
+        "args": [
+          "x"
+        ]
+      }
+    },
+    {
+      "name": "run without arguments",
+      "input": {
+        "kind": "run",
+        "args": []
+      }
+    },
+    {
+      "name": "run without the args key",
+      "input": {
+        "kind": "run"
+      }
+    },
+    {
+      "name": "retry without a fragment",
+      "input": {
+        "kind": "retry"
+      }
+    },
+    {
+      "name": "set_env without a variable",
+      "input": {
+        "kind": "set_env",
+        "describes": "d"
+      }
+    },
+    {
+      "name": "set_env without a description",
+      "input": {
+        "kind": "set_env",
+        "variable": "V"
+      }
+    },
+    {
+      "name": "choose without values",
+      "input": {
+        "kind": "choose",
+        "label": "l"
+      }
+    },
+    {
+      "name": "choose without a label",
+      "input": {
+        "kind": "choose",
+        "values": [
+          "a"
+        ]
+      }
+    },
+    {
+      "name": "note without text",
+      "input": {
+        "kind": "note"
+      }
+    },
+    {
+      "name": "note with a second placeholder",
+      "input": {
+        "kind": "note",
+        "text": "a {count} of things"
+      }
+    },
+    {
+      "name": "a note carrying a run field",
+      "input": {
+        "kind": "note",
+        "text": "t",
+        "args": [
+          "x"
+        ]
+      }
+    },
+    {
+      "name": "a run carrying a set_env field",
+      "input": {
+        "kind": "run",
+        "args": [
+          "x"
+        ],
+        "variable": "V"
+      }
+    },
+    {
+      "name": "a retry carrying args",
+      "input": {
+        "kind": "retry",
+        "fragment": "--x",
+        "args": [
+          "x"
+        ]
+      }
+    },
+    {
+      "name": "an unknown field",
+      "input": {
+        "kind": "run",
+        "args": [
+          "x"
+        ],
+        "bogus": "y"
+      }
+    }
+  ],
+  "parse": [
+    {
+      "tool": "hass-axi",
+      "line": "Run `hass-axi area list` to see each area's id",
+      "intent": {
+        "kind": "run",
+        "args": [
+          "area",
+          "list"
+        ],
+        "lead": "Run",
+        "purpose": "to see each area's id"
+      },
+      "renders_back": "Run `hass-axi area list` to see each area's id"
+    },
+    {
+      "tool": "hass-axi",
+      "line": "Raise the limit with `hass-axi --timeout 60 <command>`",
+      "intent": {
+        "kind": "run",
+        "args": [
+          "--timeout",
+          "60",
+          "<command>"
+        ],
+        "lead": "Raise the limit with"
+      },
+      "renders_back": "Raise the limit with `hass-axi --timeout 60 <command>`"
+    },
+    {
+      "tool": "hass-axi",
+      "line": "Every local client still works without it: run `hass-axi clients`",
+      "intent": {
+        "kind": "run",
+        "args": [
+          "clients"
+        ],
+        "lead": "Every local client still works without it: run"
+      },
+      "renders_back": "Every local client still works without it: run `hass-axi clients`"
+    },
+    {
+      "tool": "hass-axi",
+      "line": "Run the command again with `--limit 50`",
+      "intent": {
+        "kind": "retry",
+        "fragment": "--limit 50",
+        "lead": "Run the command again with"
+      },
+      "renders_back": "Run the command again with `--limit 50`"
+    },
+    {
+      "tool": "hass-axi",
+      "line": " `--x`",
+      "intent": {
+        "kind": "retry",
+        "fragment": "--x",
+        "lead": ""
+      },
+      "renders_back": " `--x`"
+    },
+    {
+      "tool": "hass-axi",
+      "line": "Pass a writable repository root with `--path <dir>`",
+      "intent": {
+        "kind": "retry",
+        "fragment": "--path <dir>",
+        "lead": "Pass a writable repository root with"
+      },
+      "renders_back": "Pass a writable repository root with `--path <dir>`"
+    },
+    {
+      "tool": "hass-axi",
+      "line": "Set HA_URL to your base URL, e.g. export HA_URL=https://host.example.com",
+      "intent": {
+        "kind": "set_env",
+        "describes": "your base URL",
+        "example": "export HA_URL=https://host.example.com",
+        "variable": "HA_URL"
+      },
+      "renders_back": "Set HA_URL to your base URL, e.g. export HA_URL=https://host.example.com"
+    },
+    {
+      "tool": "hass-axi",
+      "line": "Retry the command; a dropped connection is often a one-off",
+      "intent": {
+        "kind": "note",
+        "text": "Retry the command; a dropped connection is often a one-off"
+      },
+      "renders_back": "Retry the command; a dropped connection is often a one-off"
+    },
+    {
+      "tool": "hass-axi",
+      "line": "usage: hass-axi [command] [subcommand] [args] [flags]",
+      "intent": {
+        "kind": "note",
+        "text": "usage: {tool} [command] [subcommand] [args] [flags]"
+      },
+      "renders_back": "usage: hass-axi [command] [subcommand] [args] [flags]"
+    },
+    {
+      "tool": "hass-axi",
+      "line": "Run `hass-axi rate --help` or `hass-axi playlist --help` for the writes on offer",
+      "intent": {
+        "kind": "note",
+        "text": "Run `{tool} rate --help` or `{tool} playlist --help` for the writes on offer"
+      },
+      "renders_back": "Run `hass-axi rate --help` or `hass-axi playlist --help` for the writes on offer"
+    },
+    {
+      "tool": "hass-axi",
+      "line": "Install it with `pip install 'hass-axi'` or `pip install websockets`",
+      "intent": {
+        "kind": "note",
+        "text": "Install it with `pip install '{tool}'` or `pip install websockets`"
+      },
+      "renders_back": "Install it with `pip install 'hass-axi'` or `pip install websockets`"
+    },
+    {
+      "tool": "hass-axi",
+      "line": "`--flag` at the very start",
+      "intent": {
+        "kind": "note",
+        "text": "`--flag` at the very start"
+      },
+      "renders_back": "`--flag` at the very start"
+    },
+    {
+      "tool": "hass-axi",
+      "line": "units: s seconds, m minutes, h hours",
+      "intent": {
+        "kind": "note",
+        "text": "units: s seconds, m minutes, h hours"
+      },
+      "renders_back": "units: s seconds, m minutes, h hours"
+    },
+    {
+      "tool": "hass-axi",
+      "line": "Run `hass-axi doctor`.",
+      "intent": {
+        "kind": "run",
+        "args": [
+          "doctor"
+        ],
+        "lead": "Run",
+        "separator": "."
+      },
+      "renders_back": "Run `hass-axi doctor`."
+    }
+  ],
+  "parse_refused": [
+    "",
+    "   ",
+    "\n"
+  ]
+}

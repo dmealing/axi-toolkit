@@ -1,0 +1,374 @@
+{
+  "pack": "axi-toolkit-conformance",
+  "version": 1,
+  "topic": "redaction",
+  "generated_by": "scripts/conformance_pack.py",
+  "description": "Order of application: registered literals (longest first), the bearer rule, the tool's registered patterns in order, then the token rule. A pattern with a capture group keeps group 1 and redacts the rest; one without is replaced whole. Patterns are ECMAScript, compiled with their `flags`. What `\\b` and `\\s` match is engine-defined; the cases are the contract. A literal is registered only when it is at least `min_length` long. An input is a list of strings and `{ref}` markers, resolved through `fragments`, so no credential-shaped value is written into this file.",
+  "redacted": "<redacted>",
+  "min_secret_length": 8,
+  "order": [
+    "literals",
+    "bearer",
+    "registered",
+    "token"
+  ],
+  "builtin": {
+    "bearer": {
+      "source": "\\b(bearer\\s+)[A-Za-z0-9._~+/=-]{8,}",
+      "flags": "iu"
+    },
+    "token": {
+      "source": "\\beyJ[A-Za-z0-9_-]{4,}\\.[A-Za-z0-9_-]{4,}\\.[A-Za-z0-9_-]{4,}",
+      "flags": "u"
+    }
+  },
+  "fragments": {
+    "bearer_value": {
+      "join": [
+        "abcdef",
+        "123456",
+        "ghijkl"
+      ]
+    },
+    "plex_value": {
+      "join": [
+        "plex",
+        "0123456789",
+        "abcdef"
+      ]
+    },
+    "token": {
+      "header": "{\"alg\": \"HS256\"}",
+      "payload": "{\"sub\": \"synthetic\"}",
+      "signature": "c2lnbmF0dXJlLXZhbHVl"
+    }
+  },
+  "tools": {
+    "hass-axi": {
+      "patterns": [
+        {
+          "source": "([?&](?:token|access_token|authsig)=)[^&\\s\"'<>]+",
+          "flags": "iu"
+        }
+      ],
+      "secrets": [
+        {
+          "value": "a-registered-literal-value",
+          "min_length": 8
+        },
+        {
+          "value": "someone:example-secret",
+          "min_length": 4
+        },
+        {
+          "value": "example-secret",
+          "min_length": 4
+        },
+        {
+          "value": "abc",
+          "min_length": 8
+        }
+      ],
+      "cases": [
+        {
+          "name": "bearer-header",
+          "input": [
+            "Authorization: Bearer ",
+            {
+              "ref": "bearer_value"
+            }
+          ],
+          "expected": "Authorization: Bearer <redacted>"
+        },
+        {
+          "name": "jwt-in-prose",
+          "input": [
+            "leaked ",
+            {
+              "ref": "token"
+            },
+            " here"
+          ],
+          "expected": "leaked <redacted> here"
+        },
+        {
+          "name": "token-parameter",
+          "input": [
+            "http://host.example.com:32400/art?X-Plex-Token=",
+            {
+              "ref": "plex_value"
+            }
+          ],
+          "expected": "http://host.example.com:32400/art?X-Plex-Token=plex0123456789abcdef"
+        },
+        {
+          "name": "delegation-parameter",
+          "input": [
+            "http://host.example.com:32400/s?token=",
+            {
+              "ref": "plex_value"
+            }
+          ],
+          "expected": "http://host.example.com:32400/s?token=<redacted>"
+        },
+        {
+          "name": "token-header",
+          "input": [
+            "X-Plex-Token: ",
+            {
+              "ref": "plex_value"
+            }
+          ],
+          "expected": "X-Plex-Token: plex0123456789abcdef"
+        },
+        {
+          "name": "access-token-parameter",
+          "input": [
+            "https://host.example.com/media/example.jpg?width=100&access_token=",
+            {
+              "ref": "bearer_value"
+            }
+          ],
+          "expected": "https://host.example.com/media/example.jpg?width=100&access_token=<redacted>"
+        },
+        {
+          "name": "signature-parameter",
+          "input": [
+            "https://host.example.com/media/example.mp3?authsig=",
+            {
+              "ref": "bearer_value"
+            },
+            "&v=2"
+          ],
+          "expected": "https://host.example.com/media/example.mp3?authsig=<redacted>&v=2"
+        },
+        {
+          "name": "parameter-value-outside-an-alphabet",
+          "input": [
+            "https://host.example.com/s?token=ab%2Fcd+",
+            {
+              "ref": "bearer_value"
+            },
+            "/=="
+          ],
+          "expected": "https://host.example.com/s?token=<redacted>"
+        },
+        {
+          "name": "bearer-inside-a-parameter",
+          "input": [
+            "https://host.example.com/s?token=bearer ",
+            {
+              "ref": "bearer_value"
+            }
+          ],
+          "expected": "https://host.example.com/s?token=<redacted> <redacted>"
+        },
+        {
+          "name": "jwt-after-a-parameter-prefix",
+          "input": [
+            "https://host.example.com/s?token=ab.",
+            {
+              "ref": "token"
+            }
+          ],
+          "expected": "https://host.example.com/s?token=<redacted>"
+        },
+        {
+          "name": "registered-literal",
+          "input": [
+            "note a-registered-literal-value trailing"
+          ],
+          "expected": "note <redacted> trailing"
+        },
+        {
+          "name": "userinfo-pair",
+          "input": [
+            "pair is someone:example-secret"
+          ],
+          "expected": "pair is <redacted>"
+        },
+        {
+          "name": "too-short-to-register",
+          "input": [
+            "abc def"
+          ],
+          "expected": "abc def"
+        },
+        {
+          "name": "nothing-to-redact",
+          "input": [
+            "an ordinary sentence about a token"
+          ],
+          "expected": "an ordinary sentence about a token"
+        }
+      ]
+    },
+    "plex-axi": {
+      "patterns": [
+        {
+          "source": "(X-Plex-Token=)[A-Za-z0-9._~-]{4,}",
+          "flags": "iu"
+        },
+        {
+          "source": "([?&]token=)[A-Za-z0-9._~-]{8,}",
+          "flags": "iu"
+        },
+        {
+          "source": "(X-Plex-Token['\"]?\\s*[:=]\\s*['\"]?)[A-Za-z0-9._~-]{8,}",
+          "flags": "iu"
+        }
+      ],
+      "secrets": [
+        {
+          "value": "a-registered-literal-value",
+          "min_length": 8
+        },
+        {
+          "value": "someone:example-secret",
+          "min_length": 4
+        },
+        {
+          "value": "example-secret",
+          "min_length": 4
+        },
+        {
+          "value": "abc",
+          "min_length": 8
+        }
+      ],
+      "cases": [
+        {
+          "name": "bearer-header",
+          "input": [
+            "Authorization: Bearer ",
+            {
+              "ref": "bearer_value"
+            }
+          ],
+          "expected": "Authorization: Bearer <redacted>"
+        },
+        {
+          "name": "jwt-in-prose",
+          "input": [
+            "leaked ",
+            {
+              "ref": "token"
+            },
+            " here"
+          ],
+          "expected": "leaked <redacted> here"
+        },
+        {
+          "name": "token-parameter",
+          "input": [
+            "http://host.example.com:32400/art?X-Plex-Token=",
+            {
+              "ref": "plex_value"
+            }
+          ],
+          "expected": "http://host.example.com:32400/art?X-Plex-Token=<redacted>"
+        },
+        {
+          "name": "delegation-parameter",
+          "input": [
+            "http://host.example.com:32400/s?token=",
+            {
+              "ref": "plex_value"
+            }
+          ],
+          "expected": "http://host.example.com:32400/s?token=<redacted>"
+        },
+        {
+          "name": "token-header",
+          "input": [
+            "X-Plex-Token: ",
+            {
+              "ref": "plex_value"
+            }
+          ],
+          "expected": "X-Plex-Token: <redacted>"
+        },
+        {
+          "name": "access-token-parameter",
+          "input": [
+            "https://host.example.com/media/example.jpg?width=100&access_token=",
+            {
+              "ref": "bearer_value"
+            }
+          ],
+          "expected": "https://host.example.com/media/example.jpg?width=100&access_token=abcdef123456ghijkl"
+        },
+        {
+          "name": "signature-parameter",
+          "input": [
+            "https://host.example.com/media/example.mp3?authsig=",
+            {
+              "ref": "bearer_value"
+            },
+            "&v=2"
+          ],
+          "expected": "https://host.example.com/media/example.mp3?authsig=abcdef123456ghijkl&v=2"
+        },
+        {
+          "name": "parameter-value-outside-an-alphabet",
+          "input": [
+            "https://host.example.com/s?token=ab%2Fcd+",
+            {
+              "ref": "bearer_value"
+            },
+            "/=="
+          ],
+          "expected": "https://host.example.com/s?token=ab%2Fcd+abcdef123456ghijkl/=="
+        },
+        {
+          "name": "bearer-inside-a-parameter",
+          "input": [
+            "https://host.example.com/s?token=bearer ",
+            {
+              "ref": "bearer_value"
+            }
+          ],
+          "expected": "https://host.example.com/s?token=bearer <redacted>"
+        },
+        {
+          "name": "jwt-after-a-parameter-prefix",
+          "input": [
+            "https://host.example.com/s?token=ab.",
+            {
+              "ref": "token"
+            }
+          ],
+          "expected": "https://host.example.com/s?token=<redacted>"
+        },
+        {
+          "name": "registered-literal",
+          "input": [
+            "note a-registered-literal-value trailing"
+          ],
+          "expected": "note <redacted> trailing"
+        },
+        {
+          "name": "userinfo-pair",
+          "input": [
+            "pair is someone:example-secret"
+          ],
+          "expected": "pair is <redacted>"
+        },
+        {
+          "name": "too-short-to-register",
+          "input": [
+            "abc def"
+          ],
+          "expected": "abc def"
+        },
+        {
+          "name": "nothing-to-redact",
+          "input": [
+            "an ordinary sentence about a token"
+          ],
+          "expected": "an ordinary sentence about a token"
+        }
+      ]
+    }
+  }
+}
