@@ -240,8 +240,9 @@ describe("environment reading", () => {
     expect(firstEnv(["A"], { A: "" })).toEqual([null, null]);
   });
 
-  it("reads own keys only, so a name like toString is simply unset", () => {
+  it("ignores a prototype member that is not a string, and reads an inherited string", () => {
     expect(firstEnv(["toString", "constructor"], {})).toEqual([null, null]);
+    expect(firstEnv(["A"], Object.create({ A: " v " }))).toEqual(["A", "v"]);
   });
 
   it("reads process.env when given no environment", () => {
@@ -365,6 +366,11 @@ describe("normalizeBaseUrl", () => {
 
   it("drops a query and a fragment", () => {
     expect(normalizeBaseUrl("https://h/p?x=1#y", SPEC)).toBe("https://h/p");
+  });
+
+  it("reports an unbalanced bracket as BAD_URL rather than a bare Error", () => {
+    const error = caught(() => normalizeBaseUrl("http://[::1", SPEC));
+    expect(error.code).toBe("BAD_URL");
   });
 
   it("lowercases the scheme before checking it", () => {

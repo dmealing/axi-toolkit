@@ -42,12 +42,24 @@ export interface RegisterSecretOptions {
   readonly minLength?: number;
 }
 
+/** A compiled shape and whether it keeps a prefix, both fixed at registration. */
+interface Shape {
+  readonly regex: RegExp;
+  readonly grouped: boolean;
+}
+
+/** Always global, never sticky: a sticky shape would only ever match at index 0 and fail open. */
 function globalised(pattern: string | RegExp): RegExp {
-  if (typeof pattern === "string") return new RegExp(pattern, "gu");
-  return new RegExp(
-    pattern.source,
-    pattern.flags.includes("g") ? pattern.flags : `${pattern.flags}g`,
-  );
+  if (typeof pattern === "string") {
+    try {
+      return new RegExp(pattern, "gu");
+    } catch {
+      // Python accepts identity escapes such as `\=` that the `u` flag refuses.
+      return new RegExp(pattern, "g");
+    }
+  }
+  const flags = pattern.flags.replace("y", "");
+  return new RegExp(pattern.source, flags.includes("g") ? flags : `${flags}g`);
 }
 
 /** How many capturing groups a pattern has. */
@@ -56,14 +68,21 @@ function groupCount(pattern: RegExp): number {
   return (match?.length ?? 1) - 1;
 }
 
-function apply(pattern: RegExp, text: string): string {
-  if (groupCount(pattern) > 0) {
+function shape(regex: RegExp): Shape {
+  return { regex, grouped: groupCount(regex) > 0 };
+}
+
+const BEARER_SHAPE = shape(BEARER);
+const JWT_SHAPE = shape(JWT);
+
+function apply({ regex, grouped }: Shape, text: string): string {
+  if (grouped) {
     return text.replace(
-      pattern,
+      regex,
       (...args: unknown[]) => `${(args[1] as string | undefined) ?? ""}${REDACTED}`,
     );
   }
-  return text.replace(pattern, REDACTED);
+  return text.replace(regex, REDACTED);
 }
 
 /**
@@ -75,17 +94,24 @@ function apply(pattern: RegExp, text: string): string {
  */
 export class Redactor {
   readonly #secrets = new Set<string>();
-  readonly #patterns: RegExp[] = [];
+  readonly #patterns: Shape[] = [];
+  #longestFirst: string[] = [];
 
   /** Register a literal string that must never reach stdout or stderr. */
   registerSecret(value: string | null | undefined, options: RegisterSecretOptions = {}): void {
     const minLength = options.minLength ?? MIN_SECRET_LENGTH;
-    if (value && codePointLength(value) >= minLength) this.#secrets.add(value);
+    if (value && codePointLength(value) >= minLength && !this.#secrets.has(value)) {
+      this.#secrets.add(value);
+      this.#longestFirst = [...this.#secrets].sort(
+        (a, b) => codePointLength(b) - codePointLength(a),
+      );
+    }
   }
 
   /** Drop registered literals, keeping registered shapes. */
   resetSecrets(): void {
     this.#secrets.clear();
+    this.#longestFirst = [];
   }
 
   /**
@@ -96,31 +122,32 @@ export class Redactor {
    */
   registerPattern(pattern: string | RegExp): RegExp {
     const compiled = globalised(pattern);
-    if (this.#patterns.every((existing) => existing.source !== compiled.source)) {
-      this.#patterns.push(compiled);
-    }
+    const known = this.#patterns.find(
+      ({ regex }) => regex.source === compiled.source && regex.flags === compiled.flags,
+    );
+    if (known) return known.regex;
+    this.#patterns.push(shape(compiled));
     return compiled;
   }
 
   /** The source of each registered shape, in the order they run. */
   registeredPatterns(): readonly string[] {
-    return this.#patterns.map((pattern) => pattern.source);
+    return this.#patterns.map(({ regex }) => regex.source);
   }
 
   /** Drop literals and shapes both. */
   reset(): void {
-    this.#secrets.clear();
+    this.resetSecrets();
     this.#patterns.length = 0;
   }
 
   /** Remove credentials from `text` by literal match and by shape. */
   redact(text: string): string {
     let out = text;
-    const longestFirst = [...this.#secrets].sort((a, b) => codePointLength(b) - codePointLength(a));
-    for (const secret of longestFirst) out = out.replaceAll(secret, REDACTED);
-    out = apply(BEARER, out);
+    for (const secret of this.#longestFirst) out = out.replaceAll(secret, REDACTED);
+    out = apply(BEARER_SHAPE, out);
     for (const pattern of this.#patterns) out = apply(pattern, out);
-    return apply(JWT, out);
+    return apply(JWT_SHAPE, out);
   }
 }
 

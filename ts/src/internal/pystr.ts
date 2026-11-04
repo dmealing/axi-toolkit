@@ -33,7 +33,11 @@ export function capitalise(text: string): string {
 
 /** `text.strip()` in Python: the same whitespace set as `split()`. */
 export function pyStrip(text: string): string {
-  return text.replace(LEADING_WS, "").replace(TRAILING_WS, "");
+  let start = 0;
+  let end = text.length;
+  while (start < end && IS_WS.test(text.charAt(start))) start += 1;
+  while (end > start && IS_WS.test(text.charAt(end - 1))) end -= 1;
+  return text.slice(start, end);
 }
 
 /** `len(text)` in Python counts code points; `.length` counts UTF-16 units. */
@@ -50,8 +54,7 @@ export function rstripSlashes(text: string): string {
   return text.slice(0, end);
 }
 
-const LEADING_WS = new RegExp(`^[${PY_WS}]+`, "u");
-const TRAILING_WS = new RegExp(`[${PY_WS}]+$`, "u");
+const IS_WS = new RegExp(`^[${PY_WS}]$`, "u");
 
 /** What Python's `str.isprintable` rejects (the space itself is allowed). */
 const NOT_PRINTABLE = /^[\p{Cc}\p{Cf}\p{Cs}\p{Co}\p{Cn}\p{Zl}\p{Zp}\p{Zs}]$/u;

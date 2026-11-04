@@ -53,6 +53,15 @@ describe("pyStrip and the whitespace set", () => {
   });
 });
 
+describe("pyStrip on a pathological value", () => {
+  it("is linear in a long interior whitespace run", () => {
+    const text = `a${" ".repeat(200_000)}b`;
+    const started = performance.now();
+    expect(pyStrip(text)).toBe(text);
+    expect(performance.now() - started).toBeLessThan(500);
+  });
+});
+
 describe("small string helpers", () => {
   it("counts code points", () => {
     expect(codePointLength("ab\u{1F511}")).toBe(3);

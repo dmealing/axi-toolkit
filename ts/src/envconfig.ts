@@ -25,6 +25,7 @@ import {
   pyUrlsplit,
   pyUrlunsplit,
   rstripSlashes,
+  type UrlParts,
 } from "./internal/pystr.js";
 import { registerSecret } from "./redact.js";
 
@@ -106,8 +107,8 @@ export function firstEnv(
   environ: Environ,
 ): [name: string, value: string] | [null, null] {
   for (const name of names) {
-    const value = Object.hasOwn(environ, name) ? environ[name] : undefined;
-    if (value && !isBlank(value)) return [name, pyStrip(value)];
+    const value = environ[name];
+    if (typeof value === "string" && value && !isBlank(value)) return [name, pyStrip(value)];
   }
   return [null, null];
 }
@@ -123,7 +124,15 @@ export function splitUserinfo(netloc: string): [userinfo: string, host: string] 
 export function normalizeBaseUrl(raw: string, spec: CredentialSpec): string {
   let value = rstripSlashes(pyStrip(raw));
   if (!value.includes("://")) value = `${spec.defaultScheme}://${value}`;
-  const parts = pyUrlsplit(value);
+  let parts: UrlParts;
+  try {
+    parts = pyUrlsplit(value);
+  } catch {
+    throw new ConfigError(`${spec.urlVars[0]} is not a usable URL: ${pyRepr(value)}`, {
+      recovery: spec.setup.slice(0, 1),
+      code: "BAD_URL",
+    });
+  }
   if (!parts.netloc) {
     throw new ConfigError(`${spec.urlVars[0]} is not a usable URL: ${pyRepr(value)}`, {
       recovery: spec.setup.slice(0, 1),

@@ -151,12 +151,31 @@ describe("redact", () => {
     expect(redactor.redact("bb")).toBe(REDACTED);
   });
 
-  it("registers a source once, whatever flags or form it arrives in", () => {
+  it("registers a source and flag set once, whatever form it arrives in", () => {
     const redactor = new Redactor();
     redactor.registerPattern(/(k=)\w+/u);
-    redactor.registerPattern(/(k=)\w+/giu);
+    redactor.registerPattern(/(k=)\w+/gu);
     redactor.registerPattern("(k=)\\w+");
     expect(redactor.registeredPatterns()).toEqual(["(k=)\\w+"]);
+  });
+
+  it("never keeps a sticky flag, which would match only at index 0", () => {
+    const redactor = new Redactor();
+    redactor.registerPattern(/(tok=)\w+/y);
+    expect(redactor.redact("x tok=abc tok=def")).toBe(`x tok=${REDACTED} tok=${REDACTED}`);
+  });
+
+  it("keeps two registrations that differ only in flags", () => {
+    const redactor = new Redactor();
+    redactor.registerPattern(/(tok=)\w+/u);
+    redactor.registerPattern(/(tok=)\w+/iu);
+    expect(redactor.redact("TOK=abc")).toBe(`TOK=${REDACTED}`);
+  });
+
+  it("accepts a string shape with an identity escape that Python allows", () => {
+    const redactor = new Redactor();
+    redactor.registerPattern(String.raw`(key\=)[a-z]+`);
+    expect(redactor.redact("key=abc")).toBe(`key=${REDACTED}`);
   });
 
   it("returns the compiled pattern, always global", () => {
