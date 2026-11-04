@@ -42,6 +42,10 @@ export const ILLEGAL_TOKEN = new RegExp(`[${PY_WS}\\x00-\\x1f\\x7f]`, "u");
 const SCHEMES = ["http", "https"] as const;
 type Scheme = (typeof SCHEMES)[number];
 
+function isScheme(value: string): value is Scheme {
+  return (SCHEMES as readonly string[]).includes(value);
+}
+
 /** How one tool reads its credentials from the environment. */
 export interface CredentialSpec {
   /** Variable names for the base URL, most-preferred first; later ones are aliases. */
@@ -72,7 +76,7 @@ export function credentialSpec(init: CredentialSpecInit): CredentialSpec {
     throw new RangeError("a credential spec names at least one URL and one token variable");
   }
   const defaultScheme = init.defaultScheme ?? "https";
-  if (!(SCHEMES as readonly string[]).includes(defaultScheme)) {
+  if (!isScheme(defaultScheme)) {
     throw new RangeError(
       `defaultScheme must be one of ${JSON.stringify(SCHEMES)}, got ${pyRepr(String(defaultScheme))}`,
     );
@@ -124,29 +128,19 @@ export function splitUserinfo(netloc: string): [userinfo: string, host: string] 
 export function normalizeBaseUrl(raw: string, spec: CredentialSpec): string {
   let value = rstripSlashes(pyStrip(raw));
   if (!value.includes("://")) value = `${spec.defaultScheme}://${value}`;
+  const refuse = (message: string): ConfigError =>
+    new ConfigError(message, { recovery: spec.setup.slice(0, 1), code: "BAD_URL" });
+  const unusable = (): ConfigError =>
+    refuse(`${spec.urlVars[0]} is not a usable URL: ${pyRepr(value)}`);
   let parts: UrlParts;
   try {
     parts = pyUrlsplit(value);
   } catch {
-    throw new ConfigError(`${spec.urlVars[0]} is not a usable URL: ${pyRepr(value)}`, {
-      recovery: spec.setup.slice(0, 1),
-      code: "BAD_URL",
-    });
+    throw unusable();
   }
-  if (!parts.netloc) {
-    throw new ConfigError(`${spec.urlVars[0]} is not a usable URL: ${pyRepr(value)}`, {
-      recovery: spec.setup.slice(0, 1),
-      code: "BAD_URL",
-    });
-  }
-  if (!(SCHEMES as readonly string[]).includes(parts.scheme)) {
-    throw new ConfigError(
-      `${spec.urlVars[0]} must use http or https, got ${pyRepr(parts.scheme)}`,
-      {
-        recovery: spec.setup.slice(0, 1),
-        code: "BAD_URL",
-      },
-    );
+  if (!parts.netloc) throw unusable();
+  if (!isScheme(parts.scheme)) {
+    throw refuse(`${spec.urlVars[0]} must use http or https, got ${pyRepr(parts.scheme)}`);
   }
   let path = rstripSlashes(parts.path);
   if (spec.stripPathSuffix && path.endsWith(spec.stripPathSuffix)) {
@@ -159,7 +153,7 @@ export function normalizeBaseUrl(raw: string, spec: CredentialSpec): string {
     // redacting output boundary.
     registerSecret(userinfo, { minLength: 4 });
     const colon = userinfo.indexOf(":");
-    registerSecret(colon < 0 ? "" : userinfo.slice(colon + 1), { minLength: 4 });
+    if (colon >= 0) registerSecret(userinfo.slice(colon + 1), { minLength: 4 });
   }
   // Slice after the last "]" so a bracketed IPv6 literal's own colons are not read as a port.
   if (spec.defaultPort && !host.slice(host.lastIndexOf("]") + 1).includes(":")) {
@@ -181,9 +175,7 @@ export function load(
   const [urlVar, rawUrl] = firstEnv(spec.urlVars, environ);
   const [tokenVar, token] = firstEnv(spec.tokenVars, environ);
 
-  const missing: string[] = [];
-  if (!rawUrl) missing.push(spec.urlVars[0] as string);
-  if (!token) missing.push(spec.tokenVars[0] as string);
+  const missing = missingVars(spec, environ);
   if (missing.length > 0) {
     throw new ConfigError(
       `${missing.join(" and ")} ${missing.length > 1 ? "are" : "is"} not set in the environment`,

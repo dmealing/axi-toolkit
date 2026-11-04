@@ -42,10 +42,10 @@ export interface RegisterSecretOptions {
   readonly minLength?: number;
 }
 
-/** A compiled shape and whether it keeps a prefix, both fixed at registration. */
+/** A compiled shape and the replacement it applies, both fixed at registration. */
 interface Shape {
   readonly regex: RegExp;
-  readonly grouped: boolean;
+  readonly replacement: string;
 }
 
 /** Always global, never sticky: a sticky shape would only ever match at index 0 and fail open. */
@@ -58,8 +58,7 @@ function globalised(pattern: string | RegExp): RegExp {
       return new RegExp(pattern, "g");
     }
   }
-  const flags = pattern.flags.replace("y", "");
-  return new RegExp(pattern.source, flags.includes("g") ? flags : `${flags}g`);
+  return new RegExp(pattern.source, `${pattern.flags.replace(/[gy]/g, "")}g`);
 }
 
 /** How many capturing groups a pattern has. */
@@ -68,22 +67,13 @@ function groupCount(pattern: RegExp): number {
   return (match?.length ?? 1) - 1;
 }
 
+/** With a capturing group, `$1` keeps it, and expands to nothing when it did not take part. */
 function shape(regex: RegExp): Shape {
-  return { regex, grouped: groupCount(regex) > 0 };
+  return { regex, replacement: groupCount(regex) > 0 ? `$1${REDACTED}` : REDACTED };
 }
 
 const BEARER_SHAPE = shape(BEARER);
 const JWT_SHAPE = shape(JWT);
-
-function apply({ regex, grouped }: Shape, text: string): string {
-  if (grouped) {
-    return text.replace(
-      regex,
-      (...args: unknown[]) => `${(args[1] as string | undefined) ?? ""}${REDACTED}`,
-    );
-  }
-  return text.replace(regex, REDACTED);
-}
 
 /**
  * A set of literal secrets and credential shapes, and the filter over them.
@@ -145,9 +135,9 @@ export class Redactor {
   redact(text: string): string {
     let out = text;
     for (const secret of this.#longestFirst) out = out.replaceAll(secret, REDACTED);
-    out = apply(BEARER_SHAPE, out);
-    for (const pattern of this.#patterns) out = apply(pattern, out);
-    return apply(JWT_SHAPE, out);
+    out = out.replace(BEARER_SHAPE.regex, BEARER_SHAPE.replacement);
+    for (const { regex, replacement } of this.#patterns) out = out.replace(regex, replacement);
+    return out.replace(JWT_SHAPE.regex, JWT_SHAPE.replacement);
   }
 }
 

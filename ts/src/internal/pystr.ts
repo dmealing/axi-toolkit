@@ -12,6 +12,7 @@ export const PY_WS =
 
 const WS_RUN = new RegExp(`[${PY_WS}]+`, "u");
 const WS_ONLY = new RegExp(`^[${PY_WS}]*$`, "u");
+const IS_WS = new RegExp(`^[${PY_WS}]$`, "u");
 
 /** `text.strip() == ""` in Python. */
 export function isBlank(text: string): boolean {
@@ -42,9 +43,7 @@ export function pyStrip(text: string): string {
 
 /** `len(text)` in Python counts code points; `.length` counts UTF-16 units. */
 export function codePointLength(text: string): number {
-  let count = 0;
-  for (const _ of text) count += 1;
-  return count;
+  return [...text].length;
 }
 
 /** `text.rstrip("/")` in Python. */
@@ -53,8 +52,6 @@ export function rstripSlashes(text: string): string {
   while (end > 0 && text.charCodeAt(end - 1) === 0x2f) end -= 1;
   return text.slice(0, end);
 }
-
-const IS_WS = new RegExp(`^[${PY_WS}]$`, "u");
 
 /** What Python's `str.isprintable` rejects (the space itself is allowed). */
 const NOT_PRINTABLE = /^[\p{Cc}\p{Cf}\p{Cs}\p{Co}\p{Cn}\p{Zl}\p{Zp}\p{Zs}]$/u;
@@ -93,7 +90,7 @@ export interface UrlParts {
   readonly path: string;
 }
 
-const SCHEME_REST = /^[A-Za-z0-9+.-]*$/;
+const SCHEME = /^[A-Za-z][A-Za-z0-9+.-]*$/;
 
 /**
  * `urllib.parse.urlsplit`, minus the query and fragment. An RFC 3986 split, deliberately
@@ -110,17 +107,14 @@ export function pyUrlsplit(input: string): UrlParts {
   let rest = input.slice(start).replace(/[\t\r\n]/g, "");
   let scheme = "";
   const colon = rest.indexOf(":");
-  if (colon > 0 && /^[A-Za-z]$/.test(rest.charAt(0)) && SCHEME_REST.test(rest.slice(0, colon))) {
+  if (colon > 0 && SCHEME.test(rest.slice(0, colon))) {
     scheme = rest.slice(0, colon).toLowerCase();
     rest = rest.slice(colon + 1);
   }
   let netloc = "";
   if (rest.startsWith("//")) {
-    let end = rest.length;
-    for (const delimiter of "/?#") {
-      const at = rest.indexOf(delimiter, 2);
-      if (at >= 0 && at < end) end = at;
-    }
+    const delimiter = rest.slice(2).search(/[/?#]/);
+    const end = delimiter < 0 ? rest.length : delimiter + 2;
     netloc = rest.slice(2, end);
     rest = rest.slice(end);
     if (
