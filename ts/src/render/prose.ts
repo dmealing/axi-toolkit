@@ -6,7 +6,14 @@
  * Every sentence names the tool that owns the command; the name arrives as an argument.
  */
 
-import { DEFAULT_RETRY_LEAD, DEFAULT_RUN_LEAD, type Recovery, TOOL_SLOT } from "../errors.js";
+import {
+  DEFAULT_RETRY_LEAD,
+  DEFAULT_RUN_LEAD,
+  type Recovery,
+  SET_ENV_EXAMPLE,
+  SET_ENV_REFERENCE,
+  TOOL_SLOT,
+} from "../errors.js";
 import { capitalise } from "../internal/pystr.js";
 
 const TERMINATORS = ".!?:";
@@ -48,8 +55,8 @@ export function sentence(recovery: Recovery, tool: string): string {
       );
     case "set_env": {
       let out = `${tool} reads ${recovery.variable} from the environment: set it to ${recovery.describes}`;
-      if (recovery.example) out += `, e.g. ${recovery.example}`;
-      if (recovery.reference) out += `; see ${recovery.reference}`;
+      if (recovery.example) out += `${SET_ENV_EXAMPLE}${recovery.example}`;
+      if (recovery.reference) out += `${SET_ENV_REFERENCE}${recovery.reference}`;
       return terminate(out);
     }
     case "choose":

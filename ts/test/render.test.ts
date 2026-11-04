@@ -115,6 +115,9 @@ describe("render-rules: parse", () => {
 });
 
 describe("the recovery corpus", () => {
+  // Parsed once: three tests below walk every entry, and parsing is the expensive step.
+  const parsed: Recovery[] = corpus.entries.map((entry) => parse(entry.line, entry.tool));
+
   it("holds the population the plan names", () => {
     expect(corpus.entries.length).toBe(307);
   });
@@ -123,8 +126,8 @@ describe("the recovery corpus", () => {
     "entry %i (%s)",
     (index, tool) => {
       const entry = corpus.entries[index];
-      if (entry === undefined) throw new Error("no such entry");
-      const recovery = parse(entry.line, tool);
+      const recovery = parsed[index];
+      if (entry === undefined || recovery === undefined) throw new Error("no such entry");
       // the intent, in the wire form Python writes
       expect(recoveryToJSON(recovery)).toEqual(entry.intent);
       expect(recoveryFromJSON(entry.intent)).toEqual(recovery);
@@ -140,16 +143,15 @@ describe("the recovery corpus", () => {
   it("never stores the tool's name: rendered for another tool, the first one is absent", () => {
     // Unconditional, not gated on mentionsTool: a hand-authored intent holding the literal
     // name would sail through that gate.
-    for (const entry of corpus.entries) {
-      const recovery = parse(entry.line, entry.tool);
+    corpus.entries.forEach((entry, index) => {
+      const recovery = parsed[index] as Recovery;
       expect(line(recovery, "other-tool")).not.toContain(entry.tool);
       expect(sentence(recovery, "other-tool")).not.toContain(entry.tool);
-    }
+    });
   });
 
   it("renders identically for any tool when mentionsTool is false, and differently when true", () => {
-    for (const entry of corpus.entries) {
-      const recovery = parse(entry.line, entry.tool);
+    for (const recovery of parsed) {
       const same = line(recovery, "one-tool") === line(recovery, "two-tool");
       expect(same).toBe(!mentionsTool(recovery));
     }

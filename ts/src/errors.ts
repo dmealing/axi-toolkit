@@ -53,6 +53,9 @@ export const TOOL_SLOT = "{tool}";
 export const DEFAULT_RUN_LEAD = "Run";
 export const DEFAULT_RETRY_LEAD = "Run the command again with";
 export const DEFAULT_SEPARATOR = " ";
+/** The wording a set_env recovery puts between its clauses; both renderers read it from here. */
+export const SET_ENV_EXAMPLE = ", e.g. ";
+export const SET_ENV_REFERENCE = "; see ";
 
 export interface RunRecovery {
   readonly kind: "run";

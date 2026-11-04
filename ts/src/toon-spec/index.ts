@@ -13,6 +13,7 @@ import { createHash } from "node:crypto";
 import { readdirSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import type { Delimiter, EncodeOptions } from "../toon.js";
 
 /** The repository root, three levels above `ts/src/toon-spec` (and `ts/dist/toon-spec`). */
 export const REPOSITORY_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
@@ -79,10 +80,7 @@ export interface Report {
 }
 
 /** The toolkit's `encode`, or any encoder taking options spelled the toolkit's way. */
-export type Encoder = (
-  value: unknown,
-  options?: { delimiter?: "," | "\t" | "|"; indent?: number },
-) => string;
+export type Encoder = (value: unknown, options?: EncodeOptions) => string;
 
 interface Fixture {
   category?: unknown;
@@ -100,8 +98,16 @@ function listJson(directory: string): string[] {
     .sort();
 }
 
+// Each fixture is parsed once; the listing helpers all come through here.
+const loaded = new Map<string, Fixture>();
+
 function load(file: string): Fixture {
-  return JSON.parse(readFileSync(join(encodeRoot(), file), "utf8")) as Fixture;
+  let fixture = loaded.get(file);
+  if (fixture === undefined) {
+    fixture = JSON.parse(readFileSync(join(encodeRoot(), file), "utf8")) as Fixture;
+    loaded.set(file, fixture);
+  }
+  return fixture;
 }
 
 /** The `category` each fixture file declares. */
@@ -109,10 +115,16 @@ export function categories(): string[] {
   return fixtureFiles().map((file) => String(load(file).category ?? ""));
 }
 
-/** Every published encode case, in file-then-index order. */
+/** Every published encode case, in file-then-index order. Refuses a fixture this rig does not run. */
 export function cases(): Case[] {
-  return fixtureFiles().flatMap((file) =>
-    load(file).tests.map((test, index) => ({
+  return fixtureFiles().flatMap((file) => {
+    const fixture = load(file);
+    if (!RUNNABLE_CATEGORIES.has(String(fixture.category))) {
+      throw new Error(
+        `${file} declares category ${JSON.stringify(fixture.category)}, which this rig does not run`,
+      );
+    }
+    return fixture.tests.map((test, index) => ({
       file,
       index,
       name: String(test.name ?? ""),
@@ -120,8 +132,8 @@ export function cases(): Case[] {
       input: test.input,
       expected: test.expected as string,
       options: { ...((test.options as Record<string, unknown> | undefined) ?? {}) },
-    })),
-  );
+    }));
+  });
 }
 
 /** `"primitives-34"`: what a failing case is called in a report. Never the prose name. */
@@ -148,7 +160,7 @@ export function exercisedDelimiters(): string[] {
  * indentation option `indentSize` and the toolkit's is `indent`; the mapping lives here.
  * Throws on an option this rig does not apply.
  */
-export function encoderOptions(testCase: Case): { delimiter?: "," | "\t" | "|"; indent?: number } {
+export function encoderOptions(testCase: Case): EncodeOptions {
   const unknown = Object.keys(testCase.options)
     .filter((name) => !KNOWN_OPTIONS.has(name))
     .sort();
@@ -157,9 +169,9 @@ export function encoderOptions(testCase: Case): { delimiter?: "," | "\t" | "|"; 
       `${caseId(testCase)} uses fixture options this rig does not apply: ${JSON.stringify(unknown)}`,
     );
   }
-  const options: { delimiter?: "," | "\t" | "|"; indent?: number } = {};
+  const options: EncodeOptions = {};
   if ("delimiter" in testCase.options) {
-    options.delimiter = testCase.options.delimiter as "," | "\t" | "|";
+    options.delimiter = testCase.options.delimiter as Delimiter;
   }
   if ("indentSize" in testCase.options) options.indent = testCase.options.indentSize as number;
   return options;

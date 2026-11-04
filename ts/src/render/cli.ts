@@ -15,13 +15,12 @@ import {
   type Recovery,
   retry,
   run,
+  SET_ENV_EXAMPLE,
+  SET_ENV_REFERENCE,
   setEnv,
   TOOL_SLOT,
 } from "../errors.js";
 import { isBlank, pySplit } from "../internal/pystr.js";
-
-const EXAMPLE = ", e.g. ";
-const REFERENCE = "; see ";
 
 // `.` must not cross "\n" and nothing else, as in Python: `[^\n]` rather than `.`.
 const SET_ENV = /^Set ([A-Z][A-Z0-9_]*) to ([^\n]+)$/;
@@ -44,8 +43,8 @@ export function line(recovery: Recovery, tool: string): string {
       return withTail(`${recovery.lead} \`${recovery.fragment}\``, recovery);
     case "set_env": {
       let out = `Set ${recovery.variable} to ${recovery.describes}`;
-      if (recovery.example) out += `${EXAMPLE}${recovery.example}`;
-      if (recovery.reference) out += `${REFERENCE}${recovery.reference}`;
+      if (recovery.example) out += `${SET_ENV_EXAMPLE}${recovery.example}`;
+      if (recovery.reference) out += `${SET_ENV_REFERENCE}${recovery.reference}`;
       return out;
     }
     case "choose":
@@ -73,8 +72,8 @@ function parseSetEnv(text: string): Recovery | null {
   let example = "";
   let reference = "";
   // Each spelling is looked for once, from the right.
-  if (rest.includes(REFERENCE)) [rest, reference] = rpartition(rest, REFERENCE);
-  if (rest.includes(EXAMPLE)) [rest, example] = rpartition(rest, EXAMPLE);
+  if (rest.includes(SET_ENV_REFERENCE)) [rest, reference] = rpartition(rest, SET_ENV_REFERENCE);
+  if (rest.includes(SET_ENV_EXAMPLE)) [rest, example] = rpartition(rest, SET_ENV_EXAMPLE);
   if (rest === "") return null;
   return setEnv(variable, rest, { example, reference });
 }
