@@ -1,0 +1,11 @@
+{
+  "pack": "axi-toolkit-conformance",
+  "version": 1,
+  "topic": "toon-spec",
+  "generated_by": "scripts/conformance_pack.py",
+  "description": "The TOON encode fixtures are read in place, not copied. Paths are relative to this directory. `checksums` is in sha256sum format over the fixture files.",
+  "fixtures": "../src/axi_toolkit/toon_spec/encode",
+  "checksums": "../src/axi_toolkit/toon_spec/checksums.txt",
+  "license": "../src/axi_toolkit/toon_spec/LICENSE",
+  "provenance": "../src/axi_toolkit/toon_spec/PROVENANCE.md"
+}

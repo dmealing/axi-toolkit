@@ -1,0 +1,202 @@
+{
+  "pack": "axi-toolkit-conformance",
+  "version": 1,
+  "topic": "errors",
+  "generated_by": "scripts/conformance_pack.py",
+  "description": "The closed vocabulary around the recovery data: exit codes, fault classes, the exception hierarchy's names and exit codes, fail-closed classification, and the JSON wire form of an error.",
+  "exit_codes": {
+    "EXIT_OK": 0,
+    "EXIT_ERROR": 1,
+    "EXIT_USAGE": 2
+  },
+  "kinds": [
+    "run",
+    "retry",
+    "set_env",
+    "choose",
+    "note"
+  ],
+  "tool_slot": "{tool}",
+  "classes": [
+    "usage",
+    "config",
+    "transport",
+    "auth",
+    "permission",
+    "not_found",
+    "refused",
+    "internal"
+  ],
+  "unclassified": "unclassified",
+  "exceptions": [
+    {
+      "name": "AxiError",
+      "exit_code": 1
+    },
+    {
+      "name": "UsageError",
+      "exit_code": 2
+    },
+    {
+      "name": "ConfigError",
+      "exit_code": 1
+    },
+    {
+      "name": "ConnectionFailed",
+      "exit_code": 1
+    },
+    {
+      "name": "AuthFailed",
+      "exit_code": 1
+    },
+    {
+      "name": "Forbidden",
+      "exit_code": 1
+    },
+    {
+      "name": "NotFound",
+      "exit_code": 1
+    },
+    {
+      "name": "ApiError",
+      "exit_code": 1
+    }
+  ],
+  "fault_classes": {
+    "table": {
+      "UNREACHABLE": "transport",
+      "UNAUTHORIZED": "auth",
+      "NO_SUCH_AREA": "not_found"
+    },
+    "cases": [
+      {
+        "code": "UNREACHABLE",
+        "expected": "transport"
+      },
+      {
+        "code": "UNAUTHORIZED",
+        "expected": "auth"
+      },
+      {
+        "code": "NO_SUCH_AREA",
+        "expected": "not_found"
+      },
+      {
+        "code": "NEVER_DECLARED",
+        "expected": "unclassified"
+      },
+      {
+        "code": "",
+        "expected": "unclassified"
+      },
+      {
+        "code": null,
+        "expected": "unclassified"
+      }
+    ]
+  },
+  "error_dicts": [
+    {
+      "name": "a bare message",
+      "exception": "AxiError",
+      "message": "something went wrong",
+      "code": null,
+      "recovery": [],
+      "expected": {
+        "message": "something went wrong",
+        "code": "",
+        "recovery": []
+      }
+    },
+    {
+      "name": "a code and one recovery",
+      "exception": "NotFound",
+      "message": "no area named 'nowhere'",
+      "code": "NO_SUCH_AREA",
+      "recovery": [
+        {
+          "kind": "run",
+          "args": [
+            "area",
+            "list"
+          ],
+          "lead": "Run",
+          "purpose": "to see the areas that exist"
+        }
+      ],
+      "expected": {
+        "message": "no area named 'nowhere'",
+        "code": "NO_SUCH_AREA",
+        "recovery": [
+          {
+            "kind": "run",
+            "args": [
+              "area",
+              "list"
+            ],
+            "lead": "Run",
+            "purpose": "to see the areas that exist"
+          }
+        ]
+      }
+    },
+    {
+      "name": "several kinds of recovery, in order",
+      "exception": "ConfigError",
+      "message": "HA_URL is not set in the environment",
+      "code": "NOT_CONFIGURED",
+      "recovery": [
+        {
+          "kind": "set_env",
+          "describes": "your base URL",
+          "variable": "HA_URL"
+        },
+        {
+          "kind": "retry",
+          "fragment": "--limit 50",
+          "lead": "Run the command again with"
+        },
+        {
+          "kind": "choose",
+          "label": "did you mean",
+          "values": [
+            "a",
+            "b"
+          ]
+        },
+        {
+          "kind": "note",
+          "text": "then look at the log"
+        }
+      ],
+      "expected": {
+        "message": "HA_URL is not set in the environment",
+        "code": "NOT_CONFIGURED",
+        "recovery": [
+          {
+            "kind": "set_env",
+            "describes": "your base URL",
+            "variable": "HA_URL"
+          },
+          {
+            "kind": "retry",
+            "fragment": "--limit 50",
+            "lead": "Run the command again with"
+          },
+          {
+            "kind": "choose",
+            "label": "did you mean",
+            "values": [
+              "a",
+              "b"
+            ]
+          },
+          {
+            "kind": "note",
+            "text": "then look at the log"
+          }
+        ]
+      }
+    }
+  ]
+}
