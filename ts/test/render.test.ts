@@ -176,3 +176,15 @@ describe("lines, sentences and parseAll", () => {
     ]);
   });
 });
+
+describe("a tool name is substituted literally, as Python's replace does", () => {
+  it("does not interpret replacement patterns in the name", () => {
+    const tool = "x$&y$1$`$'";
+    expect(line(recoveryFromJSON({ kind: "note", text: "a {tool}" }), tool)).toBe(`a ${tool}`);
+    expect(sentence(recoveryFromJSON({ kind: "note", text: "a {tool}" }), tool)).toBe(`a ${tool}.`);
+    expect(recoveryToJSON(parse(`see ${tool} now`, tool))).toEqual({
+      kind: "note",
+      text: "see {tool} now",
+    });
+  });
+});

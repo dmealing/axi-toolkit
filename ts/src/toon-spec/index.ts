@@ -37,9 +37,18 @@ function readPointer(): Pointer {
   return pointer as Pointer;
 }
 
-const pointer = readPointer();
-export const ENCODE_ROOT = resolve(CONFORMANCE_ROOT, pointer.fixtures);
-export const CHECKSUMS = resolve(CONFORMANCE_ROOT, pointer.checksums);
+// Read lazily: importing this module outside a checkout must not throw.
+let pointer: Pointer | undefined;
+function resolved(): Pointer {
+  pointer ??= readPointer();
+  return pointer;
+}
+export function encodeRoot(): string {
+  return resolve(CONFORMANCE_ROOT, resolved().fixtures);
+}
+function checksumsPath(): string {
+  return resolve(CONFORMANCE_ROOT, resolved().checksums);
+}
 
 /** Fixture categories this rig runs. A decode fixture arriving in `encode/` must fail. */
 export const RUNNABLE_CATEGORIES: ReadonlySet<string> = new Set(["encode"]);
@@ -82,7 +91,7 @@ interface Fixture {
 
 /** Every vendored fixture file name, in a stable order. */
 export function fixtureFiles(): string[] {
-  return listJson(ENCODE_ROOT);
+  return listJson(encodeRoot());
 }
 
 function listJson(directory: string): string[] {
@@ -92,7 +101,7 @@ function listJson(directory: string): string[] {
 }
 
 function load(file: string): Fixture {
-  return JSON.parse(readFileSync(join(ENCODE_ROOT, file), "utf8")) as Fixture;
+  return JSON.parse(readFileSync(join(encodeRoot(), file), "utf8")) as Fixture;
 }
 
 /** The `category` each fixture file declares. */
@@ -159,7 +168,7 @@ export function encoderOptions(testCase: Case): { delimiter?: "," | "\t" | "|"; 
 /** The SHA-256 of each file as recorded when the fixtures were vendored. */
 export function recordedDigests(): Record<string, string> {
   const recorded: Record<string, string> = {};
-  for (const line of readFileSync(CHECKSUMS, "utf8").split("\n")) {
+  for (const line of readFileSync(checksumsPath(), "utf8").split("\n")) {
     if (line.trim() === "") continue;
     const [digest, ...rest] = line.trim().split(/\s+/);
     recorded[rest.join(" ")] = digest as string;
@@ -172,7 +181,7 @@ export function actualDigests(): Record<string, string> {
   const actual: Record<string, string> = {};
   for (const file of fixtureFiles()) {
     actual[file] = createHash("sha256")
-      .update(readFileSync(join(ENCODE_ROOT, file)))
+      .update(readFileSync(join(encodeRoot(), file)))
       .digest("hex");
   }
   return actual;

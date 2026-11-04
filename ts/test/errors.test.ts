@@ -254,3 +254,22 @@ describe("mentionsTool", () => {
     expect(mentionsTool(choose("l", ["a"]))).toBe(false);
   });
 });
+
+describe("parity with Python on inputs the pack never emits", () => {
+  it("keeps an explicit empty separator on the wire and through a round trip", () => {
+    const recovery = run(["x"], { separator: "", purpose: "p" });
+    expect(recoveryToJSON(recovery)).toMatchObject({ separator: "" });
+    expect(recoveryFromJSON(recoveryToJSON(recovery))).toEqual(recovery);
+  });
+
+  it("refuses a purpose on a kind that cannot carry one", () => {
+    expect(() => withPurpose(note("hi") as never, "p")).toThrow("cannot carry 'purpose'");
+  });
+
+  it("accepts any ReadonlyMap-like table", () => {
+    const table = {
+      get: (k: string) => (k === "A" ? "auth" : undefined),
+    } as unknown as ReadonlyMap<string, string>;
+    expect(faultClass("A", table)).toBe("auth");
+  });
+});

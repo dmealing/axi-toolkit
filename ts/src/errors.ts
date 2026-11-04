@@ -38,7 +38,9 @@ export function faultClass(
   codes: Readonly<Record<string, string>> | ReadonlyMap<string, string>,
 ): string {
   const key = code ?? "";
-  if (codes instanceof Map) return codes.get(key) ?? CLASS_UNCLASSIFIED;
+  if (typeof (codes as ReadonlyMap<string, string>).get === "function") {
+    return (codes as ReadonlyMap<string, string>).get(key) ?? CLASS_UNCLASSIFIED;
+  }
   const table = codes as Readonly<Record<string, string>>;
   return Object.hasOwn(table, key) ? (table[key] as string) : CLASS_UNCLASSIFIED;
 }
@@ -157,6 +159,9 @@ export function note(text: string): NoteRecovery {
 
 /** A copy of a `run` or `retry` carrying a different trailing clause. */
 export function withPurpose<T extends PurposeRecovery>(recovery: T, purpose: string): T {
+  if (recovery.kind !== "run" && recovery.kind !== "retry") {
+    throw new Error(`${(recovery as Recovery).kind} recovery cannot carry 'purpose'`);
+  }
   return Object.freeze({ ...recovery, purpose }) as unknown as T;
 }
 
@@ -191,10 +196,11 @@ export function recoveryToJSON(recovery: Recovery): Record<string, unknown> {
   for (const name of ALLOWED[recovery.kind]) {
     const value = source[name];
     const alwaysWritten = name === "lead";
+    // Only the default separator is unset: an explicit empty one is a real value.
     const unset =
-      value === "" ||
-      (Array.isArray(value) && value.length === 0) ||
-      (name === "separator" && value === DEFAULT_SEPARATOR);
+      name === "separator"
+        ? value === DEFAULT_SEPARATOR
+        : value === "" || (Array.isArray(value) && value.length === 0);
     if (unset && !alwaysWritten) continue;
     out[name] = Array.isArray(value) ? [...value] : value;
   }

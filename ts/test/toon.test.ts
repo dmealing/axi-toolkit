@@ -10,7 +10,7 @@ import {
   cases,
   categories,
   digestMismatches,
-  ENCODE_ROOT,
+  encodeRoot,
   encoderOptions,
   exercisedDelimiters,
   fixtureFiles,
@@ -125,7 +125,7 @@ describe("the conformance pack's own checksums", () => {
   });
 
   it("point at fixtures that exist", () => {
-    expect(ENCODE_ROOT.endsWith("encode")).toBe(true);
+    expect(encodeRoot().endsWith("encode")).toBe(true);
     expect(fixtureFiles().length).toBeGreaterThan(0);
   });
 });

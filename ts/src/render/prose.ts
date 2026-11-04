@@ -56,7 +56,7 @@ export function sentence(recovery: Recovery, tool: string): string {
       // No tool named: the values are the system's vocabulary, not the tool's.
       return terminate(`${capitalise(recovery.label)}: ${recovery.values.join(", ")}`);
     case "note":
-      return terminate(recovery.text.replaceAll(TOOL_SLOT, tool));
+      return terminate(recovery.text.replaceAll(TOOL_SLOT, () => tool));
   }
 }
 

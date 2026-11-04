@@ -51,7 +51,7 @@ export function line(recovery: Recovery, tool: string): string {
     case "choose":
       return `${recovery.label}: ${recovery.values.join(", ")}`;
     case "note":
-      return recovery.text.replaceAll(TOOL_SLOT, tool);
+      return recovery.text.replaceAll(TOOL_SLOT, () => tool);
   }
 }
 
@@ -126,7 +126,7 @@ export function parse(text: string, tool: string): Recovery {
   if (isBlank(text)) throw new Error("an empty line is not a recovery");
   const structured = parseSetEnv(text) ?? parseBackticked(text, tool);
   if (structured !== null && !namesToolOutsideCommand(structured, tool)) return structured;
-  return note(text.replaceAll(tool, TOOL_SLOT));
+  return note(text.replaceAll(tool, () => TOOL_SLOT));
 }
 
 export function parseAll(texts: Iterable<string>, tool: string): Recovery[] {
