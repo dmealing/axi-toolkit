@@ -162,6 +162,9 @@ _DEFAULT_RUN_LEAD = "Run"
 _DEFAULT_RETRY_LEAD = "Run the command again with"
 _DEFAULT_SEPARATOR = " "
 
+#: The lead a ``run`` or ``retry`` takes when none is written.
+_FACTORY_LEADS = {KIND_RUN: _DEFAULT_RUN_LEAD, KIND_RETRY: _DEFAULT_RETRY_LEAD}
+
 #: Fields each kind is allowed to set. Anything else is a construction error, so a
 #: recovery written with the wrong keyword fails where it is written rather than
 #: rendering as a shorter line than its author meant.
@@ -247,9 +250,17 @@ class Recovery:
 
     @classmethod
     def from_dict(cls, data: dict) -> Recovery:
-        """Rebuild a recovery from :meth:`as_dict`."""
+        """Rebuild a recovery from :meth:`as_dict`.
+
+        An absent ``lead`` on a ``run`` or ``retry`` takes the factory default rather
+        than ``""``: a hand-written ``{"kind": "run", "args": ["x"]}`` otherwise
+        renders with a leading space. :meth:`as_dict` writes every non-default lead,
+        so a recovery built through the factories round-trips exactly.
+        """
         payload = dict(data)
         kind = payload.pop("kind", "")
+        if "lead" not in payload and kind in _FACTORY_LEADS:
+            payload["lead"] = _FACTORY_LEADS[kind]
         if "text" in payload:
             payload["fragment"] = payload.pop("text")
         for name in ("args", "values"):

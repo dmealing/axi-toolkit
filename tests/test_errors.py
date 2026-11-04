@@ -66,6 +66,32 @@ def test_as_dict_carries_only_the_fields_the_kind_uses():
     assert note("plain").as_dict() == {"kind": "note", "text": "plain"}
 
 
+def test_a_hand_written_run_or_retry_without_a_lead_takes_the_factory_default():
+    """An absent lead was "", which rendered as ' `t x`' with a leading space."""
+    from axi_toolkit.render import cli, prose
+
+    rebuilt = Recovery.from_dict({"kind": "run", "args": ["x"]})
+    assert rebuilt == run(("x",))
+    assert cli.line(rebuilt, "t") == "Run `t x`"
+    assert prose.sentence(rebuilt, "t") == "Use t's `x` command."
+
+    rebuilt = Recovery.from_dict({"kind": "retry", "fragment": "--x", "purpose": "for z"})
+    assert rebuilt == retry("--x", purpose="for z")
+    assert cli.line(rebuilt, "t") == "Run the command again with `--x` for z"
+
+
+def test_a_lead_that_is_written_is_kept_and_the_other_kinds_take_none():
+    assert Recovery.from_dict({"kind": "run", "args": ["x"], "lead": "Raise with"}).lead == (
+        "Raise with"
+    )
+    for wire in (
+        {"kind": "note", "text": "t"},
+        {"kind": "set_env", "variable": "V", "describes": "d"},
+        {"kind": "choose", "label": "l", "values": ["a"]},
+    ):
+        assert Recovery.from_dict(wire).lead == ""
+
+
 def test_a_kind_cannot_carry_another_kinds_field():
     """A mistyped recovery fails where it is written, not where it renders short."""
     with pytest.raises(ValueError, match="cannot carry 'args'"):
