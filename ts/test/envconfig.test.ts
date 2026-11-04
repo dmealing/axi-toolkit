@@ -376,7 +376,7 @@ describe("normalizeBaseUrl", () => {
   it("registers the userinfo of a URL it refuses, so the message redacts", () => {
     const password = ["example", "refused", "secret"].join("-");
     for (const raw of [
-      `https://someone:${password}@[fe80::1`,
+      `https://someone:${password}@[2001:db8::1`,
       `https:///someone:${password}@host.example.com`,
     ]) {
       const error = caught(() => normalizeBaseUrl(raw, SPEC));
