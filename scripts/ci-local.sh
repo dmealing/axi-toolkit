@@ -22,6 +22,7 @@
 #                 check and scripts/reqgen.py drift against them (see below)
 #   tslint        the TypeScript package in ts/: biome check, then tsc --noEmit
 #   tstest        the TypeScript package in ts/: vitest, then a build
+#   tspack        ts/: build, then what npm pack would ship, publint and attw (esm-only profile)
 #
 # Usage:
 #   scripts/ci-local.sh                        # every section
@@ -96,7 +97,7 @@ set -uo pipefail
 root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 cd "$root" || exit 1
 
-SECTIONS=(leakcheck commits lint test requirements verify metagen drift tslint tstest)
+SECTIONS=(leakcheck commits lint test requirements verify metagen drift tslint tstest tspack)
 METAOBJECTS_PIN=$(grep -m1 '^metaobjects==' dev-constraints.txt) ||
   { echo "ci-local: dev-constraints.txt pins no metaobjects==" >&2; exit 1; }
 METAOBJECTS=${METAOBJECTS:-$METAOBJECTS_PIN}
@@ -281,6 +282,20 @@ sec_tstest() {
   ensure_ts_deps
   npm --prefix ts run --silent test
   npm --prefix ts run --silent build
+}
+
+# Packaging: the tarball's file list (npm pack --dry-run), publint on the manifest, and
+# attw on the exports map and declarations. attw runs with the esm-only profile because the
+# package is ESM-only by design; the node10 and CommonJS resolutions it ignores are not
+# ones this package claims to support.
+sec_tspack() {
+  ensure_ts_deps
+  # tsc never deletes output, so a stale dist/ would pass every check below.
+  rm -rf ts/dist
+  npm --prefix ts run --silent build
+  npm --prefix ts run --silent check:pack
+  npm --prefix ts run --silent check:publint
+  npm --prefix ts run --silent check:types
 }
 
 # Each section runs in its own subshell under `set -e`, so its first failing

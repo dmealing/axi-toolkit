@@ -27,9 +27,15 @@ interface Pointer {
 }
 
 function readPointer(): Pointer {
-  const pointer = JSON.parse(
-    readFileSync(join(CONFORMANCE_ROOT, "toon-spec.json"), "utf8"),
-  ) as Partial<Pointer>;
+  let text: string;
+  try {
+    text = readFileSync(join(CONFORMANCE_ROOT, "toon-spec.json"), "utf8");
+  } catch {
+    throw new Error(
+      "axi-toolkit/toon-spec reads the conformance pack in place and needs a checkout of the repository",
+    );
+  }
+  const pointer = JSON.parse(text) as Partial<Pointer>;
   for (const key of ["fixtures", "checksums", "license", "provenance"] as const) {
     if (typeof pointer[key] !== "string") {
       throw new Error(`conformance/toon-spec.json carries no ${JSON.stringify(key)}`);
@@ -179,8 +185,13 @@ export function encoderOptions(testCase: Case): EncodeOptions {
 
 /** The SHA-256 of each file as recorded when the fixtures were vendored. */
 export function recordedDigests(): Record<string, string> {
+  return parseChecksums(readFileSync(checksumsPath(), "utf8"));
+}
+
+/** `sha256sum` lines to `{ name: digest }`. */
+export function parseChecksums(text: string): Record<string, string> {
   const recorded: Record<string, string> = {};
-  for (const line of readFileSync(checksumsPath(), "utf8").split("\n")) {
+  for (const line of text.split("\n")) {
     if (line.trim() === "") continue;
     const [digest, ...rest] = line.trim().split(/\s+/);
     recorded[rest.join(" ")] = digest as string;

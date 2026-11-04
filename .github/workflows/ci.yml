@@ -127,7 +127,7 @@ jobs:
           node-version: "22"
           cache: npm
           cache-dependency-path: ts/package-lock.json
-      - run: scripts/ci-local.sh --only tslint --only tstest
+      - run: scripts/ci-local.sh --only tslint --only tstest --only tspack
 
   test:
     name: test (py${{ matrix.python-version }})

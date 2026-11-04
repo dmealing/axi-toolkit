@@ -1,6 +1,6 @@
 # The TypeScript package (`ts/`)
 
-`axi-toolkit` on npm: the TypeScript counterpart of the Python package in `src/`, in the
+`axi-toolkit` (not yet published to npm): the TypeScript counterpart of the Python package in `src/`, in the
 same repository and versioned on its own. It is not a release-please package yet: the root
 package's `exclude-paths: ["ts"]` keeps commits here from bumping the Python version, and
 how `ts` is released is still to be decided. The root `AGENTS.md` still governs everything here,
@@ -20,7 +20,7 @@ data, local paths or personal identifiers in any file, fixture, test or commit m
   imports it (`test/purity.test.ts` holds both).
 - `src/toon-spec/` — the fixture rig. It reads `../conformance/toon-spec.json` and the
   fixtures it points at **in place**; there is no vendored copy. It therefore needs a
-  checkout of the repository, and is not yet in the npm tarball.
+  checkout of the repository. It ships in the tarball under `dist/`, but works only from a checkout.
 - `src/redact.ts`, `src/envconfig.ts` — the redaction boundary (literals, bearer, registered
   shapes, JWT, in that order) and environment-only credentials. `test/redact.test.ts` and
   `test/envconfig.test.ts` judge them against `conformance/redaction.json` and
@@ -48,9 +48,11 @@ data, local paths or personal identifiers in any file, fixture, test or commit m
 Install from the lockfile into `ts/node_modules` only (`npm ci`), then:
 
 ```sh
-scripts/ci-local.sh --only tslint --only tstest   # what the gate runs: biome, tsc, vitest, build
+scripts/ci-local.sh --only tslint --only tstest   # biome, tsc, vitest, build (the gate also runs tspack)
 npm --prefix ts run test                          # just vitest
 ```
 
-Out of scope until later phases: the drift checks against the
-Python `main`, `publint` / `attw` / `npm pack`, and any `npm publish`.
+Also `--only tspack` (`npm pack --dry-run` contents, `publint`, `attw`). The conformance
+pack and fixture checksums are checked inside `tstest` (`test/toon.test.ts`). There is no
+network drift check: the pack is read in place, so there is no second copy to compare.
+Out of scope: any `npm publish`.
