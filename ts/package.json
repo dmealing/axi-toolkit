@@ -25,6 +25,14 @@
       "types": "./dist/render/prose.d.ts",
       "default": "./dist/render/prose.js"
     },
+    "./redact": {
+      "types": "./dist/redact.d.ts",
+      "default": "./dist/redact.js"
+    },
+    "./envconfig": {
+      "types": "./dist/envconfig.d.ts",
+      "default": "./dist/envconfig.js"
+    },
     "./toon": {
       "types": "./dist/toon.d.ts",
       "default": "./dist/toon.js"
