@@ -373,6 +373,20 @@ describe("normalizeBaseUrl", () => {
     expect(error.code).toBe("BAD_URL");
   });
 
+  it("registers the userinfo of a URL it refuses, so the message redacts", () => {
+    const password = ["example", "refused", "secret"].join("-");
+    for (const raw of [
+      `https://someone:${password}@[fe80::1`,
+      `https:///someone:${password}@host.example.com`,
+    ]) {
+      const error = caught(() => normalizeBaseUrl(raw, SPEC));
+      expect(error.code).toBe("BAD_URL");
+      expect(error.message).toBe(`EXAMPLE_URL is not a usable URL: '${raw}'`);
+      expect(redact(error.message)).not.toContain(password);
+      reset();
+    }
+  });
+
   it("lowercases the scheme before checking it", () => {
     expect(normalizeBaseUrl("HTTP://h", SPEC)).toBe("http://h");
   });

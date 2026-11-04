@@ -124,14 +124,27 @@ export function splitUserinfo(netloc: string): [userinfo: string, host: string] 
   return [netloc.slice(0, at), netloc.slice(at + 1)];
 }
 
+/**
+ * Register `user:password` and the password alone as secrets, so from here on either can only
+ * be printed through the redacting output boundary.
+ */
+function registerUserinfo(userinfo: string): void {
+  if (!userinfo) return;
+  registerSecret(userinfo, { minLength: 4 });
+  const colon = userinfo.indexOf(":");
+  if (colon >= 0) registerSecret(userinfo.slice(colon + 1), { minLength: 4 });
+}
+
 /** Accept a bare host, apply `spec`'s defaults, and drop any trailing path noise. */
 export function normalizeBaseUrl(raw: string, spec: CredentialSpec): string {
   let value = rstripSlashes(pyStrip(raw));
   if (!value.includes("://")) value = `${spec.defaultScheme}://${value}`;
   const refuse = (message: string): ConfigError =>
     new ConfigError(message, { recovery: spec.setup.slice(0, 1), code: "BAD_URL" });
-  const unusable = (): ConfigError =>
-    refuse(`${spec.urlVars[0]} is not a usable URL: ${pyRepr(value)}`);
+  const unusable = (): ConfigError => {
+    registerUserinfo(splitUserinfo(value.slice(value.indexOf("://") + 3))[0]);
+    return refuse(`${spec.urlVars[0]} is not a usable URL: ${pyRepr(value)}`);
+  };
   let parts: UrlParts;
   try {
     parts = pyUrlsplit(value);
@@ -148,13 +161,7 @@ export function normalizeBaseUrl(raw: string, spec: CredentialSpec): string {
   }
   const [userinfo, hostPart] = splitUserinfo(parts.netloc);
   let host = hostPart;
-  if (userinfo) {
-    // Registered before returning: from here on the value can only be printed through the
-    // redacting output boundary.
-    registerSecret(userinfo, { minLength: 4 });
-    const colon = userinfo.indexOf(":");
-    if (colon >= 0) registerSecret(userinfo.slice(colon + 1), { minLength: 4 });
-  }
+  registerUserinfo(userinfo);
   // Slice after the last "]" so a bracketed IPv6 literal's own colons are not read as a port.
   if (spec.defaultPort && !host.slice(host.lastIndexOf("]") + 1).includes(":")) {
     host = `${host}:${spec.defaultPort}`;
