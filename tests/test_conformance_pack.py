@@ -185,6 +185,8 @@ def test_es_pattern_refuses_a_construct_it_cannot_translate():
 
 def test_a_hand_written_run_without_a_lead_renders_without_a_leading_space():
     for case in _load("render-rules.json")["hand_written"]:
+        if case["input"]["kind"] not in ("run", "retry") or "lead" in case["input"]:
+            continue
         for rendered in case["renders"].values():
             assert not rendered["line"].startswith(" "), case["name"]
             assert not rendered["sentence"].startswith(" "), case["name"]
@@ -214,3 +216,12 @@ def test_the_exit_codes_and_classes_in_the_pack_are_the_modules():
         "AxiError", "UsageError", "ConfigError", "ConnectionFailed",
         "AuthFailed", "Forbidden", "NotFound", "ApiError",
     }  # fmt: skip
+
+
+def test_an_explicit_empty_lead_stays_empty_in_the_pack():
+    cases = {c["name"]: c for c in _load("render-rules.json")["hand_written"]}
+    for name in ("run, empty lead kept", "retry, empty lead kept"):
+        assert cases[name]["recovery"]["lead"] == "", name
+    parsed = {c["line"]: c for c in _load("render-rules.json")["parse"]}
+    assert parsed[" `--x`"]["intent"]["lead"] == ""
+    assert parsed[" `--x`"]["renders_back"] == " `--x`"

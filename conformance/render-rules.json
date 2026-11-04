@@ -578,6 +578,48 @@
       }
     },
     {
+      "name": "run, empty lead kept",
+      "input": {
+        "kind": "run",
+        "args": [
+          "x"
+        ],
+        "lead": ""
+      },
+      "recovery": {
+        "kind": "run",
+        "args": [
+          "x"
+        ],
+        "lead": ""
+      },
+      "renders": {
+        "hass-axi": {
+          "line": " `hass-axi x`",
+          "sentence": " hass-axi's `x`."
+        }
+      }
+    },
+    {
+      "name": "retry, empty lead kept",
+      "input": {
+        "kind": "retry",
+        "fragment": "--x",
+        "lead": ""
+      },
+      "recovery": {
+        "kind": "retry",
+        "fragment": "--x",
+        "lead": ""
+      },
+      "renders": {
+        "hass-axi": {
+          "line": " `--x`",
+          "sentence": " `--x`, then run it again with hass-axi."
+        }
+      }
+    },
+    {
       "name": "note, text key",
       "input": {
         "kind": "note",
@@ -807,6 +849,16 @@
         "lead": "Run the command again with"
       },
       "renders_back": "Run the command again with `--limit 50`"
+    },
+    {
+      "tool": "hass-axi",
+      "line": " `--x`",
+      "intent": {
+        "kind": "retry",
+        "fragment": "--x",
+        "lead": ""
+      },
+      "renders_back": " `--x`"
     },
     {
       "tool": "hass-axi",
