@@ -21,8 +21,13 @@ data, local paths or personal identifiers in any file, fixture, test or commit m
 - `src/toon-spec/` — the fixture rig. It reads `../conformance/toon-spec.json` and the
   fixtures it points at **in place**; there is no vendored copy. It therefore needs a
   checkout of the repository, and is not yet in the npm tarball.
+- `src/redact.ts`, `src/envconfig.ts` — the redaction boundary (literals, bearer, registered
+  shapes, JWT, in that order) and environment-only credentials. `test/redact.test.ts` and
+  `test/envconfig.test.ts` judge them against `conformance/redaction.json` and
+  `credentials.json`, read in place.
 - `src/internal/pystr.ts` — where a JS string built-in differs from the Python one the
-  contract was written against (whitespace set, code-point capitalisation). Not exported.
+  contract was written against (whitespace set, strip, `repr`, `urlsplit`, code-point length
+  and capitalisation). Not exported.
 - `test/` — vitest. `render.test.ts` and `errors.test.ts` judge the implementation against
   `conformance/recovery.json`, `render-rules.json` and `errors.json`, read in place.
 
@@ -47,5 +52,5 @@ scripts/ci-local.sh --only tslint --only tstest   # what the gate runs: biome, t
 npm --prefix ts run test                          # just vitest
 ```
 
-Out of scope until later phases: `redact`, `envconfig`, the drift checks against the
+Out of scope until later phases: the drift checks against the
 Python `main`, `publint` / `attw` / `npm pack`, and any `npm publish`.
