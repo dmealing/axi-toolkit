@@ -52,5 +52,6 @@ scripts/ci-local.sh --only tslint --only tstest   # what the gate runs: biome, t
 npm --prefix ts run test                          # just vitest
 ```
 
-Out of scope until later phases: the drift checks against the
-Python `main`, `publint` / `attw` / `npm pack`, and any `npm publish`.
+Also `--only tsdrift` (the pack and fixture checksums) and `--only tspack` (`npm pack
+--dry-run` contents, `publint`, `attw`). There is no network drift check: the pack is read
+in place, so there is no second copy to compare. Out of scope: any `npm publish`.
