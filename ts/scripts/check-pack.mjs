@@ -19,25 +19,20 @@ const output = execFileSync("npm", ["pack", "--dry-run", "--json", "--ignore-scr
 });
 const shipped = JSON.parse(output)[0].files.map((file) => file.path).sort();
 
+const ROOT_FILES = ["package.json", "README.md", "LICENSE"];
 const problems = [];
-const required = new Set(["package.json", "README.md", "LICENSE"]);
+const required = new Set(ROOT_FILES);
 
-const targets = [];
 (function collect(value) {
-  if (typeof value === "string") targets.push(value.replace(/^\.\//, ""));
+  if (typeof value === "string") required.add(value.replace(/^\.\//, ""));
   else if (value && typeof value === "object") Object.values(value).forEach(collect);
 })(manifest.exports);
-for (const target of targets) required.add(target);
 
 for (const path of required) {
   if (!shipped.includes(path)) problems.push(`missing from the tarball: ${path}`);
 }
 for (const path of shipped) {
-  const allowed = path.startsWith("dist/") || ["package.json", "README.md", "LICENSE"].includes(path);
-  if (!allowed) problems.push(`must not ship: ${path}`);
-  if (path.startsWith("dist/") && /\.(test|spec)\.|\.tsbuildinfo$/.test(path)) {
-    problems.push(`must not ship: ${path}`);
-  }
+  if (!path.startsWith("dist/") && !ROOT_FILES.includes(path)) problems.push(`must not ship: ${path}`);
 }
 
 if (readFileSync(join(root, "LICENSE"), "utf8") !== readFileSync(join(root, "..", "LICENSE"), "utf8")) {

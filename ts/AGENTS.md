@@ -52,6 +52,7 @@ scripts/ci-local.sh --only tslint --only tstest   # what the gate runs: biome, t
 npm --prefix ts run test                          # just vitest
 ```
 
-Also `--only tsdrift` (the pack and fixture checksums) and `--only tspack` (`npm pack
---dry-run` contents, `publint`, `attw`). There is no network drift check: the pack is read
-in place, so there is no second copy to compare. Out of scope: any `npm publish`.
+Also `--only tspack` (`npm pack --dry-run` contents, `publint`, `attw`). The conformance
+pack and fixture checksums are checked inside `tstest` (`test/toon.test.ts`). There is no
+network drift check: the pack is read in place, so there is no second copy to compare.
+Out of scope: any `npm publish`.

@@ -18,6 +18,7 @@ import {
   recordedDigests,
   run,
 } from "../src/toon-spec/index.js";
+import { pack } from "./pack.js";
 
 // Ratchets on a fixture refresh, not expectations: the two deliberate literals here.
 const CASE_COUNT = 160;
@@ -121,6 +122,18 @@ describe("the conformance pack's own checksums", () => {
         .update(readFileSync(join(CONFORMANCE_ROOT, name as string)))
         .digest("hex");
       expect(actual, name).toBe(digest);
+    }
+  });
+
+  it("declare the pack name and version, and the topic their file name", () => {
+    for (const entry of readFileSync(join(CONFORMANCE_ROOT, "checksums.txt"), "utf8")
+      .trim()
+      .split("\n")) {
+      const name = entry.split(/\s+/)[1] as string;
+      const file = pack<{ pack: string; version: number; topic: string }>(name);
+      expect(file.pack).toBe("axi-toolkit-conformance");
+      expect(file.version).toBe(1);
+      expect(`${file.topic}.json`).toBe(name);
     }
   });
 

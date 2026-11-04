@@ -58,8 +58,8 @@ The Python package in `src/` is the reference. It writes `conformance/` at the r
 root: language-neutral JSON (recovery lines with their parsed and prose forms, rendering
 rules, error classification, credential scenarios, redaction cases) with a `checksums.txt`
 over it. This package's tests read those files, and the TOON encode fixtures, **in place**.
-There is no vendored copy and nothing to sync. A test (`test/drift.test.ts`) fails when the
-bytes on disk stop matching the recorded checksums, and `scripts/ci-local.sh --only tsdrift`
+There is no vendored copy and nothing to sync. A test (`test/toon.test.ts`) fails when the
+bytes on disk stop matching the recorded checksums, and `scripts/ci-local.sh --only tstest`
 runs it. Because the pack is read where it lives, a separate network drift check against
 another repository would compare a file with itself, so there is none.
 
@@ -70,7 +70,6 @@ checkout and not from the installed tarball.
 
 ```sh
 scripts/ci-local.sh --only tslint --only tstest   # biome, tsc, vitest, build
-scripts/ci-local.sh --only tsdrift                # conformance pack and TOON fixture checksums
 scripts/ci-local.sh --only tspack                 # build, npm pack --dry-run contents, publint, attw
 ```
 
