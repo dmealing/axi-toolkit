@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.0.2](https://github.com/dmealing/axi-toolkit/compare/v1.0.1...v1.0.2) (2026-11-14)
+
+
+### Bug Fixes
+
+* **errors:** default an absent lead on run and retry wire forms ([#46](https://github.com/dmealing/axi-toolkit/issues/46)) ([fd15dde](https://github.com/dmealing/axi-toolkit/commit/fd15dde3f822336ebf897fcaddf15f7418ab1c6d))
+* **toon:** quote a root string that starts with U+FEFF ([#45](https://github.com/dmealing/axi-toolkit/issues/45)) ([3e5ae40](https://github.com/dmealing/axi-toolkit/commit/3e5ae40478a3688568f0fd498f4cd37eb40d98d0))
+
+
+### Documentation
+
+* add disk I/O guidance for throwaway data ([#50](https://github.com/dmealing/axi-toolkit/issues/50)) ([2a88660](https://github.com/dmealing/axi-toolkit/commit/2a886608310bce5953804c015585c3389660a544))
+
 ## [1.0.1](https://github.com/dmealing/axi-toolkit/compare/v1.0.0...v1.0.1) (2026-10-29)
 
 
