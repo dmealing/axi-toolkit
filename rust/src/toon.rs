@@ -154,13 +154,15 @@ impl Delimiter {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum Dialect {
     /// Spec v4.4 and the Python `axi_toolkit.toon` module: a string starting with `#` is quoted,
-    /// a leading `+` makes a string numeric-like, padding means a space or tab, and a float
-    /// outside the canonical decimal range prints with Python's exponent form (`1e-07`).
+    /// a leading `+` makes a string numeric-like, padding means a space or tab, an integral float
+    /// prints its exact integer (`2^63` as `9223372036854775808`), and a float outside the
+    /// canonical decimal range prints with Python's exponent form (`1e-07`).
     #[default]
     Spec,
     /// `@toon-format/toon` 2.3.x: `#` is not special, `+1` is not numeric-like, padding is
-    /// anything JavaScript's `String.prototype.trim` strips, and an exponent has no zero padding
-    /// (`1e-7`).
+    /// anything JavaScript's `String.prototype.trim` strips, an integral float prints its
+    /// shortest round-trip digits (`2^63` as `9223372036854776000`), and an exponent has no zero
+    /// padding (`1e-7`).
     ToonJs2,
 }
 

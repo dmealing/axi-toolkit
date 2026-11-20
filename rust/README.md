@@ -137,6 +137,9 @@ fixtures. Every implementation runs the same files.
 
 * **Exponent form.** Python (and spec v4.4) write `1e-07`; the JavaScript library writes `1e-7`.
   `Dialect::Spec` matches Python, `Dialect::ToonJs2` matches JavaScript.
+* **Large integral floats.** Python (and spec v4.4) write `2**63` as its exact integer,
+  `9223372036854775808`; the JavaScript library writes its shortest round-trip digits,
+  `9223372036854776000`. `Dialect::Spec` matches Python, `Dialect::ToonJs2` matches JavaScript.
 * **Truncation unit.** `render::view::truncate` counts UTF-16 code units, as JavaScript's
   `String.length` does, so it cuts where the TypeScript tools cut. A cut inside a surrogate pair
   leaves U+FFFD, as it would on a JavaScript stdout.
