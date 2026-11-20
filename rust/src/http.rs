@@ -16,7 +16,7 @@
 //!
 //! | code | when |
 //! | --- | --- |
-//! | [`CODE_INSECURE_URL`] | plain `http://` refused before sending |
+//! | [`CODE_INSECURE_URL`] | plain `http://` (any scheme case) refused before sending |
 //! | [`CODE_BAD_RESPONSE`] | a response that was not the JSON the caller expected |
 //! | [`CODE_HTTP_UNAUTHORIZED`] | status 401 |
 //! | [`CODE_HTTP_FORBIDDEN`] | status 403 |

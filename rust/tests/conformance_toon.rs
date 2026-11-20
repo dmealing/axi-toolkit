@@ -49,7 +49,8 @@ fn options(case: &serde_json::Value) -> Options {
 /// Cases whose JSON integer literal is beyond i64: the reference reads a Python `int` (exact
 /// digits), but `Value::Int` is an i64, so here it is an `f64` and prints as the exact integer
 /// that float holds, which is what Python's `str(int(float(literal)))` gives. The value is the
-/// literal's own binary64 expansion, derived independently of the encoder.
+/// literal's own binary64 expansion, derived independently of the encoder. It replaces the
+/// fixture's `expected` for these named cases only; every other case compares to the fixture.
 const FLOAT_HELD_INTEGERS: &[(&str, &str)] = &[(
     "encodes a large integer-valued number with its shortest round-trip digits",
     "123456789012345683968",
