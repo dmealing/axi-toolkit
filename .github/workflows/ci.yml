@@ -87,7 +87,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: scripts/ci-local.sh --only commits
 
-  # EVERY job that needs third-party packages installs into a fresh `.venv` and
+  # EVERY job that needs third-party packages installs into a fresh `python/.venv` and
   # calls the tools by path out of it. That is not ceremony. This runner runs as
   # the maintainer's own user, so `~/.local/lib/python3.X/site-packages` and
   # `~/.local/bin` are on the interpreter's path and ahead of it on `PATH` — a
@@ -107,9 +107,9 @@ jobs:
         with:
           python-version: "3.12"
       # --clear because the workspace outlives the job on a self-hosted runner.
-      - run: python -m venv --clear .venv
-      - run: .venv/bin/python -m pip install --upgrade pip
-      - run: .venv/bin/pip install -e ".[dev]"
+      - run: python -m venv --clear python/.venv
+      - run: python/.venv/bin/python -m pip install --upgrade pip
+      - run: python/.venv/bin/pip install -e "./python[dev]"
       - run: scripts/ci-local.sh --only lint
 
   # The TypeScript package in ts/. Node only: it reads the conformance pack and the
@@ -147,16 +147,16 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       # NOT a project dependency, and not one line of the package needs it. It is
-      # here so `tests/test_commit_message.py` can run the vendored parser and
+      # here so `python/tests/test_commit_message.py` can run the vendored parser and
       # compare the transcription in `commitcheck.py` against it. Without node the
       # parity cases skip, and a skipped agreement check reads exactly like a
       # passing one — so that suite fails rather than skips when `CI` is set.
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
-      - run: python -m venv --clear .venv
-      - run: .venv/bin/python -m pip install --upgrade pip
-      - run: .venv/bin/pip install -e ".[dev]"
+      - run: python -m venv --clear python/.venv
+      - run: python/.venv/bin/python -m pip install --upgrade pip
+      - run: python/.venv/bin/pip install -e "./python[dev]"
       # No credentials, no source checkouts, no network. The conformance layer
       # reads the committed capture, which is the property that lets the whole
       # suite run here at all — and the floor is 3.9 precisely because the
@@ -179,9 +179,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: python -m venv --clear .venv
-      - run: .venv/bin/python -m pip install --upgrade pip
-      - run: .venv/bin/pip install -c dev-constraints.txt -e ".[dev,reqgen]"
+      - run: python -m venv --clear python/.venv
+      - run: python/.venv/bin/python -m pip install --upgrade pip
+      - run: python/.venv/bin/pip install -c python/dev-constraints.txt -e "./python[dev,reqgen]"
       # Loads the declaration under the sealed-registry discipline and applies
       # the binding rules — an invented attribute, a requirement with no check,
       # a reference that no longer resolves, all fail here.
@@ -200,9 +200,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: python -m venv --clear .venv
-      - run: .venv/bin/python -m pip install --upgrade pip uv
-      - run: echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
+      - run: python -m venv --clear python/.venv
+      - run: python/.venv/bin/python -m pip install --upgrade pip uv
+      - run: echo "$PWD/python/.venv/bin" >> "$GITHUB_PATH"
       - run: scripts/ci-local.sh --only verify
 
   # The one job that reads something other than this repository: it fetches both
@@ -220,9 +220,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: python -m venv --clear .venv
-      - run: .venv/bin/python -m pip install --upgrade pip
-      - run: .venv/bin/pip install -c dev-constraints.txt -e ".[dev,reqgen]"
+      - run: python -m venv --clear python/.venv
+      - run: python/.venv/bin/python -m pip install --upgrade pip
+      - run: python/.venv/bin/pip install -c python/dev-constraints.txt -e "./python[dev,reqgen]"
       - run: scripts/ci-local.sh --only drift
 
   # Nothing watches a workflow that runs on main and overnight, so a failure has

@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# Build this repository's development environment: a virtualenv at .venv with
+# Build the Python package's development environment: a virtualenv at python/.venv with
 # the package installed into it in editable mode. No other Python environment,
 # console script or site-packages directory is created, modified or removed.
 #
@@ -19,9 +19,9 @@ set -e
 
 usage() {
   cat <<'EOF'
-Usage: scripts/dev-setup.sh [--reqgen] [--python INTERPRETER] [--recreate]
+Usage: python/scripts/dev-setup.sh [--reqgen] [--python INTERPRETER] [--recreate]
 
-Creates .venv at the repository root and installs the package into it in
+Creates python/.venv and installs the package into it in
 editable mode. No other Python environment, console script or site-packages
 directory is created, modified or removed.
 
@@ -132,5 +132,5 @@ case "$extras" in
     echo "  .venv/bin/python scripts/reqgen.py list | check | generate"
     ;;
 esac
-echo "  scripts/install-hooks.sh                          # the commit guards"
-echo "  scripts/leakcheck.py                              # what those hooks run"
+echo "  ../scripts/install-hooks.sh                       # the commit guards"
+echo "  ../scripts/leakcheck.py                           # what those hooks run"

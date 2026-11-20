@@ -57,7 +57,9 @@ from pathlib import Path
 
 import pytest
 
-ROOT = Path(__file__).resolve().parent.parent
+#: `scripts/commitcheck.py` and `vendor/` serve the whole repository, so they sit at its root,
+#: one level above this package.
+ROOT = Path(__file__).resolve().parent.parent.parent
 COMMITCHECK = ROOT / "scripts" / "commitcheck.py"
 VENDOR = ROOT / "vendor" / "conventional-commits-parser"
 CHECKSUMS = VENDOR / "checksums.txt"
@@ -439,7 +441,7 @@ def _repo(tmp_path, commits):
     run("config", "user.name", "Nobody")
     run("config", "core.hooksPath", str(tmp_path / "no-hooks"))
     run("config", "commit.gpgsign", "false")
-    (root / ".release-please-manifest.json").write_text('{\n  ".": "1.0.0"\n}\n')
+    (root / ".release-please-manifest.json").write_text('{\n  "python": "1.0.0"\n}\n')
     run("add", ".release-please-manifest.json")
     run("commit", "-q", "-m", "chore: release 1.0.0")
     run("tag", "v1.0.0")

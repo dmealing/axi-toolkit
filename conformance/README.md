@@ -1,7 +1,7 @@
 # Conformance pack
 
 Language-neutral JSON that any implementation of the toolkit's contract judges itself
-against. The Python package in `src/axi_toolkit` is the reference: it writes this
+against. The Python package in `python/src/axi_toolkit` is the reference: it writes this
 directory, and a test regenerates it on every run and requires the committed bytes, so
 the pack cannot drift from Python. A second implementation in this repository reads these
 files in place; there is no vendored copy and nothing to sync.
@@ -25,22 +25,22 @@ default.
 A redaction input is never a credential-shaped string. It is a list of literal strings and
 `{"ref": name}` markers, and `fragments` holds the recipe for each name (parts to join, or a
 header, payload and signature to base64url-encode without padding into a token). The reader
-assembles the text at run time, which is also how `tests/test_redact.py` builds its samples.
+assembles the text at run time, which is also how `python/tests/test_redact.py` builds its samples.
 
 ## The TOON fixtures
 
 They stay where they are, inside the Python package, because the wheel ships them so a
 downstream tool can run the rig against its own encoder. `toon-spec.json` gives the paths
-relative to this directory (`../src/axi_toolkit/toon_spec/encode/`, its `checksums.txt`,
+relative to this directory (`../python/src/axi_toolkit/toon_spec/encode/`, its `checksums.txt`,
 `LICENSE` and `PROVENANCE.md`). A package that must carry them in its own tarball copies
 them at build time from that path rather than keeping a second source of truth.
 
 ## Regenerating
 
 ```sh
-.venv/bin/python scripts/conformance_pack.py
+python/.venv/bin/python python/scripts/conformance_pack.py
 ```
 
-The pack is built from the committed `tests/conformance/capture.json` and the package
-itself (`tests/conformance/pack.py`), so no source checkout or network is needed. Never
+The pack is built from the committed `python/tests/conformance/capture.json` and the package
+itself (`python/tests/conformance/pack.py`), so no source checkout or network is needed. Never
 edit these files by hand.

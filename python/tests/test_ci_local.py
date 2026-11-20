@@ -11,8 +11,12 @@ from __future__ import annotations
 
 import os
 import subprocess
+from pathlib import Path
 
 import pytest
+
+#: The script serves the whole repository, so it sits at its root, above this package.
+CI_LOCAL = str(Path(__file__).resolve().parents[2] / "scripts" / "ci-local.sh")
 
 
 @pytest.fixture
@@ -28,7 +32,7 @@ def run_drift(tmp_path):
             **overrides,
         )
         return subprocess.run(
-            ["scripts/ci-local.sh", "--only", "drift"], capture_output=True, text=True, env=env
+            [CI_LOCAL, "--only", "drift"], capture_output=True, text=True, env=env
         )
 
     return run
@@ -60,8 +64,6 @@ def test_any_other_value_of_the_override_is_not_the_override(run_drift):
 
 
 def test_drift_is_a_section_the_script_names():
-    result = subprocess.run(
-        ["scripts/ci-local.sh", "--only", "no-such-section"], capture_output=True, text=True
-    )
+    result = subprocess.run([CI_LOCAL, "--only", "no-such-section"], capture_output=True, text=True)
     assert result.returncode == 2
     assert "drift" in result.stderr

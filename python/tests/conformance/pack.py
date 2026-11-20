@@ -39,7 +39,7 @@ from . import projections, specs
 __all__ = ["PACK_DIR", "build", "checksums", "es_pattern", "render_segments"]
 
 ROOT = Path(__file__).resolve().parents[2]
-PACK_DIR = ROOT / "conformance"
+PACK_DIR = ROOT.parent / "conformance"
 CAPTURE = Path(__file__).resolve().with_name("capture.json")
 
 #: The two source tools' command names, which is what the corpus is parsed and rendered
@@ -707,10 +707,10 @@ def _toon_pointer() -> dict:
             "The TOON encode fixtures are read in place, not copied. Paths are relative to "
             "this directory. `checksums` is in sha256sum format over the fixture files."
         ),
-        "fixtures": "../src/axi_toolkit/toon_spec/encode",
-        "checksums": "../src/axi_toolkit/toon_spec/checksums.txt",
-        "license": "../src/axi_toolkit/toon_spec/LICENSE",
-        "provenance": "../src/axi_toolkit/toon_spec/PROVENANCE.md",
+        "fixtures": "../python/src/axi_toolkit/toon_spec/encode",
+        "checksums": "../python/src/axi_toolkit/toon_spec/checksums.txt",
+        "license": "../python/src/axi_toolkit/toon_spec/LICENSE",
+        "provenance": "../python/src/axi_toolkit/toon_spec/PROVENANCE.md",
     }
 
 

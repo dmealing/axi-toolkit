@@ -57,7 +57,7 @@ import re
 import sys
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
+REPO_ROOT = Path(__file__).resolve().parent.parent  # the python/ package directory
 METADATA_DIR = REPO_ROOT / "metaobjects"
 CONFORMANCE_DIR = REPO_ROOT / "tests" / "conformance"
 PROJECTIONS = CONFORMANCE_DIR / "projections.py"

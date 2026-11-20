@@ -52,7 +52,7 @@ API is camelCase.
 
 ## Relation to the Python package and the `conformance/` pack
 
-The Python package in `src/` is the reference. It writes `conformance/` at the repository
+The Python package in `python/` is the reference. It writes `conformance/` at the repository
 root: language-neutral JSON (recovery lines with their parsed and prose forms, rendering
 rules, error classification, credential scenarios, redaction cases) with a `checksums.txt`
 over it. This package's tests read those files, and the TOON encode fixtures, **in place**.

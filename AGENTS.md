@@ -3,6 +3,14 @@
 This file is the project's committed home for project-intrinsic agent knowledge: build,
 test, release, architecture, and sharp-edge notes that should travel with the code.
 
+**Layout.** The Python package is in `python/`, the TypeScript package in `ts/`, and the shared
+language-neutral `conformance/` pack at the root beside the repository-wide tooling:
+`scripts/leakcheck.py`, `scripts/commitcheck.py`, `scripts/ci-local.sh`,
+`scripts/install-hooks.sh`, `vendor/`, `.githooks/`, `.github/` and the release-please files.
+Every other path below (`src/`, `tests/`, `metaobjects/`, `models/`, `pyproject.toml`,
+`scripts/reqgen.py`, `scripts/dev-setup.sh`, `.venv`, `CHANGELOG.md`, ...) is relative to
+`python/`, and the Python commands are run from there.
+
 ## The hard constraint: this repository is public and must stay generic
 
 `axi-toolkit` is built by reading two AXI command-line tools and the installations they
@@ -65,7 +73,7 @@ case is a synthetic Windows drive path.
 
 **`scripts/dev-setup.sh` is the only setup command for the standard environment. Never run
 `pip install` — editable or otherwise — outside `.venv`, and never document one.** The
-script creates `.venv` at the repository root and installs `.[dev]` into it; `--reqgen`
+script creates `python/.venv` and installs `.[dev]` into it; `--reqgen`
 adds `.[dev,reqgen]` (raises the interpreter floor to 3.11 for the requirements
 toolchain); everything afterwards is called by path out of it — `.venv/bin/pytest`,
 `.venv/bin/ruff`, `.venv/bin/python scripts/reqgen.py`. The MetaObjects generators in
@@ -593,9 +601,9 @@ Bringing the two back into line is **one commit whose last footer is
 `Release-As: <version>`**. Three things about it are easy to get wrong, and two of them
 were got wrong before this note existed.
 
-- **Touch no version string and no changelog.** `pyproject.toml`,
-  `src/axi_toolkit/__init__.py` (it is in `extra-files`) and
-  `.release-please-manifest.json` are release-please's to write, in its own release PR,
+- **Touch no version string and no changelog.** `python/pyproject.toml`,
+  `python/src/axi_toolkit/__init__.py` (it is in `extra-files`) and
+  `.release-please-manifest.json` (the `python` entry) are release-please's to write, in its own release PR,
   and the `CHANGELOG.md` section is generated from the commits. A hand-bump does not seed
   that PR, it collides with it. The forcing commit carries prose and the footer, nothing
   else.

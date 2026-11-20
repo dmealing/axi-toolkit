@@ -13,7 +13,7 @@
 # deliberate run. `scripts/ci-local.sh --help` says what each section runs. The
 # drift section is the one that needs a network, and it fails rather than passes
 # without one. The gate runs pytest once, on the interpreter that builds
-# .venv; the 3.9-3.12 matrix is `scripts/ci-local.sh --matrix`, run by hand
+# python/.venv; the 3.9-3.12 matrix is `scripts/ci-local.sh --matrix`, run by hand
 # (see the script's header for why).
 #
 # The TypeScript package in ts/ rides along: `tslint` (biome and tsc) is part of the lint
@@ -22,7 +22,7 @@
 # packages. They install into ts/node_modules from the lockfile (`npm ci`).
 #
 # The gate checks out a fresh worktree with no .venv; the script builds one
-# with `scripts/dev-setup.sh --reqgen` the first time a section needs it.
+# with `python/scripts/dev-setup.sh --reqgen` the first time a section needs it.
 #
 # This file must sit at the repository root, and the gate reads it from the
 # default branch, so an edit here takes effect only once it is merged to main.

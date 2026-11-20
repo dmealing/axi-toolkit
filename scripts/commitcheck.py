@@ -996,7 +996,7 @@ def report(problems, label, stream=None):
 
 def released_version(root):
     manifest = Path(root) / ".release-please-manifest.json"
-    return json.loads(manifest.read_text(encoding="utf-8"))["."]
+    return json.loads(manifest.read_text(encoding="utf-8"))["python"]
 
 
 def _tag_exists(tag, root):

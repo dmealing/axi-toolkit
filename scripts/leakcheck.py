@@ -233,7 +233,7 @@ PATH_ALLOWANCES = {
     # fixture is vendored byte-for-byte and its checksum is asserted, so editing
     # it to satisfy this scanner would replace the specification's opinion with
     # ours, which is the opposite of what a conformance fixture is for.
-    "src/axi_toolkit/toon_spec/encode/primitives.json": frozenset({"home-path"}),
+    "python/src/axi_toolkit/toon_spec/encode/primitives.json": frozenset({"home-path"}),
 }
 
 

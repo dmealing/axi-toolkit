@@ -61,15 +61,17 @@ metagen = [
 Homepage = "https://github.com/dmealing/axi-toolkit"
 Source = "https://github.com/dmealing/axi-toolkit"
 Issues = "https://github.com/dmealing/axi-toolkit/issues"
-Changelog = "https://github.com/dmealing/axi-toolkit/blob/main/CHANGELOG.md"
-Documentation = "https://github.com/dmealing/axi-toolkit#readme"
+Changelog = "https://github.com/dmealing/axi-toolkit/blob/main/python/CHANGELOG.md"
+Documentation = "https://github.com/dmealing/axi-toolkit/tree/main/python#readme"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/axi_toolkit"]
 
-# The TypeScript package in ts/ is not part of this sdist; its release is decided in ts/AGENTS.md.
+# This directory is the whole sdist, so ts/ and the repository's own tooling are outside it. The
+# two tests that judge that tooling (scripts/commitcheck.py, scripts/ci-local.sh and vendor/,
+# all at the repository root) would have nothing to read from an unpacked sdist, so they stay out.
 [tool.hatch.build.targets.sdist]
-exclude = ["/ts"]
+exclude = ["/tests/test_commit_message.py", "/tests/test_ci_local.py"]
 
 [tool.ruff]
 line-length = 100
