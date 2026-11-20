@@ -2,7 +2,7 @@
   "pack": "axi-toolkit-conformance",
   "version": 1,
   "topic": "redaction",
-  "generated_by": "scripts/conformance_pack.py",
+  "generated_by": "python/scripts/conformance_pack.py",
   "description": "Order of application: registered literals (longest first), the bearer rule, the tool's registered patterns in order, then the token rule. A pattern with a capture group keeps group 1 and redacts the rest; one without is replaced whole. Patterns are ECMAScript, compiled with their `flags`. What `\\b` and `\\s` match is engine-defined; the cases are the contract. A literal is registered only when it is at least `min_length` long. An input is a list of strings and `{ref}` markers, resolved through `fragments`, so no credential-shaped value is written into this file.",
   "redacted": "<redacted>",
   "min_secret_length": 8,

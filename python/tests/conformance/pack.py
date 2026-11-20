@@ -66,7 +66,7 @@ def _header(topic: str) -> dict:
         "pack": "axi-toolkit-conformance",
         "version": VERSION,
         "topic": topic,
-        "generated_by": "scripts/conformance_pack.py",
+        "generated_by": "python/scripts/conformance_pack.py",
     }
 
 
