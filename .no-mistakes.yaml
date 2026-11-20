@@ -6,9 +6,9 @@
 # declared here, the gate's test step is an agent choosing what to run.
 #
 # The two commands together are a bare `scripts/ci-local.sh`, cut along its
-# `--only` sections so neither step repeats the other: ruff is the lint step,
-# and everything else — the leak scan, the commit-message audit, pytest, the
-# requirements check, `metaobjects verify` (needs uv on PATH) and the drift check
+# `--only` sections so neither step repeats the other: ruff, `tslint` and `rsfmt`
+# are the lint step, and everything else — the leak scan, the commit-message audit, pytest,
+# the requirements check, `metaobjects verify` (needs uv on PATH) and the drift check
 # against both source tools' main — is the test step; `metagen` is left to a
 # deliberate run. `scripts/ci-local.sh --help` says what each section runs. The
 # drift section is the one that needs a network, and it fails rather than passes

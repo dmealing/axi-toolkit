@@ -4,8 +4,8 @@
 # GitHub Actions is disabled on this repository, so the workflow's jobs run
 # nowhere unless something local runs them. This script is that something: the
 # no-mistakes gate calls it (see `.no-mistakes.yaml`), a developer can run it
-# before pushing, and `ci.yml` calls it one section per job, so the checks are
-# the same whether or not Actions ever comes back.
+# before pushing, and `ci.yml` calls it once per job, with that job's sections,
+# so the checks are the same whether or not Actions ever comes back.
 #
 # Sections, in the order a bare run executes them:
 #
