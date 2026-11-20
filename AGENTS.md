@@ -70,8 +70,9 @@ body**; never weaken the guard.
 
 **A file that cannot carry a marker** — JSON has no comment syntax, and vendored
 third-party data must stay byte-for-byte — is exempted in `PATH_ALLOWANCES`, per path
-*and* per rule. There is one entry: the vendored TOON fixture whose backslash-escaping
-case is a synthetic Windows drive path.
+*and* per rule. There are two entries, one per vendored copy of the TOON fixture
+(the Python package's and the Rust crate's older set) whose backslash-escaping case is a
+synthetic Windows drive path.
 
 ## The development environment: `.venv`, always
 
