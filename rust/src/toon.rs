@@ -154,13 +154,15 @@ impl Delimiter {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum Dialect {
     /// Spec v4.4 and the Python `axi_toolkit.toon` module: a string starting with `#` is quoted,
-    /// a leading `+` makes a string numeric-like, padding means a space or tab, and a float
-    /// outside the canonical decimal range prints with Python's exponent form (`1e-07`).
+    /// a leading `+` makes a string numeric-like, padding means a space or tab, an integral float
+    /// prints its exact integer (`2^63` as `9223372036854775808`), and a float outside the
+    /// canonical decimal range prints with Python's exponent form (`1e-07`).
     #[default]
     Spec,
     /// `@toon-format/toon` 2.3.x: `#` is not special, `+1` is not numeric-like, padding is
-    /// anything JavaScript's `String.prototype.trim` strips, and an exponent has no zero padding
-    /// (`1e-7`).
+    /// anything JavaScript's `String.prototype.trim` strips, an integral float prints its
+    /// shortest round-trip digits (`2^63` as `9223372036854776000`), and an exponent has no zero
+    /// padding (`1e-7`).
     ToonJs2,
 }
 
@@ -320,7 +322,9 @@ fn format_number(v: f64, dialect: Dialect) -> String {
         // (`str(int(v))`): Display would pad the shortest digits with zeros instead, which
         // differs from the exact value from 2^53 up (2^63 is 9223372036854775808, not
         // ...776000). |v| < 1e21 < 2^70, so the i128 conversion is exact.
-        if v.fract() == 0.0 {
+        // The JavaScript dialect keeps the shortest digits (`String(2**63)` is
+        // `9223372036854776000`), so only the Spec dialect takes this branch.
+        if dialect == Dialect::Spec && v.fract() == 0.0 {
             #[allow(clippy::cast_possible_truncation)]
             return (v as i128).to_string();
         }
@@ -671,6 +675,17 @@ mod tests {
         assert_eq!(n(f64::MAX), "1.7976931348623157e+308");
         assert_eq!(n(f64::MIN), "-1.7976931348623157e+308");
         assert_eq!(n(-0.0), "0");
+    }
+
+    #[test]
+    fn the_js_dialect_keeps_shortest_digits_for_large_integral_floats() {
+        let opts = Options {
+            dialect: Dialect::ToonJs2,
+            ..Options::default()
+        };
+        let n = |v: f64| encode_scalar_with(&Value::Num(v), &opts);
+        assert_eq!(n(2f64.powi(63)), "9223372036854776000");
+        assert_eq!(n(1e20), "100000000000000000000");
     }
 
     #[test]
