@@ -6,7 +6,6 @@ members = ["."]
 name = "axi-toolkit"
 version = "0.1.0"
 edition = "2021"
-rust-version = "1.74"
 description = "Shared toolkit for Agent eXperience Interface (AXI) command-line tools: a strict TOON encoder, errors that carry recovery as data, a redaction boundary, a flag parser and dispatcher"
 license = "MIT"
 readme = "README.md"
