@@ -3,13 +3,17 @@
 This file is the project's committed home for project-intrinsic agent knowledge: build,
 test, release, architecture, and sharp-edge notes that should travel with the code.
 
-**Layout.** The Python package is in `python/`, the TypeScript package in `ts/`, and the shared
+**Layout.** The Python package is in `python/`, the TypeScript package in `ts/`, the Rust crate in `rust/`, and the shared
 language-neutral `conformance/` pack at the root beside the repository-wide tooling:
 `scripts/leakcheck.py`, `scripts/commitcheck.py`, `scripts/ci-local.sh`,
 `scripts/install-hooks.sh`, `vendor/`, `.githooks/`, `.github/` and the release-please files.
 Every other path below (`src/`, `tests/`, `metaobjects/`, `models/`, `pyproject.toml`,
 `scripts/reqgen.py`, `scripts/dev-setup.sh`, `.venv`, `CHANGELOG.md`, ...) is relative to
-`python/`, and the Python commands are run from there.
+`python/`, and the Python commands are run from there. The Rust crate reads the root
+`conformance/` pack and the Python package's TOON fixtures in place (no copy of either; the one exception is its older spec v4.1.1 fixture set under
+`rust/tests/fixtures/`, kept on its own checksums), is
+`publish = false`, and is deliberately outside release-please; `scripts/ci-local.sh --only rsfmt
+--only rstest` checks it.
 
 ## The hard constraint: this repository is public and must stay generic
 
@@ -66,8 +70,9 @@ body**; never weaken the guard.
 
 **A file that cannot carry a marker** — JSON has no comment syntax, and vendored
 third-party data must stay byte-for-byte — is exempted in `PATH_ALLOWANCES`, per path
-*and* per rule. There is one entry: the vendored TOON fixture whose backslash-escaping
-case is a synthetic Windows drive path.
+*and* per rule. There are two entries, one per vendored copy of the TOON fixture
+(the Python package's and the Rust crate's older set) whose backslash-escaping case is a
+synthetic Windows drive path.
 
 ## The development environment: `.venv`, always
 

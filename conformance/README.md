@@ -3,8 +3,8 @@
 Language-neutral JSON that any implementation of the toolkit's contract judges itself
 against. The Python package in `python/src/axi_toolkit` is the reference: it writes this
 directory, and a test regenerates it on every run and requires the committed bytes, so
-the pack cannot drift from Python. A second implementation in this repository reads these
-files in place; there is no vendored copy and nothing to sync.
+the pack cannot drift from Python. The TypeScript and Rust packages in this repository read
+these files in place; there is no vendored copy and nothing to sync.
 
 | file | what it holds |
 | --- | --- |

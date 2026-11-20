@@ -10,7 +10,7 @@ One contract, implemented once per language and judged by the same shared fixtur
 | --- | --- | --- |
 | [`python/`](python/) | the Python package, published to PyPI as `axi-toolkit`; the reference implementation | released, with its own [changelog](python/CHANGELOG.md) |
 | [`ts/`](ts/) | the TypeScript port | not yet published |
-| `rust/` | a Rust crate | planned |
+| [`rust/`](rust/) | the Rust crate; reads `conformance/` and the Python package's TOON fixtures in place (plus an older v4.1.1 fixture set of its own) | not published (`publish = false`; outside release automation) |
 | [`conformance/`](conformance/) | the language-neutral JSON pack every implementation judges itself against; written by the Python package, read in place by the others | shared |
 
 `scripts/`, `vendor/`, `.githooks/` and `.github/` at the root serve the whole repository:
@@ -25,17 +25,17 @@ pip install axi-toolkit
 ```
 
 The package's README, API tables and development instructions are in
-[`python/README.md`](python/README.md); the TypeScript port's are in [`ts/README.md`](ts/README.md).
+[`python/README.md`](python/README.md); the TypeScript port's are in [`ts/README.md`](ts/README.md); the Rust crate's are in [`rust/README.md`](rust/README.md).
 
 ## Developing
 
 ```sh
 scripts/install-hooks.sh     # the pre-commit and commit-msg guards
-scripts/ci-local.sh          # every check, Python and TypeScript (see --help for the sections)
+scripts/ci-local.sh          # every check, Python, TypeScript and Rust (see --help for the sections)
 ```
 
 Each package is versioned and released on its own. Only `python/` is a release-please
-package today, so commits that touch only `ts/` or `conformance/` do not bump the Python
+package today, so commits that touch only `ts/`, `rust/` or `conformance/` do not bump the Python
 version, and the Python changelog lives in `python/CHANGELOG.md`.
 
 This repository is public and must stay generic: no host addresses, credentials, real data
