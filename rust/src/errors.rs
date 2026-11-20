@@ -652,8 +652,8 @@ impl ErrorKind {
 ///
 /// `recovery` carries the specific next steps as data: on an error, suggest the fix rather than
 /// pointing at `--help`. `code` is a literal from the owning tool's closed table -- always a
-/// literal, because a code built from whatever the server said (`HTTP_404`) is vocabulary no
-/// caller can switch on and no table can ever complete.
+/// literal, because a code built from whatever the server said (an `HTTP_404` assembled from the
+/// status) is vocabulary no caller can switch on and no table can ever complete.
 ///
 /// There is deliberately no field for rendered help lines: [`crate::render`] produces them
 /// from `recovery` at the moment somebody knows which tool is asking.

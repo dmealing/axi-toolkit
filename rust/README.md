@@ -33,7 +33,7 @@ cargo add axi-toolkit --features http
 | `envconfig` | Credentials from the environment only: first-set variable wins, base URL normalised, userinfo split out and registered as a secret, failures that say exactly which variable to set. |
 | `cli` | `AppSpec` / `CommandSpec` / `FlagSpec` (data), the flag-parsing helpers, help text, and the dispatcher: the `Handlers` trait, `Outcome`, `run` and `execute`. |
 | `proc` | Run a subprocess with a timeout and an output cap, redact what it prints, and refuse any argv that holds a registered secret. |
-| `http` | (feature `http`) A blocking client: bearer token registered as a secret, plain `http://` refused unless allowed, every failure an `AxiError` of the right kind. |
+| `http` | (feature `http`) A blocking client: bearer token registered as a secret, plain `http://` (any scheme case) refused unless allowed, every failure an `AxiError` of the right kind. Error codes are a closed set of literals a tool declares in its fault table; `http::CODES` lists them and the module docs say when each is produced. |
 
 ## How a tool is built
 
