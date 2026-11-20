@@ -46,20 +46,16 @@ fn options(case: &serde_json::Value) -> Options {
     o
 }
 
+/// Cases whose JSON integer literal is beyond i64: the reference reads a Python `int` (exact
+/// digits), but `Value::Int` is an i64, so here it is an `f64` and prints as the exact integer
+/// that float holds, which is what Python's `str(int(float(literal)))` gives. The value is the
+/// literal's own binary64 expansion, derived independently of the encoder.
+const FLOAT_HELD_INTEGERS: &[(&str, &str)] = &[(
+    "encodes a large integer-valued number with its shortest round-trip digits",
+    "123456789012345683968",
+)];
+
 /// Encode every case in `dir`; return how many there were and the failures.
-/// An integral number the encoder holds as a float although the fixture wrote it as an integer.
-fn beyond_i64_integer(j: &serde_json::Value) -> bool {
-    j.as_f64()
-        .is_some_and(|f| j.as_i64().is_none() && f.fract() == 0.0 && f.abs() < 1e21)
-}
-
-fn exact_integer(v: &Value) -> String {
-    match v {
-        Value::Num(n) => format!("{}", *n as i128),
-        _ => unreachable!("a literal beyond i64 is read as a float"),
-    }
-}
-
 fn run_fixtures(dir: &Path) -> (usize, Vec<String>) {
     let (mut total, mut failures) = (0, Vec::new());
     for path in fixture_files(dir) {
@@ -75,15 +71,11 @@ fn run_fixtures(dir: &Path) -> (usize, Vec<String>) {
             let expected = case["expected"].as_str().unwrap();
             total += 1;
             let got = encode_with(&input, &options(case));
-            // A JSON integer literal beyond i64 is a Python `int` in the reference (its exact
-            // digits) but an `f64` here, because `Value::Int` is an i64. A float prints as its
-            // exact integer, as Python's does, so what this case can check is that: the value the
-            // float holds, which the fixture's rounded digits agree with to 17 significant digits.
-            let expected = if beyond_i64_integer(&case["input"]) {
-                exact_integer(&input)
-            } else {
-                expected.to_string()
-            };
+            let case_name = case["name"].as_str().unwrap();
+            let expected = FLOAT_HELD_INTEGERS
+                .iter()
+                .find(|(n, _)| *n == case_name)
+                .map_or(expected, |(_, v)| v);
             if got != expected {
                 failures.push(format!(
                     "{name}[{i}] {}: expected {expected:?}, got {got:?}",
