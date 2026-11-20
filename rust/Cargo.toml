@@ -1,0 +1,44 @@
+[workspace]
+resolver = "2"
+members = ["."]
+
+[package]
+name = "axi-toolkit"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.74"
+description = "Shared toolkit for Agent eXperience Interface (AXI) command-line tools: a strict TOON encoder, errors that carry recovery as data, a redaction boundary, a flag parser and dispatcher"
+license = "MIT"
+readme = "README.md"
+keywords = ["cli", "agent", "toon", "axi"]
+categories = ["command-line-interface"]
+publish = false
+
+[lib]
+name = "axi_toolkit"
+path = "src/lib.rs"
+
+[features]
+default = []
+# An HTTPS client with timeouts (ureq over rustls). The only non-std dependency.
+http = ["dep:ureq"]
+
+[dependencies]
+ureq = { version = "2.12", default-features = false, features = ["tls"], optional = true }
+
+[dev-dependencies]
+# Reads the conformance JSON and talks to the Python oracle. Dev-only.
+serde_json = { version = "1", features = ["preserve_order", "float_roundtrip"] }
+
+[[example]]
+name = "hello_axi"
+path = "examples/hello_axi.rs"
+
+[[example]]
+name = "http_probe"
+path = "examples/http_probe.rs"
+required-features = ["http"]
+
+[lints.rust]
+unsafe_code = "forbid"
+missing_docs = "warn"

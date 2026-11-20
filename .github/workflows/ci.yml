@@ -129,6 +129,21 @@ jobs:
           cache-dependency-path: ts/package-lock.json
       - run: scripts/ci-local.sh --only tslint --only tstest --only tspack
 
+  # The Rust crate in rust/. It reads the conformance pack and the Python package's TOON
+  # fixtures in place; the only dependencies are crates.io ones from its lockfile.
+  rust:
+    name: rust
+    runs-on: [self-hosted, linux]
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - run: scripts/ci-local.sh --only rsfmt --only rstest
+
   test:
     name: test (py${{ matrix.python-version }})
     runs-on: [self-hosted, linux]

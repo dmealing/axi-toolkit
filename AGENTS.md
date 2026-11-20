@@ -3,13 +3,16 @@
 This file is the project's committed home for project-intrinsic agent knowledge: build,
 test, release, architecture, and sharp-edge notes that should travel with the code.
 
-**Layout.** The Python package is in `python/`, the TypeScript package in `ts/`, and the shared
+**Layout.** The Python package is in `python/`, the TypeScript package in `ts/`, the Rust crate in `rust/`, and the shared
 language-neutral `conformance/` pack at the root beside the repository-wide tooling:
 `scripts/leakcheck.py`, `scripts/commitcheck.py`, `scripts/ci-local.sh`,
 `scripts/install-hooks.sh`, `vendor/`, `.githooks/`, `.github/` and the release-please files.
 Every other path below (`src/`, `tests/`, `metaobjects/`, `models/`, `pyproject.toml`,
 `scripts/reqgen.py`, `scripts/dev-setup.sh`, `.venv`, `CHANGELOG.md`, ...) is relative to
-`python/`, and the Python commands are run from there.
+`python/`, and the Python commands are run from there. The Rust crate reads the root
+`conformance/` pack and the Python package's TOON fixtures in place (no vendored copy), is
+`publish = false`, and is deliberately outside release-please; `scripts/ci-local.sh --only rsfmt
+--only rstest` checks it.
 
 ## The hard constraint: this repository is public and must stay generic
 

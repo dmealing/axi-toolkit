@@ -23,6 +23,8 @@
 #   tslint        the TypeScript package in ts/: biome check, then tsc --noEmit
 #   tstest        the TypeScript package in ts/: vitest, then a build
 #   tspack        ts/: build, then what npm pack would ship, publint and attw (esm-only profile)
+#   rsfmt         the Rust crate in rust/: cargo fmt --check, then clippy over every target, -D warnings
+#   rstest        rust/: cargo test, then the crate's packaged file list (cargo package --list)
 #
 # Usage:
 #   scripts/ci-local.sh                        # every section
@@ -98,7 +100,7 @@ set -uo pipefail
 root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 cd "$root" || exit 1
 
-SECTIONS=(leakcheck commits lint test requirements verify metagen drift tslint tstest tspack)
+SECTIONS=(leakcheck commits lint test requirements verify metagen drift tslint tstest tspack rsfmt rstest)
 METAOBJECTS_PIN=$(grep -m1 '^metaobjects==' python/dev-constraints.txt) ||
   { echo "ci-local: python/dev-constraints.txt pins no metaobjects==" >&2; exit 1; }
 METAOBJECTS=${METAOBJECTS:-$METAOBJECTS_PIN}
@@ -310,6 +312,37 @@ sec_tspack() {
   npm --prefix ts run --silent check:pack
   npm --prefix ts run --silent check:publint
   npm --prefix ts run --silent check:types
+}
+
+# THE RUST CRATE. rust/ is a third package, read-only against conformance/ and the Python
+# package's TOON fixtures, which its tests open in place from the repository. Nothing here
+# publishes: the crate is `publish = false` and sits outside release-please. Build output
+# goes under $DEV_SCRATCH (RAM) when it is set, else the system temp directory, and is
+# removed when the section ends. The opt-in differential test against the Python reference
+# stays off unless AXI_PYTHON_REFERENCE is set; point it at python/.
+rs_target() {
+  # Not local, for the reason the comment under sec_test gives.
+  rs_tmp=$(mktemp -d "${DEV_SCRATCH:-${TMPDIR:-/tmp}}/axi-rust.XXXXXX")
+  trap 'rm -rf "$rs_tmp"' EXIT
+  export CARGO_TARGET_DIR=${CARGO_TARGET_DIR:-$rs_tmp/target}
+}
+
+ensure_cargo() {
+  command -v cargo >/dev/null 2>&1 || { echo "ci-local: rust needs cargo on PATH" >&2; return 1; }
+}
+
+sec_rsfmt() {
+  ensure_cargo
+  rs_target
+  cargo fmt --manifest-path rust/Cargo.toml --check
+  cargo clippy --manifest-path rust/Cargo.toml --all-targets --all-features -- -D warnings
+}
+
+sec_rstest() {
+  ensure_cargo
+  rs_target
+  cargo test --manifest-path rust/Cargo.toml --all-features
+  cargo package --manifest-path rust/Cargo.toml --list --allow-dirty
 }
 
 # Each section runs in its own subshell under `set -e`, so its first failing

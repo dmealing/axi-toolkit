@@ -21,6 +21,10 @@
 # of the test step, so one review run covers both
 # packages. They install into ts/node_modules from the lockfile (`npm ci`).
 #
+# The Rust crate in rust/ rides along the same way: `rsfmt` (cargo fmt and clippy) is part of
+# the lint step and `rstest` (cargo test and the packaged file list) of the test step. Cargo
+# output goes under $DEV_SCRATCH and is removed when the section ends.
+#
 # The gate checks out a fresh worktree with no .venv; the script builds one
 # with `python/scripts/dev-setup.sh --reqgen` the first time a section needs it.
 #
@@ -28,8 +32,8 @@
 # default branch, so an edit here takes effect only once it is merged to main.
 
 commands:
-  test: "scripts/ci-local.sh --only leakcheck --only commits --only test --only requirements --only verify --only drift --only tstest --only tspack"
-  lint: "scripts/ci-local.sh --only lint --only tslint"
+  test: "scripts/ci-local.sh --only leakcheck --only commits --only test --only requirements --only verify --only drift --only tstest --only tspack --only rstest"
+  lint: "scripts/ci-local.sh --only lint --only tslint --only rsfmt"
 
 # Public repository: keep PR bodies short and the run intent out of them.
 pr:

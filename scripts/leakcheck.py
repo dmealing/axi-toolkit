@@ -234,6 +234,9 @@ PATH_ALLOWANCES = {
     # it to satisfy this scanner would replace the specification's opinion with
     # ours, which is the opposite of what a conformance fixture is for.
     "python/src/axi_toolkit/toon_spec/encode/primitives.json": frozenset({"home-path"}),
+    # The Rust crate's older (spec v4.1.1) fixture set carries the same case, for the same
+    # reason and under its own checksum file.
+    "rust/tests/fixtures/toon-4.1/encode/primitives.json": frozenset({"home-path"}),
 }
 
 
