@@ -8,6 +8,23 @@
 //!   token over cleartext is a leak;
 //! * every failure is an [`AxiError`] of the right kind (connection, 401, 403, 404, other), with
 //!   a redacted message, so the dispatcher's exit codes and fault classes come out right.
+//!
+//! # Error codes
+//!
+//! Every code this module produces is a literal from a closed set, so a tool can declare them in
+//! its fault table and [`fault_class`](crate::errors::fault_class) can classify them:
+//!
+//! | code | when |
+//! | --- | --- |
+//! | [`CODE_INSECURE_URL`] | plain `http://` refused before sending |
+//! | [`CODE_BAD_RESPONSE`] | a response that was not the JSON the caller expected |
+//! | [`CODE_HTTP_UNAUTHORIZED`] | status 401 |
+//! | [`CODE_HTTP_FORBIDDEN`] | status 403 |
+//! | [`CODE_HTTP_NOT_FOUND`] | status 404 |
+//! | [`CODE_HTTP_ERROR`] | any other error status |
+//!
+//! The status number itself is in the message, never in the code. A connection failure carries
+//! no code. [`CODES`] lists the set.
 
 use crate::envconfig::Credentials;
 use crate::errors::AxiError;
@@ -18,6 +35,25 @@ use std::time::Duration;
 pub const CODE_INSECURE_URL: &str = "INSECURE_URL";
 /// The code of an error from a response that was not the JSON the caller expected.
 pub const CODE_BAD_RESPONSE: &str = "BAD_RESPONSE";
+
+/// The code of an error from a 401 response.
+pub const CODE_HTTP_UNAUTHORIZED: &str = "HTTP_UNAUTHORIZED";
+/// The code of an error from a 403 response.
+pub const CODE_HTTP_FORBIDDEN: &str = "HTTP_FORBIDDEN";
+/// The code of an error from a 404 response.
+pub const CODE_HTTP_NOT_FOUND: &str = "HTTP_NOT_FOUND";
+/// The code of an error from any other error status.
+pub const CODE_HTTP_ERROR: &str = "HTTP_ERROR";
+
+/// Every code this module produces, for a tool to merge into its fault table.
+pub const CODES: [&str; 6] = [
+    CODE_INSECURE_URL,
+    CODE_BAD_RESPONSE,
+    CODE_HTTP_UNAUTHORIZED,
+    CODE_HTTP_FORBIDDEN,
+    CODE_HTTP_NOT_FOUND,
+    CODE_HTTP_ERROR,
+];
 
 /// A blocking client bound to one base URL and one bearer token.
 #[derive(Debug, Clone)]
@@ -88,7 +124,12 @@ impl Client {
     }
 
     fn request(&self, method: &str, path: &str, body: Option<&str>) -> Result<String, AxiError> {
-        if self.base_url.starts_with("http://") && !self.allow_insecure {
+        // RFC 3986: a scheme is case-insensitive, so `HTTP://` is the same cleartext as `http://`.
+        let cleartext = self
+            .base_url
+            .get(..7)
+            .is_some_and(|p| p.eq_ignore_ascii_case("http://"));
+        if cleartext && !self.allow_insecure {
             return Err(
                 AxiError::config("refusing to send a credential over plain http")
                     .with_code(CODE_INSECURE_URL),
@@ -140,12 +181,11 @@ fn status_error(code: u16, url: &str, detail: &str) -> AxiError {
     };
     let message = format!("{url} answered {code}{tail}");
     match code {
-        401 => AxiError::auth_failed(message),
-        403 => AxiError::forbidden(message),
-        404 => AxiError::not_found(message),
-        _ => AxiError::api(message),
+        401 => AxiError::auth_failed(message).with_code(CODE_HTTP_UNAUTHORIZED),
+        403 => AxiError::forbidden(message).with_code(CODE_HTTP_FORBIDDEN),
+        404 => AxiError::not_found(message).with_code(CODE_HTTP_NOT_FOUND),
+        _ => AxiError::api(message).with_code(CODE_HTTP_ERROR),
     }
-    .with_code(format!("HTTP_{code}"))
 }
 
 #[cfg(test)]
@@ -196,11 +236,16 @@ mod tests {
 
     #[test]
     fn statuses_map_to_error_kinds() {
-        for (status, kind) in [
-            ("401 Unauthorized", ErrorKind::AuthFailed),
-            ("403 Forbidden", ErrorKind::Forbidden),
-            ("404 Not Found", ErrorKind::NotFound),
-            ("500 Internal Server Error", ErrorKind::Api),
+        for (status, kind, code) in [
+            (
+                "401 Unauthorized",
+                ErrorKind::AuthFailed,
+                CODE_HTTP_UNAUTHORIZED,
+            ),
+            ("403 Forbidden", ErrorKind::Forbidden, CODE_HTTP_FORBIDDEN),
+            ("404 Not Found", ErrorKind::NotFound, CODE_HTTP_NOT_FOUND),
+            ("500 Internal Server Error", ErrorKind::Api, CODE_HTTP_ERROR),
+            ("418 I'm a teapot", ErrorKind::Api, CODE_HTTP_ERROR),
         ] {
             let resp: &'static str = Box::leak(
                 format!("HTTP/1.1 {status}\r\nContent-Length: 0\r\nConnection: close\r\n\r\n")
@@ -213,8 +258,80 @@ mod tests {
                 .unwrap_err();
             h.join().unwrap();
             assert_eq!(err.kind, kind, "{status}");
-            assert!(err.code.as_deref().unwrap().starts_with("HTTP_"));
+            assert_eq!(err.code.as_deref(), Some(code), "{status}");
         }
+    }
+
+    #[test]
+    fn the_literal_codes_are_the_closed_set() {
+        assert_eq!(CODE_HTTP_UNAUTHORIZED, "HTTP_UNAUTHORIZED");
+        assert_eq!(CODE_HTTP_FORBIDDEN, "HTTP_FORBIDDEN");
+        assert_eq!(CODE_HTTP_NOT_FOUND, "HTTP_NOT_FOUND");
+        assert_eq!(CODE_HTTP_ERROR, "HTTP_ERROR");
+        let mut seen = std::collections::HashSet::new();
+        assert!(CODES.iter().all(|c| seen.insert(*c)), "codes are distinct");
+    }
+
+    #[test]
+    fn every_http_code_is_classifiable_once_a_tool_declares_it() {
+        use crate::errors::{fault_class, CLASS_AUTH, CLASS_NOT_FOUND, CLASS_UNCLASSIFIED};
+        let table = [
+            (CODE_HTTP_UNAUTHORIZED, CLASS_AUTH),
+            (CODE_HTTP_FORBIDDEN, CLASS_AUTH),
+            (CODE_HTTP_NOT_FOUND, CLASS_NOT_FOUND),
+            (CODE_HTTP_ERROR, "api"),
+        ];
+        for (status, code) in [
+            (401, CODE_HTTP_UNAUTHORIZED),
+            (403, CODE_HTTP_FORBIDDEN),
+            (404, CODE_HTTP_NOT_FOUND),
+            (500, CODE_HTTP_ERROR),
+            (418, CODE_HTTP_ERROR),
+        ] {
+            let err = status_error(status, "https://host.example.com/x", "");
+            assert_eq!(err.code.as_deref(), Some(code));
+            assert_ne!(err.fault_class(&table), CLASS_UNCLASSIFIED, "{status}");
+        }
+        assert_eq!(fault_class(Some("HTTP_404"), &table), CLASS_UNCLASSIFIED);
+    }
+
+    #[test]
+    fn the_cleartext_guard_ignores_scheme_case() {
+        for base in [
+            "HTTP://127.0.0.1:1",
+            "Http://127.0.0.1:1",
+            "hTTp://127.0.0.1:1",
+        ] {
+            let err = Client::new(base, "http-test-token-abcdef")
+                .get("/")
+                .unwrap_err();
+            assert_eq!(err.code.as_deref(), Some(CODE_INSECURE_URL), "{base}");
+        }
+    }
+
+    #[test]
+    fn an_uppercase_https_scheme_is_not_refused() {
+        // The guard passes; the request then fails to connect (nothing listens), not as cleartext.
+        let l = TcpListener::bind("127.0.0.1:0").unwrap();
+        let url = format!("HTTPS://{}", l.local_addr().unwrap());
+        drop(l);
+        let err = Client::new(url, "http-test-token-abcdef")
+            .timeout(Duration::from_millis(500))
+            .get("/")
+            .unwrap_err();
+        assert_ne!(err.code.as_deref(), Some(CODE_INSECURE_URL));
+    }
+
+    #[test]
+    fn a_mixed_case_scheme_is_allowed_when_insecure_is_permitted() {
+        let (url, req) = serve(OK);
+        let url = url.replacen("http://", "HtTp://", 1);
+        let body = Client::new(url, "http-test-token-abcdef")
+            .allow_insecure()
+            .get("/")
+            .unwrap();
+        assert_eq!(body, "{\"ok\":true}");
+        req.join().unwrap();
     }
 
     #[test]

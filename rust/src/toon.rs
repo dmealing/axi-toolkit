@@ -316,8 +316,15 @@ fn format_number(v: f64, dialect: Dialect) -> String {
     }
     let a = v.abs();
     if (1e-6..1e21).contains(&a) {
-        // Display prints the shortest round-tripping digits and never uses an
-        // exponent; an integral value prints without a fractional part.
+        // An integral value prints as its exact integer, as the Python reference does
+        // (`str(int(v))`): Display would pad the shortest digits with zeros instead, which
+        // differs from the exact value from 2^53 up (2^63 is 9223372036854775808, not
+        // ...776000). |v| < 1e21 < 2^70, so the i128 conversion is exact.
+        if v.fract() == 0.0 {
+            #[allow(clippy::cast_possible_truncation)]
+            return (v as i128).to_string();
+        }
+        // Otherwise Display prints the shortest round-tripping digits and never an exponent.
         return format!("{v}");
     }
     // Exponent notation is permitted outside the canonical range. Rust prints `1.5e-7`; the
@@ -647,6 +654,23 @@ mod tests {
             ..Options::default()
         };
         encode_scalar_with(&Value::Str(s.to_string()), &opts)
+    }
+
+    #[test]
+    fn large_integral_floats_print_as_exact_integers_like_python() {
+        let n = |v: f64| encode_scalar(&Value::Num(v));
+        assert_eq!(n(9_007_199_254_740_992.0), "9007199254740992");
+        assert_eq!(n(9_007_199_254_740_994.0), "9007199254740994");
+        assert_eq!(n(1e16), "10000000000000000");
+        assert_eq!(n(2f64.powi(63)), "9223372036854775808");
+        assert_eq!(n(-2f64.powi(63)), "-9223372036854775808");
+        assert_eq!(n(1e20), "100000000000000000000");
+        assert_eq!(n(9.999_999_999_999_998e20), "999999999999999737856");
+        assert_eq!(n(1e21), "1e+21");
+        assert_eq!(n(-1e21), "-1e+21");
+        assert_eq!(n(f64::MAX), "1.7976931348623157e+308");
+        assert_eq!(n(f64::MIN), "-1.7976931348623157e+308");
+        assert_eq!(n(-0.0), "0");
     }
 
     #[test]
