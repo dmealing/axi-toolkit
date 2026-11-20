@@ -78,8 +78,8 @@ jobs:
       contents: write
       pull-requests: write
     outputs:
-      release_created: ${{ steps.release.outputs.release_created }}
-      tag_name: ${{ steps.release.outputs.tag_name }}
+      release_created: ${{ steps.release.outputs['python--release_created'] }}
+      tag_name: ${{ steps.release.outputs['python--tag_name'] }}
     steps:
       - uses: googleapis/release-please-action@v4
         id: release
@@ -93,9 +93,9 @@ jobs:
       # apart, so say here which one this run was.
       - name: Say what release-please decided
         env:
-          RELEASE_CREATED: ${{ steps.release.outputs.release_created }}
+          RELEASE_CREATED: ${{ steps.release.outputs['python--release_created'] }}
           PRS_CREATED: ${{ steps.release.outputs.prs_created }}
-          TAG_NAME: ${{ steps.release.outputs.tag_name }}
+          TAG_NAME: ${{ steps.release.outputs['python--tag_name'] }}
         run: |
           {
             echo "### release-please"
@@ -111,7 +111,8 @@ jobs:
             echo "what proves that is the truth rather than a parse failure."
           } >> "$GITHUB_STEP_SUMMARY"
 
-  # Gated behind `release_created`, which is only true after a release PR
+  # Gated behind `python--release_created` (the Python package's path prefixes every
+  # per-package output), which is only true after a release PR
   # merges, so a plain push to `main` never publishes. That gate is what let
   # this job be committed before the PyPI project existed: it could not fire
   # until the one-time account actions only the maintainer could perform --
@@ -144,7 +145,7 @@ jobs:
         with:
           python-version: "3.12"
       - run: python -m pip install --upgrade pip build
-      - run: python -m build
+      - run: python -m build python
 
       # Publishing a broken artifact is worse than not publishing. This package
       # has no entry point to run, so the smoke test is the thing a consumer
@@ -155,7 +156,7 @@ jobs:
       - name: Smoke-test the built wheel
         run: |
           python -m venv /tmp/verify
-          /tmp/verify/bin/pip install --quiet dist/*.whl
+          /tmp/verify/bin/pip install --quiet python/dist/*.whl
           /tmp/verify/bin/python -c "
           import axi_toolkit, axi_toolkit.errors, axi_toolkit.redact, axi_toolkit.envconfig
           import axi_toolkit.toon, axi_toolkit.toon_spec
@@ -167,3 +168,5 @@ jobs:
           "
 
       - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: python/dist/

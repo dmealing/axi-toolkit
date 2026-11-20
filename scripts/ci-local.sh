@@ -12,14 +12,14 @@
 #   leakcheck     scripts/leakcheck.py --demo, then the scan of every tracked file
 #   commits       scripts/commitcheck.py --demo, then --since-release with
 #                 --pull-requests require, or auto with no GitHub token (see below)
-#   lint          ruff check . && ruff format --check .
-#   test          pytest, once, on the interpreter that built .venv
-#   requirements  scripts/reqgen.py list, then scripts/reqgen.py check
-#   verify        metaobjects verify, then --codegen
-#                 --require-implementers over the metaobjects/ ledger, at the pinned $METAOBJECTS
-#   metagen       tests/metagen under the MetaObjects toolchain (see below)
-#   drift         fetch both source tools at their main, then scripts/reqgen.py
-#                 check and scripts/reqgen.py drift against them (see below)
+#   lint          python/: ruff check && ruff format --check, over python/ and the root scripts/
+#   test          python/: pytest, once, on the interpreter that built python/.venv
+#   requirements  python/scripts/reqgen.py list, then python/scripts/reqgen.py check
+#   verify        python/: metaobjects verify, then --codegen
+#                 --require-implementers over the python/metaobjects/ ledger, at the pinned $METAOBJECTS
+#   metagen       python/tests/metagen under the MetaObjects toolchain (see below)
+#   drift         fetch both source tools at their main, then python/scripts/reqgen.py
+#                 check and python/scripts/reqgen.py drift against them (see below)
 #   tslint        the TypeScript package in ts/: biome check, then tsc --noEmit
 #   tstest        the TypeScript package in ts/: vitest, then a build
 #   tspack        ts/: build, then what npm pack would ship, publint and attw (esm-only profile)
@@ -33,7 +33,7 @@
 # THE TEST MATRIX DECISION. `test` runs the suite once, on the interpreter that
 # built .venv. That is what the gate runs, because it is the cost every change
 # pays. The supported range (3.9 through 3.12; `requires-python = ">=3.9"` in
-# pyproject.toml) is checked on demand with `--matrix`, which builds a throwaway
+# python/pyproject.toml) is checked on demand with `--matrix`, which builds a throwaway
 # `uv` venv per version and runs pytest in each. `--matrix` needs `uv` on PATH
 # and fails if it is missing, because a matrix that silently ran nothing reads
 # like one that passed. Override the versions with MATRIX_PYTHONS="3.9 3.12".
@@ -47,7 +47,7 @@
 #
 # METAGEN. `axi_toolkit.metagen` holds the generators a tool's own MetaObjects config
 # names, and they need the toolchain, which needs Python 3.11 -- more than this
-# package's floor, and more than a bare `pytest` run can count on. tests/metagen skips
+# package's floor, and more than a bare `pytest` run can count on. python/tests/metagen skips
 # where the toolchain is absent, and a skip is not a pass, so this section is the one
 # that runs it: under `uvx --python 3.12` with the pinned toolchain, never touching
 # .venv. Like `--matrix` it fails without `uv` on PATH rather than passing unrun.
@@ -85,7 +85,8 @@
 # (`leakcheck.py --pull-request N`) has no local home: the text it scans exists
 # only on GitHub, after the pull request is opened.
 #
-# The environment is .venv, built by `scripts/dev-setup.sh --reqgen` when it is
+# The Python sections run from python/. The environment is python/.venv, built by
+# `python/scripts/dev-setup.sh --reqgen` when it is
 # missing or lacks what a section imports (so that build needs Python 3.11+),
 # and every tool is called as .venv/bin/<tool> — never off PATH, for the reason
 # AGENTS.md gives under "The development environment".
@@ -98,8 +99,8 @@ root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 cd "$root" || exit 1
 
 SECTIONS=(leakcheck commits lint test requirements verify metagen drift tslint tstest tspack)
-METAOBJECTS_PIN=$(grep -m1 '^metaobjects==' dev-constraints.txt) ||
-  { echo "ci-local: dev-constraints.txt pins no metaobjects==" >&2; exit 1; }
+METAOBJECTS_PIN=$(grep -m1 '^metaobjects==' python/dev-constraints.txt) ||
+  { echo "ci-local: python/dev-constraints.txt pins no metaobjects==" >&2; exit 1; }
 METAOBJECTS=${METAOBJECTS:-$METAOBJECTS_PIN}
 MATRIX_PYTHONS=${MATRIX_PYTHONS:-"3.9 3.10 3.11 3.12"}
 
@@ -123,9 +124,13 @@ while [ $# -gt 0 ]; do
 done
 [ ${#only[@]} -gt 0 ] || only=("${SECTIONS[@]}")
 
+# The Python package lives in python/, and so do its .venv, its config and its scripts: every
+# section that touches it starts with `inpy`. Sections run in subshells, so the cd goes no further.
+inpy() { cd "$root/python" || return 1; }
+
 # A .venv built before the pin moved still imports metaobjects, so importable is not enough:
-# for that module the installed version must be the one dev-constraints.txt pins, which is
-# what scripts/dev-setup.sh installs whatever METAOBJECTS is set to.
+# for that module the installed version must be the one python/dev-constraints.txt pins, which is
+# what python/scripts/dev-setup.sh installs whatever METAOBJECTS is set to.
 venv_has_pinned_metaobjects() {
   [ "$1" = metaobjects ] || return 0
   [ "metaobjects==$(.venv/bin/python -I -c 'import importlib.metadata as m; print(m.version("metaobjects"))' 2>/dev/null)" = "$METAOBJECTS_PIN" ]
@@ -134,7 +139,8 @@ venv_has_pinned_metaobjects() {
 # Build .venv when it lacks what a section imports. `test` and `lint` need only
 # .[dev], which keeps a 3.9 venv usable; `requirements` needs .[dev,reqgen].
 ensure_venv() {
-  # -I: from the root, the metaobjects/ ledger directory imports as an empty namespace package.
+  # -I: from python/, the metaobjects/ ledger directory imports as an empty namespace package.
+  inpy
   if ! .venv/bin/python -I -c "import $1" >/dev/null 2>&1 || ! venv_has_pinned_metaobjects "$1"; then
     scripts/dev-setup.sh --reqgen
   fi
@@ -159,12 +165,16 @@ sec_commits() {
 
 sec_lint() {
   ensure_venv ruff
-  .venv/bin/ruff check .
-  .venv/bin/ruff format --check .
+  inpy
+  # The root scripts/ are Python too and are held to the package's rules: --config makes that
+  # explicit, since no pyproject sits above them for ruff to find.
+  .venv/bin/ruff check --config pyproject.toml . ../scripts
+  .venv/bin/ruff format --config pyproject.toml --check . ../scripts
 }
 
 sec_test() {
   ensure_venv pytest
+  inpy
   .venv/bin/pytest
   [ "$matrix" -eq 1 ] || return 0
   command -v uv >/dev/null 2>&1 || { echo "ci-local: --matrix needs uv on PATH" >&2; return 1; }
@@ -182,6 +192,7 @@ sec_test() {
 
 sec_requirements() {
   ensure_venv metaobjects
+  inpy
   .venv/bin/python scripts/reqgen.py list
   .venv/bin/python scripts/reqgen.py check
 }
@@ -195,6 +206,7 @@ sec_requirements() {
 # generators import from this checkout.
 sec_verify() {
   command -v uvx >/dev/null 2>&1 || { echo "ci-local: verify needs uv on PATH" >&2; return 1; }
+  inpy
   PYTHONPATH=src uvx --quiet --python 3.12 --from "$METAOBJECTS" \
     metaobjects verify
   PYTHONPATH=src uvx --quiet --python 3.12 --from "$METAOBJECTS" \
@@ -203,6 +215,7 @@ sec_verify() {
 
 sec_metagen() {
   command -v uvx >/dev/null 2>&1 || { echo "ci-local: metagen needs uv on PATH" >&2; return 1; }
+  inpy
   # -rs prints why anything skipped, and the count line is checked: nothing may skip here.
   PYTHONPATH=src uvx --quiet --python 3.12 --from "$METAOBJECTS" --with pytest --with ruff \
     pytest -p no:cacheprovider -rs tests/metagen | tee /dev/stderr | { ! grep -q 'skipped'; }
@@ -254,12 +267,13 @@ sec_drift() {
     return 1
   done
   ensure_venv metaobjects
+  inpy
   .venv/bin/python scripts/reqgen.py check
   PYTHONDONTWRITEBYTECODE=1 .venv/bin/python scripts/reqgen.py drift
 }
 
-# THE TYPESCRIPT PACKAGE. ts/ is a second package in this repository, kept out of the
-# Python release by exclude-paths in release-please-config.json. It reads the conformance/ pack
+# THE TYPESCRIPT PACKAGE. ts/ is a second package in this repository, kept apart from the
+# Python release by living outside the `python` package path in release-please-config.json. It reads the conformance/ pack
 # and the TOON fixtures in place, so these two sections need nothing but node and the
 # packages npm installs from its lockfile. The leak scan and the commit audit above
 # already cover ts/ -- they scan every tracked file and every commit -- so there is no

@@ -40,7 +40,7 @@ than implying it exercises all four.
 
 - `scripts/commitcheck.py --engine node` runs this copy directly. `--engine auto`, the default and
   what the hooks use, picks it whenever `node` is on `PATH`.
-- `tests/test_commit_message.py` runs the whole message corpus through **both** engines and asserts
+- `python/tests/test_commit_message.py` runs the whole message corpus through **both** engines and asserts
   they agree on the verdict and, where they reject, on the reported line, column, offending token,
   valid tokens and message text. That is what lets the Python transcription stand in on a machine
   with no `node`, and it is what would catch a refresh that changed the grammar.
@@ -69,8 +69,8 @@ tar -xzf conventional-commits-parser-<version>.tgz         # extracts to package
 cp package/lib/{parser,scanner,type-checks,codes}.js vendor/conventional-commits-parser/lib/
 cp package/LICENSE.txt vendor/conventional-commits-parser/LICENSE
 (cd vendor/conventional-commits-parser && sha256sum lib/*.js LICENSE) > vendor/conventional-commits-parser/checksums.txt
-scripts/dev-setup.sh
-.venv/bin/pytest tests/test_commit_message.py
+python/scripts/dev-setup.sh
+python/.venv/bin/pytest python/tests/test_commit_message.py
 ```
 
 Then update the table above, and re-read `THROW_SITES` in `scripts/commitcheck.py`: the count is

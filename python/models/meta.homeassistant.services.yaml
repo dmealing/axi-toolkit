@@ -2,7 +2,7 @@
 #
 # The readers that module reads the model through are generated from this file into
 # src/axi_toolkit/ha/model/, and the check that every name declared here is one a real
-# server sent into tests/hamodel/ (see metaobjects.config.yaml at the repository root).
+# server sent into tests/hamodel/ (see metaobjects.config.yaml in the python/ directory).
 #
 # Every name is Home Assistant's own, held to tests/fixtures/homeassistant/capture.json:
 # the service sections, byte for byte, of the names-only capture hass-axi records with

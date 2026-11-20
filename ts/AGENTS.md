@@ -1,9 +1,9 @@
 # The TypeScript package (`ts/`)
 
-`axi-toolkit` (not yet published to npm): the TypeScript counterpart of the Python package in `src/`, in the
-same repository and versioned on its own. It is not a release-please package yet: the root
-package's `exclude-paths: ["ts"]` keeps commits here from bumping the Python version, and
-how `ts` is released is still to be decided. The root `AGENTS.md` still governs everything here,
+`axi-toolkit` (not yet published to npm): the TypeScript counterpart of the Python package in `python/`, in the
+same repository and versioned on its own. It is not a release-please package yet: the Python
+package's path (`python`) in `release-please-config.json` keeps commits here from bumping the
+Python version, and how `ts` is released is still to be decided. The root `AGENTS.md` still governs everything here,
 above all the **public-repository constraint**: no host addresses, credentials, real
 data, local paths or personal identifiers in any file, fixture, test or commit message.
 `scripts/leakcheck.py` and `scripts/commitcheck.py` at the repository root already scan

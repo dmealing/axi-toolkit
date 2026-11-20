@@ -102,7 +102,7 @@ of it.
 
 ``--engine python`` runs the transcription in this file -- a line-by-line port of
 the same grammar -- so a machine with no ``node`` still gets a verdict rather than
-a skip. ``tests/test_commit_message.py`` runs the whole corpus through both and
+a skip. ``python/tests/test_commit_message.py`` runs the whole corpus through both and
 asserts they agree on the verdict and, where they reject, on the reported line,
 column, offending token, valid tokens and message text; a guard whose fallback
 disagreed with the thing it stands in for would be worse than none. That suite is
@@ -996,7 +996,7 @@ def report(problems, label, stream=None):
 
 def released_version(root):
     manifest = Path(root) / ".release-please-manifest.json"
-    return json.loads(manifest.read_text(encoding="utf-8"))["."]
+    return json.loads(manifest.read_text(encoding="utf-8"))["python"]
 
 
 def _tag_exists(tag, root):

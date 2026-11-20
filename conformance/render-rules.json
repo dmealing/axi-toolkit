@@ -2,7 +2,7 @@
   "pack": "axi-toolkit-conformance",
   "version": 1,
   "topic": "render-rules",
-  "generated_by": "scripts/conformance_pack.py",
+  "generated_by": "python/scripts/conformance_pack.py",
   "description": "`cases`: render `recovery` for each tool in `renders` and compare `line` (shell) and `sentence` (prose). `hand_written`: a wire form a person wrote; normalise it (`recovery` is the result) and render it. `rejected`: wire forms that must be refused. `parse`: shell lines and the intent they parse to; `parse_refused`: lines that must be refused.",
   "cases": [
     {
