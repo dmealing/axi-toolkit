@@ -16,7 +16,7 @@
 #   test          python/: pytest, once, on the interpreter that built python/.venv
 #   requirements  python/scripts/reqgen.py list, then python/scripts/reqgen.py check
 #   verify        python/: metaobjects verify, then --codegen
-#                 --require-implementers over the metaobjects/ ledger, at the pinned $METAOBJECTS
+#                 --require-implementers over the python/metaobjects/ ledger, at the pinned $METAOBJECTS
 #   metagen       python/tests/metagen under the MetaObjects toolchain (see below)
 #   drift         fetch both source tools at their main, then python/scripts/reqgen.py
 #                 check and python/scripts/reqgen.py drift against them (see below)
@@ -33,7 +33,7 @@
 # THE TEST MATRIX DECISION. `test` runs the suite once, on the interpreter that
 # built .venv. That is what the gate runs, because it is the cost every change
 # pays. The supported range (3.9 through 3.12; `requires-python = ">=3.9"` in
-# pyproject.toml) is checked on demand with `--matrix`, which builds a throwaway
+# python/pyproject.toml) is checked on demand with `--matrix`, which builds a throwaway
 # `uv` venv per version and runs pytest in each. `--matrix` needs `uv` on PATH
 # and fails if it is missing, because a matrix that silently ran nothing reads
 # like one that passed. Override the versions with MATRIX_PYTHONS="3.9 3.12".
@@ -47,7 +47,7 @@
 #
 # METAGEN. `axi_toolkit.metagen` holds the generators a tool's own MetaObjects config
 # names, and they need the toolchain, which needs Python 3.11 -- more than this
-# package's floor, and more than a bare `pytest` run can count on. tests/metagen skips
+# package's floor, and more than a bare `pytest` run can count on. python/tests/metagen skips
 # where the toolchain is absent, and a skip is not a pass, so this section is the one
 # that runs it: under `uvx --python 3.12` with the pinned toolchain, never touching
 # .venv. Like `--matrix` it fails without `uv` on PATH rather than passing unrun.
@@ -129,7 +129,7 @@ done
 inpy() { cd "$root/python" || return 1; }
 
 # A .venv built before the pin moved still imports metaobjects, so importable is not enough:
-# for that module the installed version must be the one dev-constraints.txt pins, which is
+# for that module the installed version must be the one python/dev-constraints.txt pins, which is
 # what python/scripts/dev-setup.sh installs whatever METAOBJECTS is set to.
 venv_has_pinned_metaobjects() {
   [ "$1" = metaobjects ] || return 0
@@ -139,7 +139,7 @@ venv_has_pinned_metaobjects() {
 # Build .venv when it lacks what a section imports. `test` and `lint` need only
 # .[dev], which keeps a 3.9 venv usable; `requirements` needs .[dev,reqgen].
 ensure_venv() {
-  # -I: from the root, the metaobjects/ ledger directory imports as an empty namespace package.
+  # -I: from python/, the metaobjects/ ledger directory imports as an empty namespace package.
   inpy
   if ! .venv/bin/python -I -c "import $1" >/dev/null 2>&1 || ! venv_has_pinned_metaobjects "$1"; then
     scripts/dev-setup.sh --reqgen
