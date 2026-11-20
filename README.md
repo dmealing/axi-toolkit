@@ -10,7 +10,7 @@ One contract, implemented once per language and judged by the same shared fixtur
 | --- | --- | --- |
 | [`python/`](python/) | the Python package, published to PyPI as `axi-toolkit`; the reference implementation | released, with its own [changelog](python/CHANGELOG.md) |
 | [`ts/`](ts/) | the TypeScript port | not yet published |
-| [`rust/`](rust/) | the Rust crate; reads `conformance/` and the Python package's TOON fixtures in place | not published (`publish = false`; outside release automation) |
+| [`rust/`](rust/) | the Rust crate; reads `conformance/` and the Python package's TOON fixtures in place (plus an older v4.1.1 fixture set of its own) | not published (`publish = false`; outside release automation) |
 | [`conformance/`](conformance/) | the language-neutral JSON pack every implementation judges itself against; written by the Python package, read in place by the others | shared |
 
 `scripts/`, `vendor/`, `.githooks/` and `.github/` at the root serve the whole repository:

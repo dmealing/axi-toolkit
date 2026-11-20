@@ -243,7 +243,7 @@ jobs:
   # Nothing watches a workflow that runs on main and overnight, so a failure has
   # to come and find someone.
   notify:
-    needs: [leakcheck, commits, lint, test, requirements, verify, drift]
+    needs: [leakcheck, commits, lint, test, requirements, verify, drift, typescript, rust]
     if: always() && contains(needs.*.result, 'failure')
     runs-on: [self-hosted, linux]
     timeout-minutes: 5

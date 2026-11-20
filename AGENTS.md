@@ -10,7 +10,8 @@ language-neutral `conformance/` pack at the root beside the repository-wide tool
 Every other path below (`src/`, `tests/`, `metaobjects/`, `models/`, `pyproject.toml`,
 `scripts/reqgen.py`, `scripts/dev-setup.sh`, `.venv`, `CHANGELOG.md`, ...) is relative to
 `python/`, and the Python commands are run from there. The Rust crate reads the root
-`conformance/` pack and the Python package's TOON fixtures in place (no vendored copy), is
+`conformance/` pack and the Python package's TOON fixtures in place (no copy of either; the one exception is its older spec v4.1.1 fixture set under
+`rust/tests/fixtures/`, kept on its own checksums), is
 `publish = false`, and is deliberately outside release-please; `scripts/ci-local.sh --only rsfmt
 --only rstest` checks it.
 
